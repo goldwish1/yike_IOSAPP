@@ -157,91 +157,6 @@ struct PointsCenterView: View {
     }
 }
 
-struct PointsHistoryView: View {
-    @EnvironmentObject var dataManager: DataManager
-    
-    private var recordsByMonth: [String: [PointsRecord]] {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy年MM月"
-        
-        var result: [String: [PointsRecord]] = [:]
-        
-        for record in dataManager.pointsRecords.sorted(by: { $0.date > $1.date }) {
-            let monthKey = dateFormatter.string(from: record.date)
-            if result[monthKey] == nil {
-                result[monthKey] = []
-            }
-            result[monthKey]?.append(record)
-        }
-        
-        return result
-    }
-    
-    var body: some View {
-        List {
-            ForEach(Array(recordsByMonth.keys.sorted(by: >)), id: \.self) { month in
-                Section(header: Text(month)) {
-                    ForEach(recordsByMonth[month] ?? []) { record in
-                        HStack {
-                            // 积分类型图标
-                            Image(systemName: iconForRecord(record))
-                                .font(.system(size: 18))
-                                .foregroundColor(colorForRecord(record))
-                                .frame(width: 36, height: 36)
-                                .background(colorForRecord(record).opacity(0.1))
-                                .clipShape(Circle())
-                            
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(record.reason)
-                                    .font(.headline)
-                                
-                                Text(formattedDate(record.date))
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
-                            
-                            Spacer()
-                            
-                            Text(record.isIncome ? "+\(record.absoluteAmount)" : "-\(record.absoluteAmount)")
-                                .font(.headline)
-                                .foregroundColor(record.isIncome ? .green : .red)
-                        }
-                        .padding(.vertical, 4)
-                    }
-                }
-            }
-        }
-        .listStyle(InsetGroupedListStyle())
-        .navigationTitle("积分记录")
-    }
-    
-    private func iconForRecord(_ record: PointsRecord) -> String {
-        if record.reason.contains("OCR") || record.reason.contains("识别") {
-            return "text.viewfinder"
-        } else if record.reason.contains("充值") {
-            return "creditcard.fill"
-        } else if record.reason.contains("奖励") {
-            return "gift.fill"
-        } else {
-            return "circle.fill"
-        }
-    }
-    
-    private func colorForRecord(_ record: PointsRecord) -> Color {
-        if record.isIncome {
-            return .green
-        } else {
-            return .red
-        }
-    }
-    
-    private func formattedDate(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "MM月dd日 HH:mm"
-        return formatter.string(from: date)
-    }
-}
-
 struct PointsRechargeView: View {
     @Environment(\.presentationMode) var presentationMode
     @EnvironmentObject var dataManager: DataManager
@@ -330,7 +245,7 @@ struct PointsRechargeView: View {
                     }
                     .padding(.horizontal)
                     
-                    Text("点击"购买"，将通过 Apple 支付进行扣款")
+                    Text("点击\"购买\"，将通过 Apple 支付进行扣款")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
