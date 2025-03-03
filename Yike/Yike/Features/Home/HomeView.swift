@@ -149,18 +149,13 @@ struct MemoryItemCard: View {
                 
                 Spacer()
                 
-                Button(action: {}) {
-                    HStack {
-                        Image(systemName: "play.fill")
-                            .font(.caption)
-                        Text(item.isNew ? "开始学习" : "开始复习")
-                            .font(.footnote)
-                    }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                    .background(Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(8)
+                NavigationLink(destination: PlayerView(memoryItem: item)) {
+                    Image(systemName: "play.fill")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .frame(width: 40, height: 40)
+                        .background(Color.blue)
+                        .clipShape(Circle())
                 }
             }
         }

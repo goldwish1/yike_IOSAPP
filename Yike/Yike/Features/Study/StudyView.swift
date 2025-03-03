@@ -222,7 +222,7 @@ struct StudyItemRow: View {
             
             Spacer()
             
-            Button(action: {}) {
+            NavigationLink(destination: PlayerView(memoryItem: item)) {
                 Image(systemName: "play.fill")
                     .font(.headline)
                     .foregroundColor(.white)

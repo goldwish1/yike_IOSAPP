@@ -6,6 +6,7 @@ struct InputSelectionView: View {
     @State private var recognizedText = ""
     @State private var manualText = ""
     @State private var wordCount = 0
+    @State private var navigateToPreview = false
     
     enum InputMethod {
         case camera, manual
@@ -67,10 +68,10 @@ struct InputSelectionView: View {
             // 下一步按钮
             NavigationLink(
                 destination: PreviewEditView(text: manualText.isEmpty ? recognizedText : manualText),
-                isActive: .constant(!manualText.isEmpty || !recognizedText.isEmpty)
+                isActive: $navigateToPreview
             ) {
                 Button(action: {
-                    // 导航链接会处理跳转
+                    navigateToPreview = true
                 }) {
                     Text("下一步")
                         .font(.headline)
