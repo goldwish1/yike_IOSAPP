@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>忆刻 - 内容输入</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        body {
+            background: #f5f5f7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .screen {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 375px;
+            height: 667px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .screen-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            height: 44px;
+            margin-bottom: 20px;
+        }
+
+        .back-button {
+            position: absolute;
+            left: 0;
+            display: flex;
+            align-items: center;
+            color: #007AFF;
+            text-decoration: none;
+            font-size: 16px;
+        }
+
+        .back-button svg {
+            width: 20px;
+            height: 20px;
+            margin-right: 2px;
+        }
+
+        .screen-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1d1d1f;
+            text-align: center;
+        }
+
+        .content {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+        }
+
+        .input-methods {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .input-method {
+            flex: 1;
+            padding: 15px;
+            border-radius: 12px;
+            background: #f5f5f7;
+            text-align: center;
+            cursor: pointer;
+            text-decoration: none;
+            color: #1d1d1f;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .input-method.active {
+            background: rgba(0,122,255,0.1);
+            color: #007AFF;
+        }
+
+        .textarea {
+            width: 100%;
+            height: 300px;
+            padding: 16px;
+            border: 1px solid #e5e5ea;
+            border-radius: 12px;
+            resize: none;
+            font-size: 16px;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+
+        .button {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            background: #007AFF;
+            color: white;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .word-count {
+            text-align: right;
+            margin-bottom: 12px;
+            color: #8e8e93;
+            font-size: 14px;
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: #007AFF;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="screen">
+        <div class="screen-header">
+            <a href="home.html" class="back-button">
+                <svg viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+                </svg>
+                返回
+            </a>
+            <div class="screen-title">新建内容</div>
+        </div>
+        
+        <div class="content">
+            <!-- 输入方式选择 -->
+            <div class="input-methods">
+                <div class="input-method">
+                    <svg width="24" height="24" viewBox="0 0 24 24">
+                        <path fill="currentColor" d="M20 5h-3.17L15 3H9L7.17 5H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 14H4V7h4.05l1.83-2h4.24l1.83 2H20v12zM12 9c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm0 6c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/>
+                    </svg>
+                    <span>拍照输入</span>
+                </div>
+                <div class="input-method active">
+                    <svg width="24" height="24" viewBox="0 0 24 24">
+                        <path fill="currentColor" d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 3H7v2h10V6zm0 4H7v2h10v-2zM7 14h6v2H7v-2z"/>
+                    </svg>
+                    <span>手动输入</span>
+                </div>
+            </div>
+            
+            <!-- 文本输入区域 -->
+            <div class="word-count">0/250</div>
+            <textarea class="textarea" placeholder="请输入要背诵的内容（250字以内）"></textarea>
+            
+            <!-- 操作按钮 -->
+            <a href="preview.html" class="button" style="display: block; text-align: center; text-decoration: none;">下一步</a>
+        </div>
+        
+        <a href="index.html" class="back-link">返回导航</a>
+    </div>
+</body>
+</html> 

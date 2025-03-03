@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>忆刻 - 关于</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        body {
+            background: #f5f5f7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .screen {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 375px;
+            height: 667px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .screen-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            height: 44px;
+            margin-bottom: 20px;
+        }
+
+        .back-button {
+            position: absolute;
+            left: 0;
+            display: flex;
+            align-items: center;
+            color: #007AFF;
+            text-decoration: none;
+            font-size: 16px;
+        }
+
+        .back-button svg {
+            width: 20px;
+            height: 20px;
+            margin-right: 2px;
+        }
+
+        .screen-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1d1d1f;
+            text-align: center;
+        }
+
+        .content {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .app-icon {
+            width: 100px;
+            height: 100px;
+            border-radius: 22px;
+            background: linear-gradient(135deg, #007AFF, #5AC8FA);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .info-item {
+            width: 100%;
+            padding: 15px;
+            border-bottom: 1px solid #e5e5ea;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .button {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            background: #007AFF;
+            color: white;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: #007AFF;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="screen">
+        <div class="screen-header">
+            <a href="settings.html" class="back-button">
+                <svg viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+                </svg>
+                返回
+            </a>
+            <div class="screen-title">关于</div>
+        </div>
+        
+        <div class="content">
+            <!-- 应用图标 -->
+            <div class="app-icon">
+                <svg width="60" height="60" viewBox="0 0 24 24">
+                    <path fill="white" d="M21 5c-1.11-.35-2.33-.5-3.5-.5-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5S2.45 4.9 1 6v14.65c0 .25.25.5.5.5.1 0 .15-.05.25-.05C3.1 20.45 5.05 20 6.5 20c1.95 0 4.05.4 5.5 1.5 1.35-.85 3.8-1.5 5.5-1.5 1.65 0 3.35.3 4.75 1.05.1.05.15.05.25.05.25 0 .5-.25.5-.5V6c-.6-.45-1.25-.75-2-1z"/>
+                </svg>
+            </div>
+            
+            <div style="font-weight: 600; font-size: 24px; margin-bottom: 4px;">忆刻</div>
+            <div style="color: #8e8e93; margin-bottom: 40px;">智能记忆伴侣</div>
+            
+            <!-- 应用信息 -->
+            <div style="width: 100%; background: #f5f5f7; border-radius: 12px; overflow: hidden; margin-bottom: 20px;">
+                <div class="info-item" style="background: white;">
+                    <span>版本</span>
+                    <span style="color: #8e8e93;">1.0.0</span>
+                </div>
+                <div class="info-item" style="background: white;">
+                    <span>开发者</span>
+                    <span style="color: #8e8e93;">忆刻团队</span>
+                </div>
+                <div class="info-item" style="background: white;">
+                    <span>最后更新</span>
+                    <span style="color: #8e8e93;">2023-11-15</span>
+                </div>
+            </div>
+            
+            <!-- 联系我们 -->
+            <div style="width: 100%;">
+                <button class="button" style="background: white; color: #007AFF; border: 1px solid #007AFF; margin-bottom: 12px;">用户协议</button>
+                <button class="button" style="background: white; color: #007AFF; border: 1px solid #007AFF; margin-bottom: 12px;">隐私政策</button>
+                <button class="button">联系我们</button>
+            </div>
+        </div>
+        
+        <a href="index.html" class="back-link">返回导航</a>
+    </div>
+</body>
+</html> 

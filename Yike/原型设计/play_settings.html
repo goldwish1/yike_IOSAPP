@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>忆刻 - 播放设置</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        body {
+            background: #f5f5f7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .screen {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 375px;
+            height: 667px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .screen-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            height: 44px;
+            margin-bottom: 20px;
+        }
+
+        .back-button {
+            position: absolute;
+            left: 0;
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: #007AFF;
+            font-size: 16px;
+        }
+
+        .back-button svg {
+            width: 20px;
+            height: 20px;
+            margin-right: 2px;
+        }
+
+        .screen-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1d1d1f;
+            text-align: center;
+        }
+
+        .content {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+        }
+
+        .settings-item {
+            padding: 15px;
+            border-bottom: 1px solid #e5e5ea;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .input-field {
+            width: auto;
+            padding: 4px 12px;
+            border: 1px solid #e5e5ea;
+            border-radius: 10px;
+            font-size: 14px;
+        }
+
+        .button {
+            padding: 4px 12px;
+            border: none;
+            border-radius: 10px;
+            background: #007AFF;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .button.inactive {
+            background: #f5f5f7;
+            color: #1d1d1f;
+        }
+        
+        /* 新增的播放间隔开关样式 */
+        .toggle {
+            width: 50px;
+            height: 30px;
+            background: #e5e5ea;
+            border-radius: 15px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .toggle::after {
+            content: '';
+            position: absolute;
+            width: 26px;
+            height: 26px;
+            background: white;
+            border-radius: 13px;
+            top: 2px;
+            left: 2px;
+            transition: all 0.2s;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .toggle.active {
+            background: #34C759;
+        }
+
+        .toggle.active::after {
+            left: 22px;
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: #007AFF;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="screen">
+        <div class="screen-header">
+            <a href="settings.html" class="back-button">
+                <svg viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+                </svg>
+                返回
+            </a>
+            <div class="screen-title">播放设置</div>
+        </div>
+        
+        <div class="content">
+            <!-- 语音设置 -->
+            <div style="margin-bottom: 24px;">
+                <div style="font-weight: 500; margin-bottom: 16px;">语音设置</div>
+                <div style="background: #f5f5f7; border-radius: 12px; padding: 16px;">
+                    <div class="settings-item" style="background: white; border-radius: 8px; margin-bottom: 12px;">
+                        <span>语音性别</span>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="button">女声</button>
+                            <button class="button inactive">男声</button>
+                        </div>
+                    </div>
+                    <div class="settings-item" style="background: white; border-radius: 8px;">
+                        <span>语音音色</span>
+                        <select class="input-field">
+                            <option>标准音色</option>
+                            <option>温柔音色</option>
+                            <option>浑厚音色</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 播放间隔设置 -->
+            <div>
+                <div style="font-weight: 500; margin-bottom: 16px;">播放间隔</div>
+                <div style="background: #f5f5f7; border-radius: 12px; padding: 16px;">
+                    <div class="settings-item" style="background: white; border-radius: 8px 8px 0 0; margin-bottom: 1px; border-bottom: none;">
+                        <span>启用播放间隔</span>
+                        <div class="toggle active"></div>
+                    </div>
+                    <div class="settings-item" style="background: white; border-radius: 0 0 8px 8px;">
+                        <span>默认间隔时间</span>
+                        <select class="input-field">
+                            <option selected>5秒</option>
+                            <option>10秒</option>
+                            <option>15秒</option>
+                            <option>20秒</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <a href="index.html" class="back-link">返回导航</a>
+    </div>
+
+    <script>
+        // 简单的开关切换功能
+        document.querySelector('.toggle').addEventListener('click', function() {
+            this.classList.toggle('active');
+        });
+    </script>
+</body>
+</html> 

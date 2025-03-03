@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>忆刻 - 智能记忆助手</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        body {
+            background: #f5f5f7;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            color: #1d1d1f;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #8e8e93;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .pages-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 30px;
+        }
+
+        .page-card {
+            background: #f9f9f9;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            height: 600px;
+        }
+
+        .page-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .page-title {
+            background: #007AFF;
+            color: white;
+            padding: 12px 20px;
+            font-weight: 500;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .page-title a {
+            color: white;
+            text-decoration: none;
+        }
+
+        .page-preview {
+            flex-grow: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .page-iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            transform: scale(0.8);
+            transform-origin: top center;
+            pointer-events: none; /* 禁止交互，确保只能通过链接访问 */
+        }
+
+        .page-group {
+            margin-bottom: 50px;
+        }
+
+        .page-group h2 {
+            margin-bottom: 20px;
+            color: #1d1d1f;
+            font-size: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e5e5ea;
+        }
+        
+        .open-button {
+            background: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>忆刻 - 智能记忆助手</h1>
+        <div class="subtitle">基于科学记忆方法，让学习更轻松、更高效</div>
+        
+        <div class="page-group">
+            <h2>用户系统</h2>
+            <div class="pages-grid">
+                <div class="page-card">
+                    <div class="page-title">
+                        <span>登录/注册页面</span>
+                        <a href="login.html" class="open-button">打开</a>
+                    </div>
+                    <div class="page-preview">
+                        <iframe src="login.html" class="page-iframe"></iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="page-group">
+            <h2>核心功能</h2>
+            <div class="pages-grid">
+                <div class="page-card">
+                    <div class="page-title">
+                        <span>首页</span>
+                        <a href="home.html" class="open-button">打开</a>
+                    </div>
+                    <div class="page-preview">
+                        <iframe src="home.html" class="page-iframe"></iframe>
+                    </div>
+                </div>
+                
+                <div class="page-card">
+                    <div class="page-title">
+                        <span>学习页面</span>
+                        <a href="study.html" class="open-button">打开</a>
+                    </div>
+                    <div class="page-preview">
+                        <iframe src="study.html" class="page-iframe"></iframe>
+                    </div>
+                </div>
+                
+                <div class="page-card">
+                    <div class="page-title">
+                        <span>内容输入页面</span>
+                        <a href="input.html" class="open-button">打开</a>
+                    </div>
+                    <div class="page-preview">
+                        <iframe src="input.html" class="page-iframe"></iframe>
+                    </div>
+                </div>
+                
+                <div class="page-card">
+                    <div class="page-title">
+                        <span>预览编辑页面</span>
+                        <a href="preview.html" class="open-button">打开</a>
+                    </div>
+                    <div class="page-preview">
+                        <iframe src="preview.html" class="page-iframe"></iframe>
+                    </div>
+                </div>
+                
+                <div class="page-card">
+                    <div class="page-title">
+                        <span>播放页面</span>
+                        <a href="player.html" class="open-button">打开</a>
+                    </div>
+                    <div class="page-preview">
+                        <iframe src="player.html" class="page-iframe"></iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="page-group">
+            <h2>设置中心</h2>
+            <div class="pages-grid">
+                <div class="page-card">
+                    <div class="page-title">
+                        <span>设置中心</span>
+                        <a href="settings.html" class="open-button">打开</a>
+                    </div>
+                    <div class="page-preview">
+                        <iframe src="settings.html" class="page-iframe"></iframe>
+                    </div>
+                </div>
+                
+                <div class="page-card">
+                    <div class="page-title">
+                        <span>积分中心</span>
+                        <a href="points_center.html" class="open-button">打开</a>
+                    </div>
+                    <div class="page-preview">
+                        <iframe src="points_center.html" class="page-iframe"></iframe>
+                    </div>
+                </div>
+                
+                <div class="page-card">
+                    <div class="page-title">
+                        <span>积分充值</span>
+                        <a href="points_recharge.html" class="open-button">打开</a>
+                    </div>
+                    <div class="page-preview">
+                        <iframe src="points_recharge.html" class="page-iframe"></iframe>
+                    </div>
+                </div>
+                
+                <div class="page-card">
+                    <div class="page-title">
+                        <span>积分记录</span>
+                        <a href="points_history.html" class="open-button">打开</a>
+                    </div>
+                    <div class="page-preview">
+                        <iframe src="points_history.html" class="page-iframe"></iframe>
+                    </div>
+                </div>
+                
+                <div class="page-card">
+                    <div class="page-title">
+                        <span>播放设置</span>
+                        <a href="play_settings.html" class="open-button">打开</a>
+                    </div>
+                    <div class="page-preview">
+                        <iframe src="play_settings.html" class="page-iframe"></iframe>
+                    </div>
+                </div>
+                
+                <div class="page-card">
+                    <div class="page-title">
+                        <span>提醒设置</span>
+                        <a href="reminder_settings.html" class="open-button">打开</a>
+                    </div>
+                    <div class="page-preview">
+                        <iframe src="reminder_settings.html" class="page-iframe"></iframe>
+                    </div>
+                </div>
+                
+                <div class="page-card">
+                    <div class="page-title">
+                        <span>关于页面</span>
+                        <a href="about.html" class="open-button">打开</a>
+                    </div>
+                    <div class="page-preview">
+                        <iframe src="about.html" class="page-iframe"></iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

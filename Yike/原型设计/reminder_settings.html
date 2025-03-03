@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>忆刻 - 提醒设置</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        body {
+            background: #f5f5f7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .screen {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 375px;
+            height: 667px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .screen-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            height: 44px;
+            margin-bottom: 20px;
+        }
+
+        .back-button {
+            position: absolute;
+            left: 0;
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: #007AFF;
+            font-size: 16px;
+        }
+
+        .back-button svg {
+            width: 20px;
+            height: 20px;
+            margin-right: 2px;
+        }
+
+        .screen-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1d1d1f;
+            text-align: center;
+        }
+
+        .content {
+            flex: 1;
+            padding: 0;
+            overflow-y: auto;
+        }
+
+        .section-title {
+            font-weight: 600;
+            font-size: 17px;
+            margin-bottom: 12px;
+            color: #1d1d1f;
+            padding: 0 15px;
+        }
+
+        .settings-card {
+            background: #f5f5f7;
+            border-radius: 14px;
+            margin-bottom: 24px;
+            overflow: hidden;
+        }
+
+        .settings-item {
+            padding: 16px;
+            background: white;
+            border-bottom: 1px solid #e5e5ea;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .settings-item:last-child {
+            border-bottom: none;
+        }
+
+        .settings-label {
+            font-size: 16px;
+            color: #1d1d1f;
+        }
+
+        .input-field {
+            width: auto;
+            padding: 8px 12px;
+            border: 1px solid #e5e5ea;
+            border-radius: 10px;
+            font-size: 15px;
+            background: #f5f5f7;
+            color: #1d1d1f;
+        }
+
+        .toggle {
+            width: 51px;
+            height: 31px;
+            background: #e5e5ea;
+            border-radius: 31px;
+            position: relative;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .toggle::after {
+            content: '';
+            position: absolute;
+            width: 27px;
+            height: 27px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: all 0.2s;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .toggle.active {
+            background: #34C759;
+        }
+
+        .toggle.active::after {
+            left: 22px;
+        }
+
+        .time-options-container {
+            padding: 20px 16px;
+            background: white;
+        }
+
+        .time-options-title {
+            font-size: 16px;
+            color: #1d1d1f;
+            margin-bottom: 16px;
+        }
+
+        .time-options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .time-option {
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 15px;
+            text-align: center;
+            border: 1px solid #e5e5ea;
+            color: #1d1d1f;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .time-option.active {
+            background: rgba(0, 122, 255, 0.1);
+            border-color: #007AFF;
+            color: #007AFF;
+        }
+
+        .strategy-info {
+            font-size: 14px;
+            color: #8e8e93;
+            padding: 12px 16px;
+            background: white;
+        }
+
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown select {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background: #f5f5f7 url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24'%3E%3Cpath fill='%238e8e93' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E") no-repeat right 8px center;
+            padding-right: 28px;
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: #007AFF;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="screen">
+        <div class="screen-header">
+            <a href="settings.html" class="back-button">
+                <svg viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+                </svg>
+                返回
+            </a>
+            <div class="screen-title">提醒设置</div>
+        </div>
+        
+        <div class="content">
+            <!-- 每日学习提醒 -->
+            <div class="section-title">每日学习提醒</div>
+            <div class="settings-card">
+                <div class="settings-item">
+                    <span class="settings-label">开启每日提醒</span>
+                    <div class="toggle active"></div>
+                </div>
+                
+                <div class="time-options-container">
+                    <div class="time-options-title">提醒时间</div>
+                    <div class="time-options-grid">
+                        <div class="time-option">上午 8:00</div>
+                        <div class="time-option">中午 12:00</div>
+                        <div class="time-option active">晚上 8:00</div>
+                        <div class="time-option">晚上 10:00</div>
+                    </div>
+                </div>
+                
+                <div class="settings-item">
+                    <span class="settings-label">提醒方式</span>
+                    <div class="dropdown">
+                        <select class="input-field">
+                            <option>仅通知</option>
+                            <option selected>通知+声音</option>
+                            <option>通知+震动</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 复习提醒 -->
+            <div class="section-title">复习提醒</div>
+            <div class="settings-card">
+                <div class="settings-item">
+                    <span class="settings-label">到期复习提醒</span>
+                    <div class="toggle active"></div>
+                </div>
+                
+                <div class="settings-item" style="border-bottom: none;">
+                    <span class="settings-label">复习间隔策略</span>
+                    <div class="dropdown">
+                        <select class="input-field" id="strategy-select">
+                            <option value="simple">简单</option>
+                            <option value="standard" selected>标准</option>
+                            <option value="intensive">密集</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="strategy-info" id="strategy-info">
+                    标准: 第1天、第2天、第4天、第7天、第15天
+                </div>
+            </div>
+        </div>
+        
+        <a href="index.html" class="back-link">返回导航</a>
+    </div>
+
+    <script>
+        // 开关切换功能
+        document.querySelectorAll('.toggle').forEach(function(toggle) {
+            toggle.addEventListener('click', function() {
+                this.classList.toggle('active');
+            });
+        });
+        
+        // 时间选项切换功能
+        document.querySelectorAll('.time-option').forEach(function(option) {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.time-option').forEach(function(el) {
+                    el.classList.remove('active');
+                });
+                this.classList.add('active');
+            });
+        });
+        
+        // 更新策略说明文字
+        const strategySelect = document.getElementById('strategy-select');
+        const strategyInfo = document.getElementById('strategy-info');
+        
+        strategySelect.addEventListener('change', function() {
+            const strategy = this.value;
+            if (strategy === 'simple') {
+                strategyInfo.textContent = '简单: 第1天、第3天、第7天、第15天';
+            } else if (strategy === 'standard') {
+                strategyInfo.textContent = '标准: 第1天、第2天、第4天、第7天、第15天';
+            } else if (strategy === 'intensive') {
+                strategyInfo.textContent = '密集: 第1天、第2天、第3天、第5天、第8天、第13天';
+            }
+        });
+    </script>
+</body>
+</html> 

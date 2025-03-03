@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>忆刻 - 积分记录</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        body {
+            background: #f5f5f7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .screen {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 375px;
+            height: 667px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .screen-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            height: 44px;
+            margin-bottom: 20px;
+        }
+
+        .back-button {
+            position: absolute;
+            left: 0;
+            display: flex;
+            align-items: center;
+            color: #007AFF;
+            text-decoration: none;
+            font-size: 16px;
+        }
+
+        .back-button svg {
+            width: 20px;
+            height: 20px;
+            margin-right: 2px;
+        }
+
+        .screen-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1d1d1f;
+            text-align: center;
+        }
+
+        .content {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+        }
+
+        .month-section {
+            margin-bottom: 24px;
+        }
+
+        .month-header {
+            font-weight: 600;
+            font-size: 14px;
+            color: #8e8e93;
+            margin-bottom: 12px;
+            padding: 0 4px;
+        }
+
+        .record-item {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 8px;
+            border: 1px solid #e5e5ea;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .record-info {
+            flex: 1;
+        }
+
+        .record-title {
+            font-weight: 500;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+        }
+
+        .record-icon {
+            width: 16px;
+            height: 16px;
+            margin-right: 8px;
+        }
+
+        .record-time {
+            font-size: 13px;
+            color: #8e8e93;
+        }
+
+        .record-points {
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .record-points.plus {
+            color: #34C759;
+        }
+
+        .record-points.minus {
+            color: #FF3B30;
+        }
+
+        .filter-bar {
+            display: flex;
+            margin-bottom: 20px;
+            background: #f5f5f7;
+            border-radius: 8px;
+            padding: 4px;
+        }
+
+        .filter-option {
+            flex: 1;
+            padding: 8px 0;
+            text-align: center;
+            font-size: 14px;
+            color: #8e8e93;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .filter-option.active {
+            background: white;
+            color: #007AFF;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: #007AFF;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="screen">
+        <div class="screen-header">
+            <a href="points_center.html" class="back-button">
+                <svg viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+                </svg>
+                返回
+            </a>
+            <div class="screen-title">积分记录</div>
+        </div>
+        
+        <div class="content">
+            <!-- 筛选栏 -->
+            <div class="filter-bar">
+                <div class="filter-option active">全部</div>
+                <div class="filter-option">收入</div>
+                <div class="filter-option">支出</div>
+            </div>
+            
+            <!-- 本月记录 -->
+            <div class="month-section">
+                <div class="month-header">2024年2月</div>
+                
+                <div class="record-item">
+                    <div class="record-info">
+                        <div class="record-title">
+                            <svg class="record-icon" viewBox="0 0 24 24">
+                                <path fill="#34C759" d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/>
+                            </svg>
+                            充值积分
+                        </div>
+                        <div class="record-time">今天 14:30</div>
+                    </div>
+                    <div class="record-points plus">+300</div>
+                </div>
+                
+                <div class="record-item">
+                    <div class="record-info">
+                        <div class="record-title">
+                            <svg class="record-icon" viewBox="0 0 24 24">
+                                <path fill="#FF3B30" d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-8.5 14H5v-2.5h5.5V17zm0-4.5H5v-2.5h5.5V13zm0-4.5H5V6h5.5v2.5zm8.5 9h-5.5v-2.5H19V17zm0-4.5h-5.5v-2.5H19V13zm0-4.5h-5.5V6H19v2.5z"/>
+                            </svg>
+                            OCR识别
+                        </div>
+                        <div class="record-time">今天 10:20</div>
+                    </div>
+                    <div class="record-points minus">-10</div>
+                </div>
+            </div>
+            
+            <!-- 上月记录 -->
+            <div class="month-section">
+                <div class="month-header">2024年1月</div>
+                
+                <div class="record-item">
+                    <div class="record-info">
+                        <div class="record-title">
+                            <svg class="record-icon" viewBox="0 0 24 24">
+                                <path fill="#FF9500" d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/>
+                            </svg>
+                            邀请奖励
+                        </div>
+                        <div class="record-time">1月28日</div>
+                    </div>
+                    <div class="record-points plus">+50</div>
+                </div>
+                
+                <div class="record-item">
+                    <div class="record-info">
+                        <div class="record-title">
+                            <svg class="record-icon" viewBox="0 0 24 24">
+                                <path fill="#34C759" d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/>
+                            </svg>
+                            充值积分
+                        </div>
+                        <div class="record-time">1月15日</div>
+                    </div>
+                    <div class="record-points plus">+100</div>
+                </div>
+            </div>
+        </div>
+        
+        <a href="points_center.html" class="back-link">返回积分中心</a>
+    </div>
+</body>
+</html> 

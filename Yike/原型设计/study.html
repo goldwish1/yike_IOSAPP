@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>忆刻 - 学习</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        body {
+            background: #f5f5f7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .screen {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 375px;
+            height: 667px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .header {
+            margin-bottom: 20px;
+        }
+
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0 10px;
+        }
+
+        .section-title {
+            font-weight: 600;
+            font-size: 18px;
+            margin-bottom: 12px;
+            color: #1d1d1f;
+        }
+
+        .memory-item {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            border: 1px solid #e5e5ea;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .memory-info {
+            flex: 1;
+        }
+
+        .memory-title {
+            font-weight: 500;
+            color: #1d1d1f;
+            margin-bottom: 4px;
+        }
+
+        .memory-status {
+            font-size: 13px;
+            color: #8e8e93;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .progress-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 4px;
+        }
+
+        .progress-dot.new {
+            background: #007AFF;
+        }
+
+        .progress-dot.in-progress {
+            background: #FF9500;
+        }
+
+        .progress-dot.completed {
+            background: #34C759;
+        }
+
+        .play-button {
+            background: #007AFF;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+        }
+
+        .view-button {
+            background: transparent;
+            color: #007AFF;
+            border: 1px solid #007AFF;
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+        }
+
+        .tab-bar {
+            height: 50px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            border-top: 1px solid #e5e5ea;
+            margin-top: 20px;
+            background: white;
+        }
+
+        .tab-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: #8e8e93;
+        }
+
+        .tab-item.active {
+            color: #007AFF;
+        }
+
+        .tab-icon {
+            width: 24px;
+            height: 24px;
+            margin-bottom: 4px;
+        }
+
+        .tab-label {
+            font-size: 12px;
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: #007AFF;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="screen">
+        <div class="header">
+            <div style="font-weight: 600; font-size: 24px;">学习内容</div>
+        </div>
+        
+        <div class="content">
+            <!-- 待学习内容 -->
+            <div style="margin-bottom: 24px;">
+                <div class="section-title">待学习</div>
+                
+                <div class="memory-item">
+                    <div class="memory-info">
+                        <div class="memory-title">望庐山瀑布</div>
+                        <div class="memory-status">
+                            <span class="progress-dot new"></span>
+                            <span>新内容</span>
+                        </div>
+                    </div>
+                    <a href="player.html?content=望庐山瀑布" class="play-button">
+                        <svg viewBox="0 0 24 24" width="16" height="16" style="margin-right: 4px;">
+                            <path fill="currentColor" d="M8 5v14l11-7z"/>
+                        </svg>
+                        开始
+                    </a>
+                </div>
+            </div>
+            
+            <!-- 学习中的内容 -->
+            <div style="margin-bottom: 24px;">
+                <div class="section-title">学习中</div>
+                
+                <div class="memory-item">
+                    <div class="memory-info">
+                        <div class="memory-title">静夜思</div>
+                        <div class="memory-status">
+                            <span class="progress-dot in-progress"></span>
+                            <span>进度 40%</span>
+                            <span>•</span>
+                            <span>今天复习</span>
+                        </div>
+                    </div>
+                    <a href="player.html?content=静夜思" class="play-button">
+                        <svg viewBox="0 0 24 24" width="16" height="16" style="margin-right: 4px;">
+                            <path fill="currentColor" d="M8 5v14l11-7z"/>
+                        </svg>
+                        继续
+                    </a>
+                </div>
+
+                <div class="memory-item">
+                    <div class="memory-info">
+                        <div class="memory-title">登鹳雀楼</div>
+                        <div class="memory-status">
+                            <span class="progress-dot in-progress"></span>
+                            <span>进度 60%</span>
+                            <span>•</span>
+                            <span>3天后复习</span>
+                        </div>
+                    </div>
+                    <a href="player.html?content=登鹳雀楼" class="play-button">
+                        <svg viewBox="0 0 24 24" width="16" height="16" style="margin-right: 4px;">
+                            <path fill="currentColor" d="M8 5v14l11-7z"/>
+                        </svg>
+                        继续
+                    </a>
+                </div>
+            </div>
+            
+            <!-- 已掌握的内容 -->
+            <div>
+                <div class="section-title">已掌握</div>
+                
+                <div class="memory-item">
+                    <div class="memory-info">
+                        <div class="memory-title">春晓</div>
+                        <div class="memory-status">
+                            <span class="progress-dot completed"></span>
+                            <span>已完成</span>
+                            <span>•</span>
+                            <span>复习5次</span>
+                        </div>
+                    </div>
+                    <a href="player.html?content=春晓" class="view-button">
+                        <svg viewBox="0 0 24 24" width="16" height="16" style="margin-right: 4px;">
+                            <path fill="currentColor" d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                        </svg>
+                        查看
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 底部导航栏 -->
+        <div class="tab-bar">
+            <a href="home.html" class="tab-item">
+                <svg class="tab-icon" viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+                </svg>
+                <span class="tab-label">首页</span>
+            </a>
+            <a href="study.html" class="tab-item active">
+                <svg class="tab-icon" viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M21 5c-1.11-.35-2.33-.5-3.5-.5-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5S2.45 4.9 1 6v14.65c0 .25.25.5.5.5.1 0 .15-.05.25-.05C3.1 20.45 5.05 20 6.5 20c1.95 0 4.05.4 5.5 1.5 1.35-.85 3.8-1.5 5.5-1.5 1.65 0 3.35.3 4.75 1.05.1.05.15.05.25.05.25 0 .5-.25.5-.5V6c-.6-.45-1.25-.75-2-1zm0 13.5c-1.1-.35-2.3-.5-3.5-.5-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5 1.2 0 2.4.15 3.5.5v11.5z"/>
+                </svg>
+                <span class="tab-label">学习</span>
+            </a>
+            <a href="settings.html" class="tab-item">
+                <svg class="tab-icon" viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
+                </svg>
+                <span class="tab-label">设置</span>
+            </a>
+        </div>
+        
+        <a href="index.html" class="back-link">返回导航</a>
+    </div>
+</body>
+</html> 
