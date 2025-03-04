@@ -4,11 +4,17 @@ struct PreviewEditView: View {
     @EnvironmentObject var dataManager: DataManager
     @Environment(\.presentationMode) var presentationMode
     
-    @State private var title: String = ""
+    @State private var title: String
     @State private var content: String
     @State private var showingSaveAlert = false
     
     init(text: String) {
+        let defaultTitle = text.components(separatedBy: ["。", "！", "？", ".", "!", "?", "\n"])
+            .first?
+            .prefix(5)
+            .trimmingCharacters(in: .whitespacesAndNewlines) ?? "新建内容"
+        
+        _title = State(initialValue: defaultTitle)
         _content = State(initialValue: text)
     }
     

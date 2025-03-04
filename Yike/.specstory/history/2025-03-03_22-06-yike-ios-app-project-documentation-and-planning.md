@@ -3971,7 +3971,81 @@ class SpeechManager: NSObject, ObservableObject, AVSpeechSynthesizerDelegate {
                 play()
             }
         } else {
-            // 到最后一句时，自动从头
+            // 到最后一句时，自动从头开始
+            currentIndex = 0
+            prepareUtterance(for: sentences[currentIndex])
+            if isPlaying {
+                play()
+            }
+        }
+    }
+    
+    func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
+        if SettingsManager.shared.settings.enablePlaybackInterval {
+            isPlaying = false
+            startIntervalTimer()
+        } else {
+            // 自动播放下一句，如果是最后一句会自动从头开始
+            next()
+        }
+    }
+    
+    // 移除 toggleLoop 方法和相关的循环按钮 UI
+}
+````
+
+这个修改：
+1. 移除了 `isLooping` 状态属性
+2. 修改 `next()` 方法，当播放到最后一句时自动从头开始
+3. 保持 `speechSynthesizer didFinish` 的逻辑，让它自动调用 `next()`
+4. 移除了循环播放按钮相关的代码
+
+这样就实现了默认的循环播放功能，用户不需要手动控制，内容会一直循环播放直到用户主动暂停或停止。
+
+---
+
+_**User**_
+
+我们要新增一个功能：手动输入新建内容，点击下一步，内容标题我们需要为用户设置默认标题，默认读取第一句（不超过5个字）。
+
+请帮我实现这个功能，请你严格按照项目结构创建文件，以免乱创建；添加新功能时候不要影响其他功能，并获取其他文件内容，避免发生文件冲突，请不要做我要求以外的任何修改。
+
+
+---
+
+_**Assistant**_
+
+我需要修改 PreviewEditView.swift 文件，在其中添加自动设置默认标题的逻辑。这个修改只涉及到预览编辑页面的标题处理。
+
+````swift:Yike/Features/Input/PreviewEditView.swift
+struct PreviewEditView: View {
+    @EnvironmentObject var dataManager: DataManager
+    @Environment(\.presentationMode) var presentationMode
+    
+    @State private var title: String
+    @State private var content: String
+    
+    init(text: String) {
+        let defaultTitle = text.components(separatedBy: ["。", "！", "？", ".", "!", "?", "\n"])
+            .first?
+            .prefix(5)
+            .trimmingCharacters(in: .whitespacesAndNewlines) ?? "新建内容"
+        
+        _title = State(initialValue: defaultTitle)
+        _content = State(initialValue: text)
+    }
+    
+    // ... 其余代码保持不变 ...
+}
+````
+
+这个修改：
+1. 在 init 方法中添加了默认标题的处理逻辑
+2. 使用第一句话的前5个字作为默认标题
+3. 如果无法获取有效的第一句话，则使用"新建内容"作为默认标题
+4. 保持了其他所有功能不变
+
+这样当用户输入内容后点击下一步，就会自动使用第一句话的前5个字作为默认标题。用户仍然可以在预览页面修改这个标题。
 
 ---
 
