@@ -3647,6 +3647,228 @@ NavigationLink(destination: PlayerView(item: item)) {
 
 ---
 
+_**User**_
+
+点击播放按钮后，实际没有声音输出，请帮我确认问题原因。如无法直接确认，请添加必要的debug日志，以下是报错日志：
+
+#FactoryInstall Unable to query results, error: 5
+Unable to open mach-O at path: /Library/Caches/com.apple.xbs/Binaries/RenderBox/install/Root/System/Library/PrivateFrameworks/RenderBox.framework/default.metallib  Error:2
+<0x101d75680> Gesture: System gesture gate timed out.
+          IPCAUClient.cpp:129   IPCAUClient: bundle display name is nil
+
+---
+
+_**Assistant**_
+
+让我们在 PlayerView 中添加一些调试日志来确认问题所在。我会修改 PlayerView.swift 文件，添加关键位置的日志输出。
+
+````swift:Yike/Features/Player/PlayerView.swift
+class SpeechManager: NSObject, ObservableObject, AVSpeechSynthesizerDelegate {
+    // ... 现有代码 ...
+    
+    func startPlaying(text: String) {
+        print("DEBUG: 开始播放，文本内容：\(text)")
+        
+        // 分割文本为句子
+        sentences = text.components(separatedBy: ["。", "！", "？", ".", "!", "?"])
+            .filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+        
+        print("DEBUG: 分割后的句子数量：\(sentences.count)")
+        
+        guard !sentences.isEmpty else {
+            print("ERROR: 没有可播放的内容")
+            return
+        }
+        
+        currentIndex = 0
+        playCurrentSentence()
+    }
+    
+    private func playCurrentSentence() {
+        guard currentIndex < sentences.count else {
+            print("DEBUG: 已播放完所有句子")
+            isPlaying = false
+            return
+        }
+        
+        print("DEBUG: 准备播放第 \(currentIndex + 1) 句")
+        
+        let sentence = sentences[currentIndex]
+        utterance = AVSpeechUtterance(string: sentence)
+        
+        if let utterance = utterance {
+            print("DEBUG: 配置语音参数")
+            // 配置语音参数
+            utterance.rate = AVSpeechUtteranceDefaultRate * playbackSpeed
+            utterance.volume = 1.0
+            utterance.pitchMultiplier = 1.0
+            
+            // 开始播放
+            print("DEBUG: 开始语音合成")
+            synthesizer.speak(utterance)
+            isPlaying = true
+        } else {
+            print("ERROR: 创建语音合成器失败")
+        }
+    }
+    
+    // AVSpeechSynthesizerDelegate 方法
+    func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didStart utterance: AVSpeechUtterance) {
+        print("DEBUG: 语音合成开始")
+    }
+    
+    func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
+        print("DEBUG: 语音合成结束")
+        
+        if isPlaying {
+            currentIndex += 1
+            
+            if currentIndex < sentences.count {
+                // 如果启用了间隔，等待指定时间后播放下一句
+                if settingsManager.settings.enablePlaybackInterval {
+                    print("DEBUG: 等待 \(settingsManager.settings.playbackInterval) 秒后播放下一句")
+                    DispatchQueue.main.asyncAfter(deadline: .now() + Double(settingsManager.settings.playbackInterval)) {
+                        self.playCurrentSentence()
+                    }
+                } else {
+                    playCurrentSentence()
+                }
+            } else {
+                print("DEBUG: 播放完成")
+                isPlaying = false
+            }
+        }
+    }
+    
+    func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didPause utterance: AVSpeechUtterance) {
+        print("DEBUG: 语音合成暂停")
+    }
+    
+    func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didContinue utterance: AVSpeechUtterance) {
+        print("DEBUG: 语音合成继续")
+    }
+    
+    func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didCancel utterance: AVSpeechUtterance) {
+        print("DEBUG: 语音合成取消")
+    }
+}
+
+struct PlayerView: View {
+    @StateObject private var speechManager = SpeechManager.shared
+    let memoryItem: MemoryItem
+    
+    var body: some View {
+        VStack {
+            // ... 现有代码 ...
+        }
+        .onAppear {
+            print("DEBUG: PlayerView 出现")
+            speechManager.startPlaying(text: memoryItem.content)
+        }
+        .onDisappear {
+            print("DEBUG: PlayerView 消失")
+            speechManager.stopPlaying()
+        }
+    }
+}
+````
+
+这些调试日志将帮助我们了解：
+
+1. PlayerView 是否正确加载
+2. 文本是否正确传递给 SpeechManager
+3. 语音合成器是否正常工作
+4. 播放过程中的各个状态变化
+
+请运行应用并点击播放按钮，然后查看控制台输出的调试日志。这将帮助我们确定问题出在哪个环节：
+
+1. 如果没有看到 "PlayerView 出现" 的日志，说明导航链接可能有问题
+2. 如果看到 "开始播放" 但没有后续日志，说明文本处理可能有问题
+3. 如果看到 "准备播放" 但没有 "语音合成开始" 的日志，说明 AVSpeechSynthesizer 可能初始化失败
+4. 如果看到所有日志但没有声音，可能是设备音量或权限问题
+
+请运行并提供控制台输出的日志，这样我可以更准确地诊断问题。
+
+---
+
+_**User**_
+
+Requesting visual style in an implementation that has disabled it, returning nil. Behavior of caller is undefined.
+Requesting visual style in an implementation that has disabled it, returning nil. Behavior of caller is undefined.
+Requesting visual style in an implementation that has disabled it, returning nil. Behavior of caller is undefined.
+Requesting visual style in an implementation that has disabled it, returning nil. Behavior of caller is undefined.
+Requesting visual style in an implementation that has disabled it, returning nil. Behavior of caller is undefined.
+
+---
+
+_**Assistant**_
+
+从日志看，问题可能出在 PlayerView 中调用播放功能的时序上。我注意到在 `onAppear` 中的调用逻辑可能有问题：
+
+````swift:Yike/Features/Player/PlayerView.swift
+// 修改 PlayerView 的 onAppear 部分
+.onAppear {
+    print("DEBUG: PlayerView 出现")
+    // 移除条件判断，直接开始播放
+    speechManager.startPlaying(text: memoryItem.content)
+    // 开始波形动画
+    isWaving = true
+}
+
+// 修改 SpeechManager 的 prepare 方法
+func prepare(text: String, speed: Float) {
+    print("DEBUG: 准备播放，设置速度：\(speed)")
+    playbackSpeed = speed
+    
+    // 分割文本为句子
+    sentences = text.components(separatedBy: ["。", "！", "？", ".", "!", "?"])
+        .filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+    
+    currentIndex = 0
+    progress = 0
+    
+    // 准备第一个句子
+    if let firstSentence = sentences.first {
+        utterance = AVSpeechUtterance(string: firstSentence)
+        if let utterance = utterance {
+            utterance.rate = AVSpeechUtteranceDefaultRate * speed
+            utterance.volume = 1.0
+            utterance.pitchMultiplier = 1.0
+        }
+    }
+    
+    updateTimes()
+}
+
+// 修改 play 方法
+func play() {
+    print("DEBUG: 开始播放")
+    guard let utterance = utterance else {
+        print("ERROR: 没有准备好的语音内容")
+        return
+    }
+    
+    isPlaying = true
+    synthesizer.speak(utterance)
+}
+````
+
+主要修改：
+
+1. 在 `onAppear` 中直接调用 `startPlaying`，不再使用 `progress` 判断
+2. 确保 `prepare` 方法正确设置语音参数
+3. 添加更多调试日志以跟踪播放状态
+
+这些修改应该能解决播放没有声音的问题。如果还是没有声音，请查看是否有以下情况：
+
+1. 设备是否静音
+2. 是否有权限问题（虽然 AVSpeechSynthesizer 通常不需要特殊权限）
+3. 检查 memoryItem.content 是否有内容（可以在日志中打印确认）
+
+请尝试这些修改，如果问题仍然存在，我们可以添加更多的调试日志来定位具体问题。
+
+---
+
 
 
 ---
