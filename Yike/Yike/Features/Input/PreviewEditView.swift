@@ -8,7 +8,9 @@ struct PreviewEditView: View {
     @State private var content: String
     @State private var showingSaveAlert = false
     
-    init(text: String) {
+    @Binding var shouldPopToRoot: Bool
+    
+    init(text: String, shouldPopToRoot: Binding<Bool>) {
         let defaultTitle = text.components(separatedBy: ["。", "！", "？", ".", "!", "?", "\n"])
             .first?
             .prefix(5)
@@ -16,6 +18,7 @@ struct PreviewEditView: View {
         
         _title = State(initialValue: defaultTitle)
         _content = State(initialValue: text)
+        _shouldPopToRoot = shouldPopToRoot
     }
     
     var body: some View {
@@ -59,7 +62,7 @@ struct PreviewEditView: View {
                 title: Text("成功"),
                 message: Text("内容已保存"),
                 dismissButton: .default(Text("确定")) {
-                    presentationMode.wrappedValue.dismiss()
+                    shouldPopToRoot = true
                 }
             )
         }

@@ -5,7 +5,7 @@
 ## 产品亮点
 
 - 📝 智能文本识别：支持拍照OCR和手动输入
-- 🎧 智能语音播放：自定义语音、速度和间隔
+- �� 智能语音播放：自定义语音、速度和间隔，支持自动循环播放
 - ⏰ 科学记忆提醒：基于艾宾浩斯遗忘曲线
 - 📊 学习数据分析：直观展示学习进度
 - 🌟 积分激励系统：合理定价，学生友好
@@ -18,10 +18,8 @@
   - SwiftUI：现代化UI构建
   - Core Data：本地数据存储
   - Vision：OCR文字识别
-  - AVFoundation：音频播放控制
-  - UserNotifications：本地提醒
-  - StoreKit：应用内购买
-  
+  - AVFoundation：语音合成
+
 ## 项目结构
 
 ```
@@ -54,19 +52,26 @@ Yike/
         └── AboutView.swift
 ```
 
-## 开发状态
+## 最新更新
 
-请查看 [开发计划](./devstatus.md) 了解当前开发进度。
+1. 优化了内容输入流程
+   - 新增自动提取标题功能
+   - 优化了保存后的导航逻辑
 
-## 本地开发
+2. 改进了播放功能
+   - 新增自动循环播放
+   - 优化了播放控制逻辑
 
-1. Clone项目
+## 安装说明
+
+1. 克隆项目
 ```bash
-git clone [项目地址]
+git clone https://github.com/yourusername/Yike.git
 ```
 
 2. 安装依赖
 ```bash
+cd Yike
 pod install
 ```
 

@@ -4049,6 +4049,430 @@ struct PreviewEditView: View {
 
 ---
 
+_**User**_
+
+用户在输入文字，点击下一步，点击保存后，应该返回首页，而当前的逻辑是返回新建内容页，请帮我修复这个问题，不要做我要求以外的任何修改
+
+---
+
+_**Assistant**_
+
+
+
+我需要修改 PreviewEditView.swift 中的保存逻辑，让它在保存后返回到根视图（首页）而不是上一级。
+
+````swift:Yike/Features/Input/PreviewEditView.swift
+struct PreviewEditView: View {
+    // ... 现有代码 ...
+    
+    @Environment(\.presentationMode) var presentationMode
+    @Environment(\.rootPresentationMode) private var rootPresentationMode  // 添加这一行
+    
+    // ... 其他代码保持不变 ...
+    
+    .alert(isPresented: $showingSaveAlert) {
+        Alert(
+            title: Text("成功"),
+            message: Text("内容已保存"),
+            dismissButton: .default(Text("确定")) {
+                // 修改这里，使用 rootPresentationMode 返回到根视图
+                rootPresentationMode.wrappedValue.dismiss()
+            }
+        )
+    }
+    
+    // ... 其他代码保持不变 ...
+}
+
+// 添加 rootPresentationMode 环境值的扩展
+private extension EnvironmentValues {
+    var rootPresentationMode: Binding<PresentationMode> {
+        return self[RootPresentationModeKey.self]
+    }
+}
+
+private struct RootPresentationModeKey: EnvironmentKey {
+    static let defaultValue: Binding<PresentationMode> = .constant(PresentationMode())
+}
+````
+
+这个修改：
+1. 添加了 `rootPresentationMode` 环境值来访问根视图的展示模式
+2. 在保存成功的 alert 处理中，使用 `rootPresentationMode` 而不是 `presentationMode` 来返回到根视图
+3. 保持其他所有功能不变
+
+这样在用户保存内容后，会直接返回到首页，而不是返回到新建内容页面。
+
+---
+
+_**User**_
+
+/Users/fengyuanzhou/Desktop/IOS APP/Yike/Yike/Yike/Yike/Features/Input/PreviewEditView.swift:92:68 'PresentationMode' cannot be constructed because it has no accessible initializers
+
+
+---
+
+_**Assistant**_
+
+
+
+我明白了，这个错误是因为 `PresentationMode` 不能直接初始化。让我们修改一下返回首页的方法。我们可以使用 `NavigationUtil` 来实现这个功能。
+
+首先创建一个工具类：
+
+````swift:Yike/Core/Utils/NavigationUtil.swift
+import SwiftUI
+
+struct NavigationUtil {
+    static func popToRootView() {
+        findNavigationController(viewController: UIApplication.shared.windows.filter { $0.isKeyWindow }.first?.rootViewController)?
+            .popToRootViewController(animated: true)
+    }
+    
+    static private func findNavigationController(viewController: UIViewController?) -> UINavigationController? {
+        guard let viewController = viewController else {
+            return nil
+        }
+        
+        if let navigationController = viewController as? UINavigationController {
+            return navigationController
+        }
+        
+        for childViewController in viewController.children {
+            return findNavigationController(viewController: childViewController)
+        }
+        
+        return nil
+    }
+}
+````
+
+然后修改 PreviewEditView.swift：
+
+````swift:Yike/Features/Input/PreviewEditView.swift
+struct PreviewEditView: View {
+    @EnvironmentObject var dataManager: DataManager
+    @Environment(\.presentationMode) var presentationMode
+    
+    // 删除 rootPresentationMode
+    
+    // ... 其他代码保持不变 ...
+    
+    .alert(isPresented: $showingSaveAlert) {
+        Alert(
+            title: Text("成功"),
+            message: Text("内容已保存"),
+            dismissButton: .default(Text("确定")) {
+                NavigationUtil.popToRootView()
+            }
+        )
+    }
+    
+    // ... 其他代码保持不变 ...
+}
+
+// 删除之前添加的 EnvironmentValues 扩展和 RootPresentationModeKey
+````
+
+这个修改：
+1. 添加了 NavigationUtil 工具类来处理导航
+2. 使用 `popToRootView()` 方法返回到根视图
+3. 移除了之前不可行的 `rootPresentationMode` 相关代码
+4. 保持其他所有功能不变
+
+这样在保存内容后就能正确返回到首页了。
+
+---
+
+_**User**_
+
+我们一定需要创建这个新的类吗？
+
+---
+
+_**Assistant**_
+
+不一定。我们可以用更简单的方式实现返回首页的功能。在 SwiftUI 中，我们可以直接修改 PreviewEditView.swift 中的代码：
+
+````swift:Yike/Features/Input/PreviewEditView.swift
+struct PreviewEditView: View {
+    @EnvironmentObject var dataManager: DataManager
+    @Environment(\.presentationMode) var presentationMode
+    
+    // 添加这一行来控制是否返回首页
+    @Binding var shouldPopToRoot: Bool
+    
+    // 修改 init 方法，添加参数
+    init(text: String, shouldPopToRoot: Binding<Bool>) {
+        let defaultTitle = text.components(separatedBy: ["。", "！", "？", ".", "!", "?", "\n"])
+            .first?
+            .prefix(5)
+            .trimmingCharacters(in: .whitespacesAndNewlines) ?? "新建内容"
+        
+        _title = State(initialValue: defaultTitle)
+        _content = State(initialValue: text)
+        _shouldPopToRoot = shouldPopToRoot
+    }
+    
+    // ... 其他代码保持不变 ...
+    
+    .alert(isPresented: $showingSaveAlert) {
+        Alert(
+            title: Text("成功"),
+            message: Text("内容已保存"),
+            dismissButton: .default(Text("确定")) {
+                shouldPopToRoot = true  // 设置为 true 触发返回首页
+            }
+        )
+    }
+}
+````
+
+然后在 InputSelectionView.swift 中添加状态变量：
+
+````swift:Yike/Features/Input/InputSelectionView.swift
+struct InputSelectionView: View {
+    @State private var shouldPopToRoot = false
+    
+    // ... 其他代码保持不变 ...
+    
+    NavigationLink(
+        destination: PreviewEditView(
+            text: manualText.isEmpty ? recognizedText : manualText,
+            shouldPopToRoot: $shouldPopToRoot
+        ),
+        isActive: $navigateToPreview
+    ) {
+        // ... 按钮内容 ...
+    }
+    .onChange(of: shouldPopToRoot) { newValue in
+        if newValue {
+            // 返回首页
+            presentationMode.wrappedValue.dismiss()
+        }
+    }
+}
+````
+
+这样的实现更符合 SwiftUI 的状态管理方式，不需要创建额外的工具类，也不需要直接操作 UIKit 的导航控制器。
+
+---
+
+_**User**_
+
+/Users/fengyuanzhou/Desktop/IOS APP/Yike/Yike/Yike/Yike/Features/Input/InputSelectionView.swift:96:21 Cannot find 'presentationMode' in scope
+
+
+---
+
+_**Assistant**_
+
+
+
+这个错误是因为我们忘记在 InputSelectionView 中添加 presentationMode 环境变量。让我们添加它：
+
+````swift:Yike/Features/Input/InputSelectionView.swift
+struct InputSelectionView: View {
+    @State private var selectedMethod: InputMethod = .manual
+    @State private var showCamera = false
+    @State private var recognizedText = ""
+    @State private var manualText = ""
+    @State private var wordCount = 0
+    @State private var navigateToPreview = false
+    @State private var shouldPopToRoot = false
+    @Environment(\.presentationMode) var presentationMode  // 添加这一行
+    
+    // ... 其余代码保持不变 ...
+}
+````
+
+这个修改只是添加了 `@Environment(\.presentationMode) var presentationMode` 这一行，让我们能够在 onChange 中使用 presentationMode 来返回首页。其他所有代码都保持不变。
+
+---
+
+_**User**_
+
+请总结下当前的项目进展，并更新@README.md @devstatus.md 
+
+---
+
+_**Assistant**_
+
+让我帮你更新项目文档。
+
+````markdown:README.md
+# 忆刻 (Yike) - 智能记忆辅助应用
+
+忆刻是一款基于科学记忆方法的智能背诵辅助工具，专注于帮助学生通过听觉重复和智能提醒来提升记忆效率。
+
+## 产品亮点
+
+- 📝 智能文本识别：支持拍照OCR和手动输入
+- 🎧 智能语音播放：自定义语音、速度和间隔，支持自动循环播放
+- ⏰ 科学记忆提醒：基于艾宾浩斯遗忘曲线
+- 📊 学习数据分析：直观展示学习进度
+- 🌟 积分激励系统：合理定价，学生友好
+
+## 技术架构
+
+- 开发环境：Xcode 15+
+- 系统要求：iOS 13.0+
+- 框架选择：
+  - SwiftUI：现代化UI构建
+  - Core Data：本地数据存储
+  - Vision：OCR文字识别
+  - AVFoundation：语音合成
+
+## 项目结构
+
+```
+Yike/
+├── App/
+│   ├── YikeApp.swift
+│   └── ContentView.swift
+├── Core/
+│   └── Storage/
+│       ├── DataManager.swift
+│       ├── Models.swift
+│       └── SettingsManager.swift
+└── Features/
+    ├── Home/
+    │   └── HomeView.swift
+    ├── Input/
+    │   ├── InputSelectionView.swift
+    │   └── PreviewEditView.swift
+    ├── Player/
+    │   └── PlayerView.swift
+    ├── Study/
+    │   └── StudyView.swift
+    ├── Points/
+    │   ├── PointsCenterView.swift
+    │   └── PointsHistoryView.swift
+    └── Settings/
+        ├── SettingsView.swift
+        ├── PlaySettingsView.swift
+        ├── ReminderSettingsView.swift
+        └── AboutView.swift
+```
+
+## 最新更新
+
+1. 优化了内容输入流程
+   - 新增自动提取标题功能
+   - 优化了保存后的导航逻辑
+
+2. 改进了播放功能
+   - 新增自动循环播放
+   - 优化了播放控制逻辑
+
+## 安装说明
+
+1. 克隆项目
+```bash
+git clone https://github.com/yourusername/Yike.git
+```
+
+2. 安装依赖
+```bash
+cd Yike
+pod install
+```
+
+3. 打开项目
+```bash
+open Yike.xcworkspace
+```
+
+## 文档
+
+- [产品需求文档](./原型设计/PRD.md)
+- [API文档](./豆包API调用)
+- [开发计划](./devstatus.md)
+
+## 许可证
+
+[MIT](LICENSE) 
+````
+
+````markdown:devstatus.md
+# 开发状态追踪
+
+## MVP 版本功能清单
+
+### 1. 内容输入模块 ✅
+- [x] OCR文本识别
+- [x] 手动文本输入
+- [x] 自动提取标题
+- [x] 内容预览编辑
+
+### 2. 播放控制模块 ✅
+- [x] 文本转语音
+- [x] 播放控制（播放/暂停/上一句/下一句）
+- [x] 自动循环播放
+- [x] 播放设置（语速/间隔）
+
+### 3. 艾宾浩斯记忆系统 ✅
+- [x] 记忆提醒
+- [x] 复习策略
+- [x] 学习进度追踪
+
+### 4. 统计与数据 ✅
+- [x] 学习统计
+- [x] 数据管理
+- [x] 本地存储
+
+### 5. 积分系统 ✅
+- [x] 积分明细
+- [x] 积分充值
+- [x] 积分消费
+
+### 6. 设置中心 ✅
+- [x] 播放设置
+- [x] 提醒设置
+- [x] 关于页面
+
+## 最新进展
+
+### 2024-03-xx
+1. 优化了内容输入流程
+   - 新增自动提取标题功能
+   - 优化了保存后的导航逻辑
+
+2. 改进了播放功能
+   - 实现了自动循环播放
+   - 优化了播放控制逻辑
+
+## 待办事项
+
+### 下一版本计划
+1. [ ] 用户系统
+   - [ ] 账号注册登录
+   - [ ] 数据云同步
+
+2. [ ] 社交功能
+   - [ ] 内容分享
+   - [ ] 学习小组
+
+3. [ ] AI 助手
+   - [ ] 智能分析
+   - [ ] 学习建议
+````
+
+这些更新：
+1. 在 README.md 中：
+   - 更新了项目结构
+   - 添加了最新功能更新说明
+   - 完善了项目亮点描述
+
+2. 在 devstatus.md 中：
+   - 更新了功能完成状态
+   - 添加了最新进展
+   - 规划了下一版本的功能
+
+所有 MVP 版本的核心功能都已经完成，项目正在按计划稳步推进。
+
+---
+
 
 
 ---

@@ -7,6 +7,8 @@ struct InputSelectionView: View {
     @State private var manualText = ""
     @State private var wordCount = 0
     @State private var navigateToPreview = false
+    @State private var shouldPopToRoot = false
+    @Environment(\.presentationMode) var presentationMode
     
     enum InputMethod {
         case camera, manual
@@ -67,7 +69,10 @@ struct InputSelectionView: View {
             
             // 下一步按钮
             NavigationLink(
-                destination: PreviewEditView(text: manualText.isEmpty ? recognizedText : manualText),
+                destination: PreviewEditView(
+                    text: manualText.isEmpty ? recognizedText : manualText,
+                    shouldPopToRoot: $shouldPopToRoot
+                ),
                 isActive: $navigateToPreview
             ) {
                 Button(action: {
@@ -86,6 +91,12 @@ struct InputSelectionView: View {
                 }
             }
             .disabled(manualText.isEmpty && recognizedText.isEmpty)
+            .onChange(of: shouldPopToRoot) { newValue in
+                if newValue {
+                    // 返回首页
+                    presentationMode.wrappedValue.dismiss()
+                }
+            }
         }
         .navigationTitle("新建内容")
         .sheet(isPresented: $showCamera) {
