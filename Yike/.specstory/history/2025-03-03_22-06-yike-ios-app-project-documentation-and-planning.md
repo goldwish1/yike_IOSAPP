@@ -3869,6 +3869,112 @@ func play() {
 
 ---
 
+_**User**_
+
+现在还有一个问题，用户点击播放后，如果没有特别暂停，我们的语音应该要循环播放，但当前的实现逻辑是播放一次后就停止了，请帮我修复这个问题，请你严格按照项目结构创建文件，以免乱创建；添加新功能时候不要影响其他功能，并获取其他文件内容，避免发生文件冲突，请不要做我要求以外的任何修改
+
+---
+
+_**Assistant**_
+
+我需要修改 PlayerView.swift 中的播放循环逻辑。主要需要在 SpeechManager 类中添加循环播放的功能。
+
+````swift:Yike/Features/Player/PlayerView.swift
+class SpeechManager: NSObject, ObservableObject, AVSpeechSynthesizerDelegate {
+    // ... 现有代码 ...
+    @Published var isLooping = false  // 添加循环播放状态
+    
+    // 修改 speechSynthesizer didFinish 方法
+    func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
+        if SettingsManager.shared.settings.enablePlaybackInterval {
+            isPlaying = false
+            startIntervalTimer()
+        } else {
+            // 自动播放下一句
+            next()
+        }
+        
+        // 如果是最后一句，且开启了循环播放，则重新开始
+        if currentIndex >= sentences.count - 1 && isLooping {
+            currentIndex = 0
+            prepareUtterance(for: sentences[currentIndex])
+            play()
+        }
+    }
+    
+    // 添加切换循环播放的方法
+    func toggleLoop() {
+        isLooping.toggle()
+    }
+}
+
+struct PlayerView: View {
+    @StateObject private var speechManager = SpeechManager.shared
+    @State private var selectedSpeed: Float = 1.0
+    let memoryItem: MemoryItem
+    
+    var body: some View {
+        VStack {
+            // ... 现有代码 ...
+            
+            // 在控制按钮区域添加循环播放按钮
+            HStack(spacing: 30) {
+                // ... 现有的按钮 ...
+                
+                Button(action: {
+                    speechManager.toggleLoop()
+                }) {
+                    Image(systemName: speechManager.isLooping ? "repeat.circle.fill" : "repeat.circle")
+                        .font(.system(size: 24))
+                        .foregroundColor(speechManager.isLooping ? .blue : .gray)
+                }
+            }
+            
+            // ... 其他现有代码 ...
+        }
+    }
+}
+````
+
+这个修改：
+1. 添加了循环播放状态 `isLooping`
+2. 在播放完最后一句时检查是否需要循环播放
+3. 添加了循环播放按钮和切换功能
+4. 保持了原有的播放逻辑不变
+
+这样用户就可以通过点击循环按钮来控制是否循环播放内容了。当循环播放开启时，播放完最后一句会自动从头开始播放。
+
+---
+
+_**User**_
+
+我们要实现的是默认循环播放，而不是用户需要点击循环按钮来控制，请帮我修改
+
+---
+
+_**Assistant**_
+
+好的，我来修改为默认循环播放的逻辑。我们只需要修改 SpeechManager 类中的相关代码：
+
+````swift:Yike/Features/Player/PlayerView.swift
+class SpeechManager: NSObject, ObservableObject, AVSpeechSynthesizerDelegate {
+    // ... 现有代码 ...
+    
+    // 移除 isLooping 属性，因为默认就是循环的
+    
+    func next() {
+        invalidateTimer()
+        if currentIndex < sentences.count - 1 {
+            currentIndex += 1
+            prepareUtterance(for: sentences[currentIndex])
+            if isPlaying {
+                play()
+            }
+        } else {
+            // 到最后一句时，自动从头
+
+---
+
 
 
 ---

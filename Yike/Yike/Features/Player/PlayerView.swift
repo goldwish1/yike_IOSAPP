@@ -91,8 +91,12 @@ class SpeechManager: NSObject, ObservableObject, AVSpeechSynthesizerDelegate {
                 play()
             }
         } else {
-            // 已经到最后一句，停止播放
-            stop()
+            // 到最后一句时，自动从头开始
+            currentIndex = 0
+            prepareUtterance(for: sentences[currentIndex])
+            if isPlaying {
+                play()
+            }
         }
     }
     
@@ -147,7 +151,7 @@ class SpeechManager: NSObject, ObservableObject, AVSpeechSynthesizerDelegate {
             isPlaying = false
             startIntervalTimer()
         } else {
-            // 自动播放下一句
+            // 自动播放下一句，如果是最后一句会自动从头开始
             next()
         }
     }
