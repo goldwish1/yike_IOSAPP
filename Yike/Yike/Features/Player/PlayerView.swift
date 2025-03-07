@@ -18,6 +18,9 @@ class SpeechManager: NSObject, ObservableObject, AVSpeechSynthesizerDelegate, @u
     private var intervalTimer: Timer?
     private var intervalSeconds: Int = 5
     
+    // 添加一个属性来追踪当前正在播放的 utterance
+    private var currentUtterance: AVSpeechUtterance?
+    
     override init() {
         super.init()
         synthesizer.delegate = self
@@ -54,6 +57,9 @@ class SpeechManager: NSObject, ObservableObject, AVSpeechSynthesizerDelegate, @u
         utterance?.rate = playbackSpeed * AVSpeechUtteranceDefaultSpeechRate
         utterance?.voice = AVSpeechSynthesisVoice(language: "zh-CN")
         
+        // 保存当前 utterance 的引用
+        currentUtterance = utterance
+        
         // 更新进度
         progress = Double(currentIndex) / Double(max(1, sentences.count))
         updateTimes()
@@ -65,7 +71,14 @@ class SpeechManager: NSObject, ObservableObject, AVSpeechSynthesizerDelegate, @u
             print("播放失败: utterance 为空")
             return
         }
-        print("开始播放: isPlaying=\(isPlaying)")
+        
+        // 如果已经在播放，先不要打断
+        if isPlaying {
+            print("已经在播放中，忽略重复的播放请求")
+            return
+        }
+        
+        print("开始播放: isPlaying=\(isPlaying), currentIndex=\(currentIndex)")
         synthesizer.speak(utterance)
         isPlaying = true
     }
@@ -82,6 +95,11 @@ class SpeechManager: NSObject, ObservableObject, AVSpeechSynthesizerDelegate, @u
         isPlaying = false
         progress = 0.0
         currentIndex = 0
+        // 清理当前的 utterance
+        utterance = nil
+        currentUtterance = nil
+        // 清空句子数组
+        sentences = []
         updateTimes()
     }
     
@@ -102,17 +120,11 @@ class SpeechManager: NSObject, ObservableObject, AVSpeechSynthesizerDelegate, @u
         if currentIndex < sentences.count - 1 {
             currentIndex += 1
             prepareUtterance(for: sentences[currentIndex])
-            if isPlaying {
-                print("继续播放下一句")
-                play()
-            }
+            print("准备下一句")
         } else {
             print("到达最后一句，重新开始")
             currentIndex = 0
             prepareUtterance(for: sentences[currentIndex])
-            if isPlaying {
-                play()
-            }
         }
     }
     
@@ -163,14 +175,40 @@ class SpeechManager: NSObject, ObservableObject, AVSpeechSynthesizerDelegate, @u
     // MARK: - AVSpeechSynthesizerDelegate
     
     func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
+        // 确保是当前的 utterance
+        guard utterance === currentUtterance else {
+            print("忽略非当前 utterance 的完成回调")
+            return
+        }
+        
         print("播放完成一句，当前索引: \(currentIndex)")
-        if SettingsManager.shared.settings.enablePlaybackInterval {
-            isPlaying = false
-            startIntervalTimer()
-            print("启动间隔计时器")
-        } else {
-            print("准备播放下一句")
-            next()
+        
+        // 清理当前 utterance
+        self.utterance = nil
+        self.currentUtterance = nil
+        
+        // 确保在主线程更新状态
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            if SettingsManager.shared.settings.enablePlaybackInterval {
+                self.isPlaying = false
+                self.startIntervalTimer()
+                print("启动间隔计时器")
+            } else {
+                print("准备播放下一句")
+                if self.currentIndex < self.sentences.count - 1 {
+                    self.currentIndex += 1
+                    self.prepareUtterance(for: self.sentences[self.currentIndex])
+                    self.isPlaying = false
+                    self.play()
+                } else {
+                    self.currentIndex = 0
+                    self.prepareUtterance(for: self.sentences[self.currentIndex])
+                    self.isPlaying = false
+                    self.play()
+                }
+            }
         }
     }
 }
@@ -328,7 +366,7 @@ struct PlayerView: View {
             }
         }
         .onDisappear {
-            speechManager.stop()
+            speechManager.stop()  // 确保在视图消失时停止播放
         }
         .alert(isPresented: $showCompletionAlert) {
             Alert(
