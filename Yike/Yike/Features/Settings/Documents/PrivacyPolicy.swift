@@ -69,7 +69,7 @@ struct PrivacyPolicyView: View {
                         Text("九、联系我们")
                             .font(.headline)
                         
-                        Text("如果您对本隐私政策有任何疑问、意见或建议，请发送邮件至：support@yikeapp.com")
+                        Text("如果您对本隐私政策有任何疑问、意见或建议，请发送邮件至：shicfp@126.com")
                     }
                 }
                 .padding()

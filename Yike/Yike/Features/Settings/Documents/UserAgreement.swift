@@ -66,7 +66,7 @@ struct UserAgreementView: View {
                         Text("八、联系我们")
                             .font(.headline)
                         
-                        Text("如您对本协议有任何疑问，或者有任何投诉、建议，请发送邮件至：support@yikeapp.com")
+                        Text("如您对本协议有任何疑问，或者有任何投诉、建议，请发送邮件至：shicfp@126.com")
                     }
                 }
                 .padding()
