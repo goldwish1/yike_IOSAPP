@@ -37,6 +37,10 @@ class DataManager: ObservableObject {
         saveData()
     }
     
+    func deleteMemoryItem(_ item: MemoryItem) {
+        deleteMemoryItem(id: item.id)
+    }
+    
     // MARK: - Points Management
     
     func addPoints(_ amount: Int, reason: String) {

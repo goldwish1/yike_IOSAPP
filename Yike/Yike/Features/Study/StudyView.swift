@@ -2,6 +2,8 @@ import SwiftUI
 
 struct StudyView: View {
     @EnvironmentObject var dataManager: DataManager
+    @State private var showingDeleteAlert = false
+    @State private var itemToDelete: MemoryItem?
     
     var todayItems: [MemoryItem] {
         dataManager.memoryItems.filter { $0.needsReviewToday }
@@ -89,6 +91,19 @@ struct StudyView: View {
             }
             .navigationTitle("学习")
             .navigationBarItems(trailing: addButton)
+            .alert("确认删除", isPresented: $showingDeleteAlert) {
+                Button("取消", role: .cancel) {
+                    itemToDelete = nil
+                }
+                Button("删除", role: .destructive) {
+                    if let item = itemToDelete {
+                        dataManager.deleteMemoryItem(item)
+                        itemToDelete = nil
+                    }
+                }
+            } message: {
+                Text("确定要删除「\(itemToDelete?.title ?? "")」吗？此操作不可撤销。")
+            }
         }
     }
     
@@ -126,6 +141,22 @@ struct StudyView: View {
             ForEach(items) { item in
                 NavigationLink(destination: PlayerView(memoryItem: item)) {
                     StudyItemRow(item: item)
+                        .contextMenu {
+                            Button(role: .destructive, action: {
+                                itemToDelete = item
+                                showingDeleteAlert = true
+                            }) {
+                                Label("删除", systemImage: "trash")
+                            }
+                        }
+                        .swipeActions(edge: .trailing) {
+                            Button(role: .destructive) {
+                                itemToDelete = item
+                                showingDeleteAlert = true
+                            } label: {
+                                Label("删除", systemImage: "trash")
+                            }
+                        }
                 }
                 .buttonStyle(PlainButtonStyle())
             }

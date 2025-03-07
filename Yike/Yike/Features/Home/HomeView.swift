@@ -2,6 +2,8 @@ import SwiftUI
 
 struct HomeView: View {
     @EnvironmentObject var dataManager: DataManager
+    @State private var showingDeleteAlert = false
+    @State private var itemToDelete: MemoryItem?
     
     var todayItems: [MemoryItem] {
         dataManager.memoryItems.filter { item in
@@ -42,6 +44,22 @@ struct HomeView: View {
                         ForEach(todayItems) { item in
                             NavigationLink(destination: PlayerView(memoryItem: item)) {
                                 MemoryItemCard(item: item)
+                                    .contextMenu {
+                                        Button(role: .destructive, action: {
+                                            itemToDelete = item
+                                            showingDeleteAlert = true
+                                        }) {
+                                            Label("删除", systemImage: "trash")
+                                        }
+                                    }
+                                    .swipeActions(edge: .trailing) {
+                                        Button(role: .destructive) {
+                                            itemToDelete = item
+                                            showingDeleteAlert = true
+                                        } label: {
+                                            Label("删除", systemImage: "trash")
+                                        }
+                                    }
                             }
                             .buttonStyle(PlainButtonStyle())
                         }
@@ -76,6 +94,22 @@ struct HomeView: View {
                         ForEach(recentItems) { item in
                             NavigationLink(destination: PlayerView(memoryItem: item)) {
                                 MemoryItemCard(item: item)
+                                    .contextMenu {
+                                        Button(role: .destructive, action: {
+                                            itemToDelete = item
+                                            showingDeleteAlert = true
+                                        }) {
+                                            Label("删除", systemImage: "trash")
+                                        }
+                                    }
+                                    .swipeActions(edge: .trailing) {
+                                        Button(role: .destructive) {
+                                            itemToDelete = item
+                                            showingDeleteAlert = true
+                                        } label: {
+                                            Label("删除", systemImage: "trash")
+                                        }
+                                    }
                             }
                             .buttonStyle(PlainButtonStyle())
                         }
@@ -85,6 +119,19 @@ struct HomeView: View {
             }
             .navigationTitle("忆刻")
             .navigationBarItems(trailing: addButton)
+            .alert("确认删除", isPresented: $showingDeleteAlert) {
+                Button("取消", role: .cancel) {
+                    itemToDelete = nil
+                }
+                Button("删除", role: .destructive) {
+                    if let item = itemToDelete {
+                        dataManager.deleteMemoryItem(item)
+                        itemToDelete = nil
+                    }
+                }
+            } message: {
+                Text("确定要删除「\(itemToDelete?.title ?? "")」吗？此操作不可撤销。")
+            }
         }
     }
     
