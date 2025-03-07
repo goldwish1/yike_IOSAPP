@@ -21,7 +21,7 @@ class DataManager: ObservableObject {
     // MARK: - Memory Items Methods
     
     func addMemoryItem(_ item: MemoryItem) {
-        memoryItems.append(item)
+        memoryItems.insert(item, at: 0) // 将新内容插入到数组开头
         saveData()
     }
     
