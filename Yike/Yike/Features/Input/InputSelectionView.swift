@@ -68,30 +68,31 @@ struct InputSelectionView: View {
             Spacer()
             
             // 下一步按钮
-            NavigationLink(value: navigateToPreview) {
-                Button(action: {
-                    navigateToPreview = true
-                }) {
-                    Text("下一步")
-                        .font(.headline)
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(
-                            RoundedRectangle(cornerRadius: 12)
-                                .fill(Color.blue)
-                        )
-                        .padding(.horizontal)
-                }
+            Button(action: {
+                print("点击下一步按钮，当前文本长度: \(manualText.isEmpty ? recognizedText.count : manualText.count)")
+                navigateToPreview = true
+            }) {
+                Text("下一步")
+                    .font(.headline)
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color.blue)
+                    )
+                    .padding(.horizontal)
             }
             .disabled(manualText.isEmpty && recognizedText.isEmpty)
-            .navigationDestination(isPresented: $navigateToPreview) {
-                PreviewEditView(
-                    text: manualText.isEmpty ? recognizedText : manualText,
-                    shouldPopToRoot: $shouldPopToRoot
-                )
+            
+            NavigationLink(destination: PreviewEditView(
+                text: manualText.isEmpty ? recognizedText : manualText,
+                shouldPopToRoot: $shouldPopToRoot
+            ), isActive: $navigateToPreview) {
+                EmptyView()
             }
             .onChange(of: shouldPopToRoot) { oldValue, newValue in
+                print("shouldPopToRoot 变化: \(oldValue) -> \(newValue)")
                 if newValue {
                     presentationMode.wrappedValue.dismiss()
                 }
