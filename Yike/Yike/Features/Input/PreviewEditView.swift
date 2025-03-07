@@ -63,6 +63,7 @@ struct PreviewEditView: View {
                 message: Text("内容已保存"),
                 dismissButton: .default(Text("确定")) {
                     shouldPopToRoot = true
+                    presentationMode.wrappedValue.dismiss()
                 }
             )
         }
