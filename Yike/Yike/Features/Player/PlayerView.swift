@@ -21,6 +21,14 @@ class SpeechManager: NSObject, ObservableObject, AVSpeechSynthesizerDelegate {
     override init() {
         super.init()
         synthesizer.delegate = self
+        
+        // 配置音频会话
+        do {
+            try AVAudioSession.sharedInstance().setCategory(.playback, mode: .spokenAudio)
+            try AVAudioSession.sharedInstance().setActive(true)
+        } catch {
+            print("设置音频会话失败: \(error)")
+        }
     }
     
     func prepare(text: String, speed: Float = 1.0, intervalSeconds: Int = 5) {
