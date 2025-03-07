@@ -161,11 +161,25 @@ class SpeechManager: NSObject, ObservableObject, AVSpeechSynthesizerDelegate, @u
             // 如果正在播放，需要重新设置语速
             let wasPlaying = isPlaying
             invalidateTimer()
+            
+            // 先更新播放状态
+            isPlaying = false
+            
+            // 停止当前播放
             synthesizer.stopSpeaking(at: .immediate)
+            
+            // 准备新的 utterance
             prepareUtterance(for: text)
+            
+            // 如果之前在播放，则重新开始播放
             if wasPlaying {
-                play()
+                // 延迟一小段时间再开始播放，确保状态更新完成
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+                    self?.play()
+                }
             }
+            
+            print("速度已更改为: \(speed)x, 之前状态: \(wasPlaying ? "播放中" : "已暂停")")
         }
     }
     
