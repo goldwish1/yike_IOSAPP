@@ -1,7 +1,16 @@
 import SwiftUI
+import SafariServices
 
 struct AboutView: View {
     @Environment(\.presentationMode) var presentationMode
+    @State private var showingWebView = false
+    @State private var urlToShow: URL?
+    @State private var showingMailView = false
+    @State private var showingUserAgreement = false
+    @State private var showingPrivacyPolicy = false
+    
+    // 定义链接URL
+    private let contactEmail = "shicfp@126.com"
     
     var body: some View {
         NavigationView {
@@ -35,7 +44,7 @@ struct AboutView: View {
                 VStack(spacing: 0) {
                     InfoRow(title: "应用大小", value: "15MB")
                     InfoRow(title: "更新日期", value: "2023-11-15")
-                    InfoRow(title: "开发者", value: "忆刻团队")
+                    InfoRow(title: "开发者", value: "小宇宙")
                 }
                 .background(Color(.systemBackground))
                 .cornerRadius(12)
@@ -49,9 +58,15 @@ struct AboutView: View {
                 
                 // 按钮组
                 VStack(spacing: 10) {
-                    LinkButton(title: "用户协议", action: {})
-                    LinkButton(title: "隐私政策", action: {})
-                    LinkButton(title: "联系我们", action: {})
+                    LinkButton(title: "用户协议", action: {
+                        showingUserAgreement = true
+                    })
+                    LinkButton(title: "隐私政策", action: {
+                        showingPrivacyPolicy = true
+                    })
+                    LinkButton(title: "联系我们", action: {
+                        showingMailView = true
+                    })
                 }
                 .padding(.horizontal)
                 .padding(.bottom, 20)
@@ -60,7 +75,36 @@ struct AboutView: View {
             .navigationBarItems(trailing: Button("关闭") {
                 presentationMode.wrappedValue.dismiss()
             })
+            .sheet(isPresented: $showingUserAgreement) {
+                UserAgreementView()
+            }
+            .sheet(isPresented: $showingPrivacyPolicy) {
+                PrivacyPolicyView()
+            }
+            .alert(isPresented: $showingMailView) {
+                Alert(
+                    title: Text("联系我们"),
+                    message: Text("请发送邮件至：\(contactEmail)"),
+                    primaryButton: .default(Text("复制邮箱")) {
+                        UIPasteboard.general.string = contactEmail
+                    },
+                    secondaryButton: .cancel(Text("取消"))
+                )
+            }
         }
+    }
+}
+
+// Safari视图包装器
+struct SafariView: UIViewControllerRepresentable {
+    let url: URL
+    
+    func makeUIViewController(context: UIViewControllerRepresentableContext<SafariView>) -> SFSafariViewController {
+        return SFSafariViewController(url: url)
+    }
+    
+    func updateUIViewController(_ uiViewController: SFSafariViewController, context: UIViewControllerRepresentableContext<SafariView>) {
+        // 不需要更新
     }
 }
 
