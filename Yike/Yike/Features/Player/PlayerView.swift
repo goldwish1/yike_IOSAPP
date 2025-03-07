@@ -238,6 +238,33 @@ class SpeechManager: NSObject, ObservableObject, AVSpeechSynthesizerDelegate, @u
             }
         }
     }
+    
+    // 添加进度更新的回调方法
+    func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, willSpeakRangeOfSpeechString characterRange: NSRange, utterance: AVSpeechUtterance) {
+        // 确保是当前的 utterance
+        guard utterance === currentUtterance else { return }
+        
+        // 计算当前句子的播放进度
+        let progress = Float(characterRange.location + characterRange.length) / Float(utterance.speechString.count)
+        
+        // 更新总体进度
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            // 计算当前句子在总体中的权重
+            let sentenceWeight = 1.0 / Double(max(1, self.sentences.count))
+            
+            // 更新总体进度 = 已完成句子的进度 + 当前句子的进度
+            let completedProgress = Double(self.currentIndex) * sentenceWeight
+            let currentSentenceProgress = Double(progress) * sentenceWeight
+            let totalProgress = completedProgress + currentSentenceProgress
+            
+            self.progress = totalProgress
+            self.updateTimes()
+            
+            print("进度更新: 字符位置=\(characterRange.location)/\(utterance.speechString.count), 句子进度=\(progress), 总进度=\(totalProgress)")
+        }
+    }
 }
 
 struct PlayerView: View {
