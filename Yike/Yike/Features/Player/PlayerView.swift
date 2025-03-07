@@ -82,18 +82,32 @@ class SpeechManager: NSObject, ObservableObject, AVSpeechSynthesizerDelegate, @u
         if synthesizer.isSpeaking {
             print("合成器正在播放，停止当前播放")
             synthesizer.stopSpeaking(at: .immediate)
+            
+            // 停止后等待一小段时间再开始新的播放
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+                guard let self = self, let currentUtterance = self.utterance else { return }
+                
+                // 创建一个新的 utterance 实例，而不是重用旧的
+                let newUtterance = AVSpeechUtterance(string: currentUtterance.speechString)
+                newUtterance.rate = self.playbackSpeed * AVSpeechUtteranceDefaultSpeechRate
+                newUtterance.voice = AVSpeechSynthesisVoice(language: "zh-CN")
+                
+                // 更新引用
+                self.utterance = newUtterance
+                self.currentUtterance = newUtterance
+                
+                print("重新开始播放: isPlaying=\(self.isPlaying), currentIndex=\(self.currentIndex)")
+                self.isPlaying = true
+                self.synthesizer.speak(newUtterance)
+            }
+            return
         }
         
         print("开始播放: isPlaying=\(isPlaying), currentIndex=\(currentIndex)")
         
         // 设置状态为播放中，防止重复调用
         isPlaying = true
-        
-        // 延迟一小段时间再开始播放，确保状态更新完成
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
-            guard let self = self, let utterance = self.utterance else { return }
-            self.synthesizer.speak(utterance)
-        }
+        synthesizer.speak(utterance)
     }
     
     func pause() {
