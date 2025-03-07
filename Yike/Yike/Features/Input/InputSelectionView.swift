@@ -53,7 +53,7 @@ struct InputSelectionView: View {
                     .background(Color(.systemGray6))
                     .cornerRadius(12)
                     .frame(minHeight: 200)
-                    .onChange(of: manualText) { newValue in
+                    .onChange(of: manualText) { oldValue, newValue in
                         wordCount = newValue.count
                     }
                 
@@ -68,13 +68,7 @@ struct InputSelectionView: View {
             Spacer()
             
             // 下一步按钮
-            NavigationLink(
-                destination: PreviewEditView(
-                    text: manualText.isEmpty ? recognizedText : manualText,
-                    shouldPopToRoot: $shouldPopToRoot
-                ),
-                isActive: $navigateToPreview
-            ) {
+            NavigationLink(value: navigateToPreview) {
                 Button(action: {
                     navigateToPreview = true
                 }) {
@@ -91,9 +85,14 @@ struct InputSelectionView: View {
                 }
             }
             .disabled(manualText.isEmpty && recognizedText.isEmpty)
-            .onChange(of: shouldPopToRoot) { newValue in
+            .navigationDestination(isPresented: $navigateToPreview) {
+                PreviewEditView(
+                    text: manualText.isEmpty ? recognizedText : manualText,
+                    shouldPopToRoot: $shouldPopToRoot
+                )
+            }
+            .onChange(of: shouldPopToRoot) { oldValue, newValue in
                 if newValue {
-                    // 返回首页
                     presentationMode.wrappedValue.dismiss()
                 }
             }

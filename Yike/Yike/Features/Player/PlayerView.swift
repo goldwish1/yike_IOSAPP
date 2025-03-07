@@ -1,7 +1,7 @@
 import SwiftUI
 import AVFoundation
 
-class SpeechManager: NSObject, ObservableObject, AVSpeechSynthesizerDelegate {
+class SpeechManager: NSObject, ObservableObject, AVSpeechSynthesizerDelegate, @unchecked Sendable {
     static let shared = SpeechManager()
     
     private let synthesizer = AVSpeechSynthesizer()
@@ -216,7 +216,7 @@ struct PlayerView: View {
             }
             .frame(height: 50)
             .padding()
-            .onChange(of: speechManager.isPlaying) { newValue in
+            .onChange(of: speechManager.isPlaying) { oldValue, newValue in
                 isWaving = newValue
             }
             
