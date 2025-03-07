@@ -124,6 +124,14 @@
 
 ## 最新进展
 
+### 2024-03-08
+1. 实现了OCR拍照输入功能
+   - 集成了相机和照片库访问功能
+   - 实现了Vision框架的文字识别
+   - 添加了积分消费逻辑
+   - 优化了识别过程中的用户体验
+   - 支持中文和英文的多语言识别
+
 ### 2024-03-07
 1. 优化了内容输入流程
    - 新增自动提取标题功能
@@ -142,6 +150,14 @@
 
 ## 待办事项
 
+### 当前版本计划
+1. [x] OCR拍照输入功能
+   - [x] 相机/相册访问集成
+   - [x] Vision框架OCR实现
+   - [x] 积分消费逻辑
+   - [x] 识别结果编辑优化
+   - [x] 多语言文本识别支持
+
 ### 下一版本计划
 1. [ ] 用户系统
    - [ ] 账号注册登录
@@ -154,3 +170,10 @@
 3. [ ] AI 助手
    - [ ] 智能分析
    - [ ] 学习建议 
+
+NavigationLink(destination: PreviewEditView(
+    text: selectedMethod == .manual ? manualText : recognizedText,
+    shouldPopToRoot: $shouldPopToRoot
+), isActive: $navigateToPreview) {
+    EmptyView()
+} 

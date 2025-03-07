@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 struct InputSelectionView: View {
     @State private var selectedMethod: InputMethod = .manual
@@ -8,6 +9,9 @@ struct InputSelectionView: View {
     @State private var wordCount = 0
     @State private var navigateToPreview = false
     @State private var shouldPopToRoot = false
+    @State private var selectedImage: UIImage? = nil
+    @State private var isRecognizing = false
+    @EnvironmentObject private var dataManager: DataManager
     @Environment(\.presentationMode) var presentationMode
     
     enum InputMethod {
@@ -15,81 +19,113 @@ struct InputSelectionView: View {
     }
     
     var body: some View {
-        VStack(spacing: 20) {
-            // 输入方式选择
-            HStack(spacing: 10) {
-                InputMethodButton(
-                    title: "拍照输入",
-                    systemImage: "camera",
-                    isSelected: selectedMethod == .camera,
-                    action: { 
-                        selectedMethod = .camera
-                        showCamera = true
-                    }
-                )
+        ZStack {
+            VStack(spacing: 20) {
+                // 输入方式选择
+                HStack(spacing: 10) {
+                    InputMethodButton(
+                        title: "拍照输入",
+                        systemImage: "camera",
+                        isSelected: selectedMethod == .camera,
+                        action: { 
+                            selectedMethod = .camera
+                            showCamera = true
+                        }
+                    )
+                    
+                    InputMethodButton(
+                        title: "手动输入",
+                        systemImage: "square.and.pencil",
+                        isSelected: selectedMethod == .manual,
+                        action: { selectedMethod = .manual }
+                    )
+                }
+                .padding(.horizontal)
                 
-                InputMethodButton(
-                    title: "手动输入",
-                    systemImage: "square.and.pencil",
-                    isSelected: selectedMethod == .manual,
-                    action: { selectedMethod = .manual }
-                )
-            }
-            .padding(.horizontal)
-            
-            // 字数统计
-            HStack {
+                // 字数统计
+                HStack {
+                    Spacer()
+                    Text("\(wordCount)/250")
+                        .font(.footnote)
+                        .foregroundColor(wordCount > 250 ? .red : .secondary)
+                }
+                .padding(.horizontal)
+                
+                // 文本输入区域
+                ZStack(alignment: .topLeading) {
+                    if selectedMethod == .manual {
+                        TextEditor(text: $manualText)
+                            .padding(10)
+                            .background(Color(.systemGray6))
+                            .cornerRadius(12)
+                            .frame(minHeight: 200)
+                            .onChange(of: manualText) { oldValue, newValue in
+                                wordCount = newValue.count
+                            }
+                        
+                        if manualText.isEmpty {
+                            Text("请输入要背诵的内容（250字以内）")
+                                .foregroundColor(.gray)
+                                .padding(16)
+                        }
+                    } else {
+                        TextEditor(text: $recognizedText)
+                            .padding(10)
+                            .background(Color(.systemGray6))
+                            .cornerRadius(12)
+                            .frame(minHeight: 200)
+                            .onChange(of: recognizedText) { oldValue, newValue in
+                                wordCount = newValue.count
+                            }
+                        
+                        if recognizedText.isEmpty {
+                            Text(isRecognizing ? "正在识别文字..." : "请通过拍照或从相册选择图片进行OCR识别")
+                                .foregroundColor(.gray)
+                                .padding(16)
+                        }
+                    }
+                }
+                .padding(.horizontal)
+                
                 Spacer()
-                Text("\(wordCount)/250")
-                    .font(.footnote)
-                    .foregroundColor(wordCount > 250 ? .red : .secondary)
-            }
-            .padding(.horizontal)
-            
-            // 文本输入区域
-            ZStack(alignment: .topLeading) {
-                TextEditor(text: $manualText)
-                    .padding(10)
-                    .background(Color(.systemGray6))
-                    .cornerRadius(12)
-                    .frame(minHeight: 200)
-                    .onChange(of: manualText) { oldValue, newValue in
-                        wordCount = newValue.count
-                    }
                 
-                if manualText.isEmpty {
-                    Text("请输入要背诵的内容（250字以内）")
-                        .foregroundColor(.gray)
-                        .padding(16)
+                // 下一步按钮
+                Button(action: {
+                    print("点击下一步按钮，当前文本长度: \(manualText.isEmpty ? recognizedText.count : manualText.count)")
+                    navigateToPreview = true
+                }) {
+                    Text("下一步")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(Color.blue)
+                        )
+                        .padding(.horizontal)
+                }
+                .disabled((selectedMethod == .manual && manualText.isEmpty) ||
+                          (selectedMethod == .camera && recognizedText.isEmpty) ||
+                          isRecognizing)
+                
+                // 使用原来的NavigationLink方式
+                NavigationLink(destination: PreviewEditView(
+                    text: selectedMethod == .manual ? manualText : recognizedText,
+                    shouldPopToRoot: $shouldPopToRoot
+                ), isActive: $navigateToPreview) {
+                    EmptyView()
                 }
             }
-            .padding(.horizontal)
-            
-            Spacer()
-            
-            // 下一步按钮
-            Button(action: {
-                print("点击下一步按钮，当前文本长度: \(manualText.isEmpty ? recognizedText.count : manualText.count)")
-                navigateToPreview = true
-            }) {
-                Text("下一步")
-                    .font(.headline)
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(Color.blue)
-                    )
-                    .padding(.horizontal)
-            }
-            .disabled(manualText.isEmpty && recognizedText.isEmpty)
-            
-            NavigationLink(destination: PreviewEditView(
-                text: manualText.isEmpty ? recognizedText : manualText,
-                shouldPopToRoot: $shouldPopToRoot
-            ), isActive: $navigateToPreview) {
-                EmptyView()
+            .navigationTitle("新建内容")
+            .sheet(isPresented: $showCamera) {
+                CameraOptionsView(
+                    isPresented: $showCamera,
+                    selectedImage: $selectedImage,
+                    recognizedText: $recognizedText,
+                    isRecognizing: $isRecognizing
+                )
+                .environmentObject(dataManager)
             }
             .onChange(of: shouldPopToRoot) { oldValue, newValue in
                 print("shouldPopToRoot 变化: \(oldValue) -> \(newValue)")
@@ -97,12 +133,23 @@ struct InputSelectionView: View {
                     presentationMode.wrappedValue.dismiss()
                 }
             }
-        }
-        .navigationTitle("新建内容")
-        .sheet(isPresented: $showCamera) {
-            // 在实际应用中实现相机和OCR功能
-            Text("相机和OCR功能将在这里实现")
-                .padding()
+            
+            // 显示加载指示器
+            if isRecognizing {
+                Color.black.opacity(0.4)
+                    .edgesIgnoringSafeArea(.all)
+                
+                VStack {
+                    ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                        .scaleEffect(1.5)
+                    
+                    Text("正在识别文字...")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .padding(.top)
+                }
+            }
         }
     }
 }

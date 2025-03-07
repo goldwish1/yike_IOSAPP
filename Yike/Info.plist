@@ -6,5 +6,9 @@
 	<array>
 		<string>audio</string>
 	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>我们需要访问您的相机以拍摄照片，用于OCR文字识别</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>我们需要访问您的照片库，以便选择照片进行OCR文字识别</string>
 </dict>
 </plist>
