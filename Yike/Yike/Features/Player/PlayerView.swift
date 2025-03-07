@@ -49,6 +49,7 @@ class SpeechManager: NSObject, ObservableObject, AVSpeechSynthesizerDelegate, @u
     }
     
     private func prepareUtterance(for text: String) {
+        print("准备播放文本: \(text)")
         utterance = AVSpeechUtterance(string: text)
         utterance?.rate = playbackSpeed * AVSpeechUtteranceDefaultSpeechRate
         utterance?.voice = AVSpeechSynthesisVoice(language: "zh-CN")
@@ -56,10 +57,15 @@ class SpeechManager: NSObject, ObservableObject, AVSpeechSynthesizerDelegate, @u
         // 更新进度
         progress = Double(currentIndex) / Double(max(1, sentences.count))
         updateTimes()
+        print("当前进度: \(progress), 当前索引: \(currentIndex)")
     }
     
     func play() {
-        guard let utterance = utterance else { return }
+        guard let utterance = utterance else {
+            print("播放失败: utterance 为空")
+            return
+        }
+        print("开始播放: isPlaying=\(isPlaying)")
         synthesizer.speak(utterance)
         isPlaying = true
     }
@@ -91,15 +97,17 @@ class SpeechManager: NSObject, ObservableObject, AVSpeechSynthesizerDelegate, @u
     }
     
     func next() {
+        print("执行 next(), 当前索引: \(currentIndex), 总句数: \(sentences.count)")
         invalidateTimer()
         if currentIndex < sentences.count - 1 {
             currentIndex += 1
             prepareUtterance(for: sentences[currentIndex])
             if isPlaying {
+                print("继续播放下一句")
                 play()
             }
         } else {
-            // 到最后一句时，自动从头开始
+            print("到达最后一句，重新开始")
             currentIndex = 0
             prepareUtterance(for: sentences[currentIndex])
             if isPlaying {
@@ -155,11 +163,13 @@ class SpeechManager: NSObject, ObservableObject, AVSpeechSynthesizerDelegate, @u
     // MARK: - AVSpeechSynthesizerDelegate
     
     func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
+        print("播放完成一句，当前索引: \(currentIndex)")
         if SettingsManager.shared.settings.enablePlaybackInterval {
             isPlaying = false
             startIntervalTimer()
+            print("启动间隔计时器")
         } else {
-            // 自动播放下一句，如果是最后一句会自动从头开始
+            print("准备播放下一句")
             next()
         }
     }
