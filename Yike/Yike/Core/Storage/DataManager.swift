@@ -7,6 +7,7 @@ class DataManager: ObservableObject {
     @Published var memoryItems: [MemoryItem] = []
     @Published var points: Int = 100 // 新用户默认100积分
     @Published var pointsRecords: [PointsRecord] = []
+    @Published var hasShownApiVoiceAlert: Bool = false // 是否已显示过在线语音提示
     
     private init() {
         // 从本地加载数据
@@ -61,6 +62,12 @@ class DataManager: ObservableObject {
         return false
     }
     
+    // 标记用户已经看过在线语音提示信息
+    func markApiVoiceAlertAsShown() {
+        hasShownApiVoiceAlert = true
+        saveData()
+    }
+    
     // MARK: - Data Persistence
     
     private func saveData() {
@@ -75,6 +82,8 @@ class DataManager: ObservableObject {
         if let encoded = try? encoder.encode(pointsRecords) {
             UserDefaults.standard.set(encoded, forKey: "pointsRecords")
         }
+        
+        UserDefaults.standard.set(hasShownApiVoiceAlert, forKey: "hasShownApiVoiceAlert")
     }
     
     private func loadData() {
@@ -95,6 +104,8 @@ class DataManager: ObservableObject {
            let decoded = try? decoder.decode([PointsRecord].self, from: data) {
             pointsRecords = decoded
         }
+        
+        hasShownApiVoiceAlert = UserDefaults.standard.bool(forKey: "hasShownApiVoiceAlert")
     }
     
     // 添加示例数据以便测试

@@ -3,10 +3,12 @@ import SwiftUI
 struct PlaySettingsView: View {
     @ObservedObject private var settingsManager = SettingsManager.shared
     @ObservedObject private var speechManager = SpeechManager.shared
+    @ObservedObject private var dataManager = DataManager.shared
     @State private var settings: UserSettings
     @State private var isTestingApiVoice = false
     @State private var apiVoiceTestError: String? = nil
     @State private var selectedCategory: UserSettings.ApiVoiceCategory = .male
+    @State private var showingApiVoiceAlert = false
     private let previewText = "这是一段示例文本，用于预览当前选择的语音效果。"
     
     init() {
@@ -22,6 +24,11 @@ struct PlaySettingsView: View {
                         // 切换语音来源时停止播放
                         if speechManager.isPlaying {
                             speechManager.stop()
+                        }
+                        
+                        // 如果用户首次开启在线语音，且未显示过提示，则显示提示信息
+                        if newValue && !dataManager.hasShownApiVoiceAlert {
+                            showingApiVoiceAlert = true
                         }
                     }
             }
@@ -170,6 +177,13 @@ struct PlaySettingsView: View {
             
             // 停止API音频播放
             AudioPlayerService.shared.stop()
+        }
+        .alert("在线语音提示", isPresented: $showingApiVoiceAlert) {
+            Button("我知道了") {
+                dataManager.markApiVoiceAlertAsShown()
+            }
+        } message: {
+            Text("使用在线高质量语音将消耗积分，每次使用消耗1积分。\n\n已生成的语音会缓存到本地，重复播放不会重复消耗积分。\n\n您当前的积分余额：\(dataManager.points)积分")
         }
     }
     
