@@ -233,7 +233,20 @@ class SpeechManager: NSObject, ObservableObject, AVSpeechSynthesizerDelegate, @u
     private func startIntervalTimer() {
         invalidateTimer()
         intervalTimer = Timer.scheduledTimer(withTimeInterval: TimeInterval(intervalSeconds), repeats: false) { [weak self] _ in
-            self?.play()
+            guard let self = self else { return }
+            
+            // 检查是否有更多句子需要播放
+            if self.currentIndex < self.sentences.count - 1 {
+                // 播放下一句
+                self.currentIndex += 1
+                self.prepareUtterance(for: self.sentences[self.currentIndex])
+                self.play()
+            } else {
+                // 如果是最后一句，重新开始（循环播放）
+                self.currentIndex = 0
+                self.prepareUtterance(for: self.sentences[self.currentIndex])
+                self.play()
+            }
         }
     }
     
@@ -273,6 +286,7 @@ class SpeechManager: NSObject, ObservableObject, AVSpeechSynthesizerDelegate, @u
                     self.isPlaying = false
                     self.play()
                 } else {
+                    // 如果是最后一句，重新开始（循环播放）
                     self.currentIndex = 0
                     self.prepareUtterance(for: self.sentences[self.currentIndex])
                     self.isPlaying = false
