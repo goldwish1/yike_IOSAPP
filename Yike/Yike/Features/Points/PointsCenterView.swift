@@ -108,6 +108,51 @@ struct PointsCenterView: View {
                         .padding()
                     }
                     .padding(.horizontal)
+                    
+                    // 在线语音
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color(.systemBackground))
+                            .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
+                        
+                        HStack {
+                            Image(systemName: "waveform")
+                                .font(.system(size: 24))
+                                .foregroundColor(.blue)
+                                .frame(width: 40, height: 40)
+                                .background(Color.blue.opacity(0.1))
+                                .clipShape(Circle())
+                            
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("在线语音")
+                                    .font(.headline)
+                                
+                                Text("高质量AI语音合成")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                            
+                            Spacer()
+                            
+                            VStack(alignment: .trailing, spacing: 4) {
+                                Text("1积分/次")
+                                    .font(.subheadline)
+                                    .foregroundColor(.blue)
+                                
+                                NavigationLink(destination: PlaySettingsView()) {
+                                    Text("设置")
+                                        .font(.caption)
+                                        .padding(.horizontal, 12)
+                                        .padding(.vertical, 4)
+                                        .background(Color.blue)
+                                        .foregroundColor(.white)
+                                        .cornerRadius(12)
+                                }
+                            }
+                        }
+                        .padding()
+                    }
+                    .padding(.horizontal)
                 }
                 
                 // 温馨提示
@@ -123,7 +168,7 @@ struct PointsCenterView: View {
                         Spacer()
                     }
                     
-                    Text("• 新用户注册即送100积分\n• 日常对话完全免费，无需消耗积分\n• 拍照识别每次消耗10积分\n• 积分永久有效，充值不过期")
+                    Text("• 新用户注册即送100积分\n• 日常对话完全免费，无需消耗积分\n• 拍照识别每次消耗10积分\n• 在线语音每次消耗1积分\n• 积分永久有效，充值不过期")
                         .font(.subheadline)
                         .lineSpacing(6)
                 }
