@@ -25,7 +25,11 @@ struct PlaySettingsView: View {
                         speechManager.stop()
                     } else {
                         // 否则开始播放
-                        speechManager.prepare(text: previewText, speed: Float(settings.playbackSpeed))
+                        speechManager.prepare(
+                            text: previewText, 
+                            speed: Float(settings.playbackSpeed),
+                            intervalSeconds: settings.playbackInterval
+                        )
                         speechManager.play()
                     }
                 }) {

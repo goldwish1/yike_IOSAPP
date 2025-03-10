@@ -326,6 +326,7 @@ class SpeechManager: NSObject, ObservableObject, AVSpeechSynthesizerDelegate, @u
 
 struct PlayerView: View {
     @ObservedObject private var speechManager = SpeechManager.shared
+    @ObservedObject private var settingsManager = SettingsManager.shared
     @EnvironmentObject private var dataManager: DataManager
     @Environment(\.presentationMode) var presentationMode
     
@@ -417,7 +418,11 @@ struct PlayerView: View {
                         speechManager.pause()
                     } else {
                         if speechManager.progress == 0 {
-                            speechManager.prepare(text: memoryItem.content, speed: selectedSpeed)
+                            speechManager.prepare(
+                                text: memoryItem.content, 
+                                speed: selectedSpeed,
+                                intervalSeconds: settingsManager.settings.playbackInterval
+                            )
                         }
                         speechManager.play()
                     }
@@ -473,7 +478,11 @@ struct PlayerView: View {
         )
         .onAppear {
             if speechManager.progress == 0 {
-                speechManager.prepare(text: memoryItem.content, speed: selectedSpeed)
+                speechManager.prepare(
+                    text: memoryItem.content, 
+                    speed: selectedSpeed,
+                    intervalSeconds: settingsManager.settings.playbackInterval
+                )
             }
         }
         .onDisappear {

@@ -4638,6 +4638,126 @@ private func startIntervalTimer() {
 
 ---
 
+_**User**_
+
+还有一个问题，现在我们设置了1秒的播放间隔，但实际播放间隔似乎不是正常的1秒时间，请帮我锁定原因并修复，不要做我要求外的任何更改
+
+---
+
+_**Assistant**_
+
+收到大帅哥
+
+我需要检查播放间隔的设置和实际应用。通过分析代码，我发现可能有两个问题：
+
+1. 在PlaySettingsView中，间隔时间的滑块范围是1-20秒，但在SpeechManager中可能没有正确应用这个设置。
+2. 在prepare方法中，我们传入了intervalSeconds参数，但在startIntervalTimer方法中可能没有正确使用这个值。
+
+让我检查SpeechManager中的相关代码：
+
+```swift:Yike/Features/Player/PlayerView.swift
+// ... existing code ...
+
+func prepare(text: String, speed: Float = 1.0, intervalSeconds: Int = 5) {
+    stop()
+    self.playbackSpeed = speed
+    self.intervalSeconds = intervalSeconds  // 这里设置了间隔时间
+    
+    // 简单的分句处理
+    sentences = text.components(separatedBy: CharacterSet(charactersIn: "。.!?！？\n"))
+        .filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+    
+    updateTimes()
+    
+    if !sentences.isEmpty {
+        currentIndex = 0
+        prepareUtterance(for: sentences[currentIndex])
+    }
+}
+
+// ... existing code ...
+
+private func startIntervalTimer() {
+    invalidateTimer()
+    intervalTimer = Timer.scheduledTimer(withTimeInterval: TimeInterval(intervalSeconds), repeats: false) { [weak self] _ in
+        guard let self = self else { return }
+        
+        // 检查是否有更多句子需要播放
+        if self.currentIndex < self.sentences.count - 1 {
+            // 播放下一句
+            self.currentIndex += 1
+            self.prepareUtterance(for: self.sentences[self.currentIndex])
+            self.play()
+        } else {
+            // 如果是最后一句，重新开始（循环播放）
+            self.currentIndex = 0
+            self.prepareUtterance(for: self.sentences[self.currentIndex])
+            self.play()
+        }
+    }
+}
+
+// ... existing code ...
+```
+
+问题可能在于我们在PlaySettingsView中设置的间隔时间没有正确传递给SpeechManager。让我检查PlaySettingsView中的试听按钮代码：
+
+```swift:Yike/Features/Settings/PlaySettingsView.swift
+// ... existing code ...
+
+Button(action: {
+    if speechManager.isPlaying {
+        // 如果正在播放，则暂停
+        speechManager.stop()
+    } else {
+        // 否则开始播放
+        speechManager.prepare(text: previewText, speed: Float(settings.playbackSpeed))
+        speechManager.play()
+    }
+}) {
+    // ... existing code ...
+}
+
+// ... existing code ...
+```
+
+我发现问题了！在PlaySettingsView中调用prepare方法时，我们只传递了速度参数，没有传递间隔时间参数。这导致SpeechManager使用了默认的5秒间隔，而不是用户设置的间隔时间。
+
+让我修复这个问题：
+
+```swift:Yike/Features/Settings/PlaySettingsView.swift
+// ... existing code ...
+
+Button(action: {
+    if speechManager.isPlaying {
+        // 如果正在播放，则暂停
+        speechManager.stop()
+    } else {
+        // 否则开始播放
+        // 传递用户设置的间隔时间
+        speechManager.prepare(
+            text: previewText, 
+            speed: Float(settings.playbackSpeed),
+            intervalSeconds: settings.playbackInterval
+        )
+        speechManager.play()
+    }
+}) {
+    HStack {
+        Text(speechManager.isPlaying ? "停止试听" : "试听效果")
+        Spacer()
+        Image(systemName: speechManager.isPlaying ? "stop.fill" : "speaker.wave.2")
+    }
+}
+.foregroundColor(.blue)
+
+// ... existing code ...
+```
+
+这样修改后，SpeechManager将使用用户在设置中选择的间隔时间，而不是默认的5秒间隔。这应该能解决播放间隔不正确的问题。
+
+---
+
 
 
 ---
