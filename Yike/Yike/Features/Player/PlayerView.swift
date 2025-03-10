@@ -587,7 +587,7 @@ struct PlayerView: View {
         apiAudioError = nil
         
         // 检查积分是否足够
-        if dataManager.points < 1 {
+        if dataManager.points < 5 {
             isLoadingApiAudio = false
             apiAudioError = "积分不足，无法使用在线语音。当前积分: \(dataManager.points)"
             return
@@ -623,7 +623,7 @@ struct PlayerView: View {
                 
                 // 扣除积分（仅在首次生成时扣除，缓存的不扣除）
                 if !SiliconFlowTTSService.shared.isCached(text: memoryItem.content, voice: settingsManager.settings.apiVoiceType.rawValue, speed: selectedSpeed) {
-                    dataManager.deductPoints(1, reason: "使用在线语音")
+                    dataManager.deductPoints(5, reason: "使用在线语音")
                 }
             }
         }

@@ -151,7 +151,7 @@ struct PlaySettingsView: View {
             }
             
             if settings.useApiVoice {
-                Section(header: Text("关于在线语音"), footer: Text("在线语音由硅基流动API提供，每次使用会消耗1积分。生成的语音会缓存到本地，重复播放不会重复消耗积分。")) {
+                Section(header: Text("关于在线语音"), footer: Text("在线语音由硅基流动API提供，每次使用会消耗5积分。生成的语音会缓存到本地，重复播放不会重复消耗积分。")) {
                     Button(action: {
                         SiliconFlowTTSService.shared.cleanExpiredCache()
                     }) {
@@ -183,7 +183,7 @@ struct PlaySettingsView: View {
                 dataManager.markApiVoiceAlertAsShown()
             }
         } message: {
-            Text("使用在线高质量语音将消耗积分，每次使用消耗1积分。\n\n已生成的语音会缓存到本地，重复播放不会重复消耗积分。\n\n您当前的积分余额：\(dataManager.points)积分")
+            Text("使用在线高质量语音将消耗积分，每次使用消耗5积分。\n\n已生成的语音会缓存到本地，重复播放不会重复消耗积分。\n\n您当前的积分余额：\(dataManager.points)积分")
         }
     }
     
@@ -194,7 +194,7 @@ struct PlaySettingsView: View {
         
         // 检查积分是否足够
         let dataManager = DataManager.shared
-        if dataManager.points < 1 {
+        if dataManager.points < 5 {
             isTestingApiVoice = false
             apiVoiceTestError = "积分不足，无法试听。当前积分: \(dataManager.points)"
             return
@@ -227,7 +227,7 @@ struct PlaySettingsView: View {
                 }
                 
                 // 扣除积分
-                dataManager.deductPoints(1, reason: "试听API音色")
+                dataManager.deductPoints(5, reason: "试听API音色")
             }
         }
     }

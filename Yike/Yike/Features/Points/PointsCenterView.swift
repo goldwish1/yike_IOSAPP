@@ -135,7 +135,7 @@ struct PointsCenterView: View {
                             Spacer()
                             
                             VStack(alignment: .trailing, spacing: 4) {
-                                Text("1积分/次")
+                                Text("5积分/次")
                                     .font(.subheadline)
                                     .foregroundColor(.blue)
                                 
@@ -168,7 +168,7 @@ struct PointsCenterView: View {
                         Spacer()
                     }
                     
-                    Text("• 新用户注册即送100积分\n• 日常对话完全免费，无需消耗积分\n• 拍照识别每次消耗10积分\n• 在线语音每次消耗1积分\n• 积分永久有效，充值不过期")
+                    Text("• 新用户注册即送100积分\n• 日常对话完全免费，无需消耗积分\n• 拍照识别每次消耗10积分\n• 在线语音每次消耗5积分\n• 积分永久有效，充值不过期")
                         .font(.subheadline)
                         .lineSpacing(6)
                 }
