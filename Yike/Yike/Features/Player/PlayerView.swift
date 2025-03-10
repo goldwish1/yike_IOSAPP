@@ -55,7 +55,45 @@ class SpeechManager: NSObject, ObservableObject, AVSpeechSynthesizerDelegate, @u
         print("准备播放文本: \(text)")
         utterance = AVSpeechUtterance(string: text)
         utterance?.rate = playbackSpeed * AVSpeechUtteranceDefaultSpeechRate
+        
+        // 获取用户设置的声音性别和音色
+        let settings = SettingsManager.shared.settings
+        let gender = settings.playbackVoiceGender
+        let style = settings.playbackVoiceStyle
+        
+        print("应用语音设置: 性别=\(gender.rawValue), 音色=\(style.rawValue)")
+        
+        // 选择默认中文语音
         utterance?.voice = AVSpeechSynthesisVoice(language: "zh-CN")
+        
+        // 根据性别和音色调整音调
+        var pitchMultiplier: Float = 1.0
+        var volume: Float = 1.0
+        
+        switch (gender, style) {
+        case (.male, .standard):
+            pitchMultiplier = 0.9  // 标准男声
+            volume = 0.9
+        case (.male, .deep):
+            pitchMultiplier = 0.8  // 浑厚男声
+            volume = 1.0
+        case (.male, .gentle):
+            pitchMultiplier = 0.95  // 温柔男声
+            volume = 0.85
+        case (.female, .standard):
+            pitchMultiplier = 1.0  // 标准女声
+            volume = 0.9
+        case (.female, .deep):
+            pitchMultiplier = 0.9  // 浑厚女声
+            volume = 0.95
+        case (.female, .gentle):
+            pitchMultiplier = 1.15  // 温柔女声
+            volume = 0.85
+        }
+        
+        utterance?.pitchMultiplier = pitchMultiplier
+        utterance?.volume = volume
+        print("设置音调倍数: \(pitchMultiplier), 音量: \(volume)")
         
         // 保存当前 utterance 的引用
         currentUtterance = utterance

@@ -2,8 +2,9 @@ import SwiftUI
 
 struct PlaySettingsView: View {
     @ObservedObject private var settingsManager = SettingsManager.shared
+    @ObservedObject private var speechManager = SpeechManager.shared
     @State private var settings: UserSettings
-    @Environment(\.presentationMode) var presentationMode
+    private let previewText = "这是一段示例文本，用于预览当前选择的语音效果。"
     
     init() {
         _settings = State(initialValue: SettingsManager.shared.settings)
@@ -23,43 +24,82 @@ struct PlaySettingsView: View {
                         Text(style.rawValue).tag(style)
                     }
                 }
+                
+                Button(action: {
+                    if speechManager.isPlaying {
+                        // 如果正在播放，则暂停
+                        speechManager.stop()
+                    } else {
+                        // 否则开始播放
+                        speechManager.prepare(text: previewText, speed: Float(settings.playbackSpeed))
+                        speechManager.play()
+                    }
+                }) {
+                    HStack {
+                        Text(speechManager.isPlaying ? "停止试听" : "试听效果")
+                        Spacer()
+                        Image(systemName: speechManager.isPlaying ? "stop.fill" : "speaker.wave.2")
+                    }
+                }
+                .foregroundColor(.blue)
             }
             
-            Section(header: Text("播放控制")) {
-                VStack(alignment: .leading, spacing: 10) {
-                    Text("默认播放速度")
-                    
-                    HStack {
-                        Text("0.5x")
-                            .font(.caption)
-                        
-                        Slider(value: $settings.playbackSpeed, in: 0.5...2.0, step: 0.25)
-                        
-                        Text("2.0x")
-                            .font(.caption)
-                    }
-                    
+            Section(header: Text("播放设置")) {
+                HStack {
+                    Text("播放速度")
+                    Spacer()
                     Text("\(String(format: "%.1f", settings.playbackSpeed))x")
-                        .font(.headline)
-                        .frame(maxWidth: .infinity, alignment: .center)
                 }
                 
-                Toggle("开启播放间隔", isOn: $settings.enablePlaybackInterval)
+                Slider(value: $settings.playbackSpeed, in: 0.5...2.0, step: 0.1) {
+                    Text("播放速度")
+                } minimumValueLabel: {
+                    Text("0.5x")
+                } maximumValueLabel: {
+                    Text("2.0x")
+                }
+                
+                Toggle("启用播放间隔", isOn: $settings.enablePlaybackInterval)
                 
                 if settings.enablePlaybackInterval {
-                    Picker("默认间隔时间", selection: $settings.playbackInterval) {
-                        Text("5秒").tag(5)
-                        Text("10秒").tag(10)
-                        Text("15秒").tag(15)
-                        Text("20秒").tag(20)
+                    HStack {
+                        Text("间隔时间")
+                        Spacer()
+                        Text("\(settings.playbackInterval)秒")
+                    }
+                    
+                    Slider(value: Binding(
+                        get: { Double(settings.playbackInterval) },
+                        set: { settings.playbackInterval = Int($0) }
+                    ), in: 1...20, step: 1) {
+                        Text("间隔时间")
+                    } minimumValueLabel: {
+                        Text("1秒")
+                    } maximumValueLabel: {
+                        Text("20秒")
                     }
                 }
+            }
+            
+            Section(footer: Text("不同的声音性别和音色会影响播放效果，您可以通过试听来选择最适合的组合。")) {
+                EmptyView()
             }
         }
         .navigationTitle("播放设置")
-        .navigationBarItems(trailing: Button("保存") {
-            settingsManager.updateSettings(settings)
-            presentationMode.wrappedValue.dismiss()
-        })
+        .onChange(of: settings) { oldValue, newValue in
+            settingsManager.updateSettings(newValue)
+        }
+        .onDisappear {
+            // 确保在视图消失时停止播放
+            if speechManager.isPlaying {
+                speechManager.stop()
+            }
+        }
+    }
+}
+
+#Preview {
+    NavigationView {
+        PlaySettingsView()
     }
 } 

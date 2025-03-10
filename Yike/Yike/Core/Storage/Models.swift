@@ -56,7 +56,7 @@ struct PointsRecord: Identifiable, Codable {
 }
 
 // 用户设置模型
-struct UserSettings: Codable {
+struct UserSettings: Codable, Equatable {
     // 播放设置
     var playbackVoiceGender: VoiceGender = .female
     var playbackVoiceStyle: VoiceStyle = .standard
@@ -70,24 +70,24 @@ struct UserSettings: Codable {
     var reminderStyle: ReminderStyle = .notificationAndSound
     var reviewStrategy: ReviewStrategy = .standard
     
-    enum VoiceGender: String, Codable, CaseIterable {
+    enum VoiceGender: String, Codable, CaseIterable, Equatable {
         case male = "男声"
         case female = "女声"
     }
     
-    enum VoiceStyle: String, Codable, CaseIterable {
+    enum VoiceStyle: String, Codable, CaseIterable, Equatable {
         case standard = "标准音色"
         case gentle = "温柔音色"
         case deep = "浑厚音色"
     }
     
-    enum ReminderStyle: String, Codable, CaseIterable {
+    enum ReminderStyle: String, Codable, CaseIterable, Equatable {
         case notificationOnly = "仅通知"
         case notificationAndSound = "通知+声音"
         case notificationAndVibration = "通知+震动"
     }
     
-    enum ReviewStrategy: String, Codable, CaseIterable {
+    enum ReviewStrategy: String, Codable, CaseIterable, Equatable {
         case simple = "简单"
         case standard = "标准"
         case intensive = "密集"
