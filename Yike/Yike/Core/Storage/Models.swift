@@ -62,6 +62,8 @@ struct UserSettings: Codable, Equatable {
     var playbackSpeed: Double = 1.0
     var playbackInterval: Int = 5 // 秒
     var enablePlaybackInterval: Bool = true
+    var useApiVoice: Bool = false // 是否使用API音色
+    var apiVoiceType: ApiVoiceType = .alex // API音色类型
     
     // 提醒设置
     var enableDailyReminder: Bool = true
@@ -73,6 +75,49 @@ struct UserSettings: Codable, Equatable {
         case standard = "标准音色"
         case gentle = "轻柔音色"
         case deep = "浑厚音色"
+    }
+    
+    // 硅基流动API音色类型
+    enum ApiVoiceType: String, Codable, CaseIterable, Equatable {
+        // 男声
+        case alex = "alex" // 沉稳男声
+        case benjamin = "benjamin" // 低沉男声
+        case charles = "charles" // 磁性男声
+        case david = "david" // 欢快男声
+        
+        // 女声
+        case anna = "anna" // 沉稳女声
+        case bella = "bella" // 激情女声
+        case claire = "claire" // 温柔女声
+        case diana = "diana" // 欢快女声
+        
+        var displayName: String {
+            switch self {
+            case .alex: return "沉稳男声 (Alex)"
+            case .benjamin: return "低沉男声 (Benjamin)"
+            case .charles: return "磁性男声 (Charles)"
+            case .david: return "欢快男声 (David)"
+            case .anna: return "沉稳女声 (Anna)"
+            case .bella: return "激情女声 (Bella)"
+            case .claire: return "温柔女声 (Claire)"
+            case .diana: return "欢快女声 (Diana)"
+            }
+        }
+        
+        var category: ApiVoiceCategory {
+            switch self {
+            case .alex, .benjamin, .charles, .david:
+                return .male
+            case .anna, .bella, .claire, .diana:
+                return .female
+            }
+        }
+    }
+    
+    // API音色分类
+    enum ApiVoiceCategory: String, Codable, CaseIterable {
+        case male = "男声"
+        case female = "女声"
     }
     
     enum ReminderStyle: String, Codable, CaseIterable, Equatable {

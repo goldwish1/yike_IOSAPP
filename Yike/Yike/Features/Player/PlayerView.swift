@@ -325,126 +325,188 @@ class SpeechManager: NSObject, ObservableObject, AVSpeechSynthesizerDelegate, @u
 }
 
 struct PlayerView: View {
+    let memoryItem: MemoryItem
     @ObservedObject private var speechManager = SpeechManager.shared
     @ObservedObject private var settingsManager = SettingsManager.shared
-    @EnvironmentObject private var dataManager: DataManager
-    @Environment(\.presentationMode) var presentationMode
-    
+    @ObservedObject private var dataManager = DataManager.shared
     @State private var selectedSpeed: Float = 1.0
-    @State private var waveHeight: CGFloat = 10
-    @State private var isWaving = false
     @State private var showCompletionAlert = false
-    
-    var memoryItem: MemoryItem
+    @State private var isLoadingApiAudio = false
+    @State private var apiAudioError: String? = nil
+    @State private var isPlayingApiAudio = false
+    @Environment(\.presentationMode) var presentationMode
     
     var body: some View {
         VStack(spacing: 24) {
-            // 顶部标题和内容
-            VStack(spacing: 16) {
-                Text(memoryItem.title)
-                    .font(.title)
-                    .fontWeight(.bold)
-                    .multilineTextAlignment(.center)
-                
-                ScrollView {
-                    Text(memoryItem.content)
-                        .font(.body)
-                        .lineSpacing(6)
-                        .padding()
-                }
-                .frame(maxHeight: 200)
-                .background(Color(.systemGray6))
-                .cornerRadius(16)
+            // 标题
+            Text(memoryItem.title)
+                .font(.title)
+                .fontWeight(.bold)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal)
+            
+            // 内容
+            ScrollView {
+                Text(memoryItem.content)
+                    .font(.body)
+                    .lineSpacing(8)
+                    .padding()
             }
-            .padding(.horizontal)
+            .frame(maxHeight: 200)
+            .background(Color(.systemGray6))
+            .cornerRadius(12)
             
-            Spacer()
-            
-            // 波形图(简化实现)
+            // 波形动画
             HStack(spacing: 2) {
                 ForEach(0..<30, id: \.self) { index in
                     RoundedRectangle(cornerRadius: 1.5)
                         .fill(Color.blue)
-                        .frame(width: 3, height: isWaving ? waveHeight + CGFloat.random(in: 0...20) : 5)
+                        .frame(width: 3, height: (settingsManager.settings.useApiVoice ? isPlayingApiAudio : speechManager.isPlaying) ? 10 + CGFloat.random(in: 0...20) : 5)
                         .animation(
                             Animation.easeInOut(duration: 0.2)
                                 .repeatForever()
                                 .delay(Double(index) * 0.05),
-                            value: isWaving
+                            value: (settingsManager.settings.useApiVoice ? isPlayingApiAudio : speechManager.isPlaying)
                         )
                 }
             }
             .frame(height: 50)
-            .padding()
-            .onChange(of: speechManager.isPlaying) { oldValue, newValue in
-                isWaving = newValue
-            }
+            .padding(.horizontal)
             
-            // 播放进度
+            // 进度条
             VStack(spacing: 8) {
-                ProgressView(value: speechManager.progress)
-                    .progressViewStyle(LinearProgressViewStyle())
-                    .padding(.horizontal)
-                
                 HStack {
-                    Text(speechManager.currentTime)
+                    Text(settingsManager.settings.useApiVoice ? formatTime(AudioPlayerService.shared.currentTime) : speechManager.currentTime)
                         .font(.caption)
                         .foregroundColor(.secondary)
                     
                     Spacer()
                     
-                    Text(speechManager.totalTime)
+                    Text(settingsManager.settings.useApiVoice ? formatTime(AudioPlayerService.shared.duration) : speechManager.totalTime)
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
-                .padding(.horizontal)
+                
+                ProgressView(value: settingsManager.settings.useApiVoice ? (AudioPlayerService.shared.duration > 0 ? AudioPlayerService.shared.currentTime / AudioPlayerService.shared.duration : 0) : speechManager.progress)
+                    .progressViewStyle(LinearProgressViewStyle())
+                    .accentColor(.blue)
             }
+            .padding(.horizontal)
             
             // 控制按钮
             HStack(spacing: 32) {
-                Button(action: {
-                    speechManager.previous()
-                }) {
-                    Image(systemName: "backward.fill")
-                        .font(.system(size: 24))
-                        .foregroundColor(.primary)
-                        .frame(width: 60, height: 60)
-                        .background(Color(.systemGray6))
-                        .clipShape(Circle())
-                }
-                
-                Button(action: {
-                    if speechManager.isPlaying {
-                        speechManager.pause()
-                    } else {
-                        if speechManager.progress == 0 {
-                            speechManager.prepare(
-                                text: memoryItem.content, 
-                                speed: selectedSpeed,
-                                intervalSeconds: settingsManager.settings.playbackInterval
-                            )
-                        }
-                        speechManager.play()
+                if settingsManager.settings.useApiVoice {
+                    // API音频播放控制
+                    Button(action: {
+                        // API音频不支持上一句功能
+                    }) {
+                        Image(systemName: "backward.fill")
+                            .font(.system(size: 24))
+                            .foregroundColor(.gray)
+                            .frame(width: 60, height: 60)
+                            .background(Color(.systemGray6))
+                            .clipShape(Circle())
                     }
-                }) {
-                    Image(systemName: speechManager.isPlaying ? "pause.fill" : "play.fill")
-                        .font(.system(size: 24))
-                        .foregroundColor(.white)
-                        .frame(width: 70, height: 70)
-                        .background(Color.blue)
-                        .clipShape(Circle())
+                    .disabled(true)
+                    
+                    Button(action: {
+                        if isLoadingApiAudio {
+                            return
+                        }
+                        
+                        if isPlayingApiAudio {
+                            AudioPlayerService.shared.pause()
+                            isPlayingApiAudio = false
+                        } else {
+                            if AudioPlayerService.shared.duration > 0 {
+                                AudioPlayerService.shared.resume()
+                                isPlayingApiAudio = true
+                            } else {
+                                playWithApiVoice()
+                            }
+                        }
+                    }) {
+                        if isLoadingApiAudio {
+                            ProgressView()
+                                .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                .frame(width: 70, height: 70)
+                                .background(Color.blue)
+                                .clipShape(Circle())
+                        } else {
+                            Image(systemName: isPlayingApiAudio ? "pause.fill" : "play.fill")
+                                .font(.system(size: 24))
+                                .foregroundColor(.white)
+                                .frame(width: 70, height: 70)
+                                .background(Color.blue)
+                                .clipShape(Circle())
+                        }
+                    }
+                    .disabled(isLoadingApiAudio)
+                    
+                    Button(action: {
+                        // API音频不支持下一句功能
+                    }) {
+                        Image(systemName: "forward.fill")
+                            .font(.system(size: 24))
+                            .foregroundColor(.gray)
+                            .frame(width: 60, height: 60)
+                            .background(Color(.systemGray6))
+                            .clipShape(Circle())
+                    }
+                    .disabled(true)
+                } else {
+                    // 本地语音播放控制
+                    Button(action: {
+                        speechManager.previous()
+                    }) {
+                        Image(systemName: "backward.fill")
+                            .font(.system(size: 24))
+                            .foregroundColor(.primary)
+                            .frame(width: 60, height: 60)
+                            .background(Color(.systemGray6))
+                            .clipShape(Circle())
+                    }
+                    
+                    Button(action: {
+                        if speechManager.isPlaying {
+                            speechManager.pause()
+                        } else {
+                            if speechManager.progress == 0 {
+                                speechManager.prepare(
+                                    text: memoryItem.content, 
+                                    speed: selectedSpeed,
+                                    intervalSeconds: settingsManager.settings.playbackInterval
+                                )
+                            }
+                            speechManager.play()
+                        }
+                    }) {
+                        Image(systemName: speechManager.isPlaying ? "pause.fill" : "play.fill")
+                            .font(.system(size: 24))
+                            .foregroundColor(.white)
+                            .frame(width: 70, height: 70)
+                            .background(Color.blue)
+                            .clipShape(Circle())
+                    }
+                    
+                    Button(action: {
+                        speechManager.next()
+                    }) {
+                        Image(systemName: "forward.fill")
+                            .font(.system(size: 24))
+                            .foregroundColor(.primary)
+                            .frame(width: 60, height: 60)
+                            .background(Color(.systemGray6))
+                            .clipShape(Circle())
+                    }
                 }
-                
-                Button(action: {
-                    speechManager.next()
-                }) {
-                    Image(systemName: "forward.fill")
-                        .font(.system(size: 24))
-                        .foregroundColor(.primary)
-                        .frame(width: 60, height: 60)
-                        .background(Color(.systemGray6))
-                        .clipShape(Circle())
-                }
+            }
+            
+            if let error = apiAudioError {
+                Text(error)
+                    .foregroundColor(.red)
+                    .font(.footnote)
+                    .padding(.horizontal)
             }
             
             // 播放速度选择
@@ -452,7 +514,14 @@ struct PlayerView: View {
                 ForEach([0.5, 0.75, 1.0, 1.5, 2.0], id: \.self) { speed in
                     Button(action: {
                         selectedSpeed = Float(speed)
-                        speechManager.setSpeed(Float(speed))
+                        if !settingsManager.settings.useApiVoice {
+                            speechManager.setSpeed(Float(speed))
+                        } else if isPlayingApiAudio {
+                            // 如果正在使用API音频，需要重新加载
+                            AudioPlayerService.shared.stop()
+                            isPlayingApiAudio = false
+                            playWithApiVoice()
+                        }
                     }) {
                         Text("\(String(format: "%.1f", speed))x")
                             .font(.footnote)
@@ -477,16 +546,29 @@ struct PlayerView: View {
             }
         )
         .onAppear {
-            if speechManager.progress == 0 {
-                speechManager.prepare(
-                    text: memoryItem.content, 
-                    speed: selectedSpeed,
-                    intervalSeconds: settingsManager.settings.playbackInterval
-                )
+            selectedSpeed = Float(settingsManager.settings.playbackSpeed)
+            
+            if settingsManager.settings.useApiVoice {
+                // 使用API音色，预加载音频
+                playWithApiVoice()
+            } else {
+                // 使用本地音色
+                if speechManager.progress == 0 {
+                    speechManager.prepare(
+                        text: memoryItem.content, 
+                        speed: selectedSpeed,
+                        intervalSeconds: settingsManager.settings.playbackInterval
+                    )
+                }
             }
         }
         .onDisappear {
-            speechManager.stop()  // 确保在视图消失时停止播放
+            // 停止本地语音播放
+            speechManager.stop()
+            
+            // 停止API音频播放
+            AudioPlayerService.shared.stop()
+            isPlayingApiAudio = false
         }
         .alert(isPresented: $showCompletionAlert) {
             Alert(
@@ -499,6 +581,55 @@ struct PlayerView: View {
         }
     }
     
+    // 使用API音色播放
+    private func playWithApiVoice() {
+        isLoadingApiAudio = true
+        apiAudioError = nil
+        
+        // 检查积分是否足够
+        if dataManager.points < 1 {
+            isLoadingApiAudio = false
+            apiAudioError = "积分不足，无法使用在线语音。当前积分: \(dataManager.points)"
+            return
+        }
+        
+        // 调用API生成语音
+        SiliconFlowTTSService.shared.generateSpeech(
+            text: memoryItem.content,
+            voice: settingsManager.settings.apiVoiceType.rawValue,
+            speed: selectedSpeed
+        ) { audioURL, error in
+            DispatchQueue.main.async {
+                isLoadingApiAudio = false
+                
+                if let error = error {
+                    apiAudioError = "加载失败: \(error.localizedDescription)"
+                    return
+                }
+                
+                guard let audioURL = audioURL else {
+                    apiAudioError = "加载失败: 未知错误"
+                    return
+                }
+                
+                // 播放音频
+                AudioPlayerService.shared.play(url: audioURL) {
+                    DispatchQueue.main.async {
+                        isPlayingApiAudio = false
+                    }
+                }
+                
+                isPlayingApiAudio = true
+                
+                // 扣除积分（仅在首次生成时扣除，缓存的不扣除）
+                if !SiliconFlowTTSService.shared.isCached(text: memoryItem.content, voice: settingsManager.settings.apiVoiceType.rawValue, speed: selectedSpeed) {
+                    dataManager.deductPoints(1, reason: "使用在线语音")
+                }
+            }
+        }
+    }
+    
+    // 更新记忆进度
     private func updateMemoryProgress() {
         // 更新学习进度和复习阶段
         var updatedItem = memoryItem
@@ -532,4 +663,11 @@ struct PlayerView: View {
         updatedItem.lastReviewDate = Date()
         dataManager.updateMemoryItem(updatedItem)
     }
-} 
+    
+    // 格式化时间
+    private func formatTime(_ time: TimeInterval) -> String {
+        let minutes = Int(time) / 60
+        let seconds = Int(time) % 60
+        return String(format: "%02d:%02d", minutes, seconds)
+    }
+}
