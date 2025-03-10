@@ -56,44 +56,35 @@ class SpeechManager: NSObject, ObservableObject, AVSpeechSynthesizerDelegate, @u
         utterance = AVSpeechUtterance(string: text)
         utterance?.rate = playbackSpeed * AVSpeechUtteranceDefaultSpeechRate
         
-        // 获取用户设置的声音性别和音色
+        // 获取用户设置的音色类型
         let settings = SettingsManager.shared.settings
-        let gender = settings.playbackVoiceGender
-        let style = settings.playbackVoiceStyle
+        let voiceType = settings.playbackVoiceType
         
-        print("应用语音设置: 性别=\(gender.rawValue), 音色=\(style.rawValue)")
+        print("应用音色设置: \(voiceType.rawValue)")
         
         // 选择默认中文语音
         utterance?.voice = AVSpeechSynthesisVoice(language: "zh-CN")
         
-        // 根据性别和音色调整音调
-        var pitchMultiplier: Float = 1.0
-        var volume: Float = 1.0
-        
-        switch (gender, style) {
-        case (.male, .standard):
-            pitchMultiplier = 0.9  // 标准男声
-            volume = 0.9
-        case (.male, .deep):
-            pitchMultiplier = 0.8  // 浑厚男声
-            volume = 1.0
-        case (.male, .gentle):
-            pitchMultiplier = 0.95  // 温柔男声
-            volume = 0.85
-        case (.female, .standard):
-            pitchMultiplier = 1.0  // 标准女声
-            volume = 0.9
-        case (.female, .deep):
-            pitchMultiplier = 0.9  // 浑厚女声
-            volume = 0.95
-        case (.female, .gentle):
-            pitchMultiplier = 1.15  // 温柔女声
-            volume = 0.85
+        // 根据音色类型设置参数
+        switch voiceType {
+        case .standard:
+            // 标准音色 - 保持默认设置
+            utterance?.pitchMultiplier = 1.0
+            utterance?.volume = 0.9
+            utterance?.rate = utterance!.rate * 1.0
+        case .gentle:
+            // 轻柔音色 - 较高音调，较轻音量，稍快语速
+            utterance?.pitchMultiplier = 1.2
+            utterance?.volume = 0.85
+            utterance?.rate = utterance!.rate * 1.05
+        case .deep:
+            // 浑厚音色 - 低音调，大音量，慢语速
+            utterance?.pitchMultiplier = 0.75
+            utterance?.volume = 1.0
+            utterance?.rate = utterance!.rate * 0.9
         }
         
-        utterance?.pitchMultiplier = pitchMultiplier
-        utterance?.volume = volume
-        print("设置音调倍数: \(pitchMultiplier), 音量: \(volume)")
+        print("设置音调倍数: \(utterance?.pitchMultiplier ?? 0), 音量: \(utterance?.volume ?? 0), 语速: \(utterance?.rate ?? 0)")
         
         // 保存当前 utterance 的引用
         currentUtterance = utterance

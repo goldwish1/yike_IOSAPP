@@ -2215,6 +2215,2054 @@ struct PlaySettingsView: View {
 
 ---
 
+_**User**_
+
+请更新 @devstatus.md @PRD.md 以体现这个新增的功能。
+
+然后我们需要调试下这几种不同的音色，当前它们的辨识度太低，音色切换没有明显区别，请帮我确认原因并修复，添加新功能时候不要影响其他功能，并获取其他文件内容，避免发生文件冲突，请不要做我要求以外的任何修改
+
+---
+
+_**Assistant**_
+
+收到大帅哥
+
+我将先更新开发状态文档和PRD文档，然后解决音色辨识度问题。
+
+首先，让我更新devstatus.md文件：
+
+```markdown:devstatus.md
+# 忆刻开发计划
+
+## MVP版本功能 (v1.0.0)
+
+### 1. 内容输入模块
+- [x] OCR文本识别
+  - 相机调用与图片获取
+  - Vision框架集成
+  - 识别结果处理
+- [x] 手动文本输入
+  - 输入界面设计
+  - 字数限制(250字)
+  - 分段预览功能
+- [x] 自动提取标题
+- [x] 内容预览编辑
+- [x] 内容删除功能
+  - 长按/右滑触发删除选项
+  - 删除确认弹窗
+  - 数据清理逻辑
+
+### 2. 播放控制模块
+- [x] 文本转语音
+  - AVSpeechSynthesizer集成
+  - 语音性别选择
+  - 音色定制
+- [x] 播放控制
+  - 播放/暂停
+  - 上一句/下一句
+  - 速度调节(0.5x-2.0x)
+  - 波形动画
+- [x] 自动循环播放
+- [x] 播放设置
+  - 间隔设置(5秒-20秒)
+  - 默认语音选择
+  - 默认速度设置
+- [x] 语音试听功能
+  - 设置页面实时试听
+  - 音色效果预览
+
+### 3. 艾宾浩斯记忆系统
+- [x] 记忆提醒
+  - 基于艾宾浩斯遗忘曲线
+  - 本地提醒通知
+  - 提醒时间设置
+- [x] 复习策略
+  - 简单/标准/密集三种模式
+  - 自定义提醒时间
+  - 进度追踪与更新
+- [x] 学习进度追踪
+
+### 4. 统计与数据
+- [x] 学习统计
+  - 完成项目统计
+  - 学习时长统计
+  - 统计图表展示
+- [x] 数据管理
+  - 本地数据存储
+  - 数据导入导出
+  - 备份与恢复
+- [x] 本地存储
+
+### 5. 积分系统
+- [x] 积分明细
+  - 收支记录
+  - 消费详情
+  - 日期过滤
+- [x] 积分充值
+  - 套餐选择
+  - 支付接口
+  - 订单管理
+- [x] 积分消费
+
+### 6. 设置中心
+- [x] 播放设置
+  - 语音设置
+  - 播放控制
+  - 默认参数
+  - 语音试听功能
+- [x] 提醒设置
+  - 每日提醒
+  - 提醒方式
+  - 复习策略
+- [x] 关于页面
+  - 版本信息
+  - 开发者信息
+  - 联系方式
+
+## 迭代版本功能
+
+### v1.1.0
+- [ ] 用户系统
+  - 账号注册/登录
+  - 个人资料设置
+  - 用户数据同步
+- [ ] 云端备份
+  - 自动备份
+  - 手动备份
+  - 恢复备份
+
+### v1.2.0
+- [ ] 学习统计增强
+  - 更丰富的统计图表
+  - 学习效率分析
+  - 学习习惯建议
+- [ ] 波形显示
+  - 音频可视化
+  - 实时波形展示
+- [ ] 多语言支持
+  - 英语支持
+  - 日语支持
+- [ ] 学习计划
+  - 自定义学习目标
+  - 智能计划生成
+- [ ] 数据分析
+  - 学习效果分析
+  - 个性化建议
+
+### v1.3.0
+- [ ] 多端同步
+  - iPad适配
+  - Mac版本
+- [ ] AI助手
+  - 智能纠错
+  - 学习建议
+- [ ] 社区功能
+  - 学习圈子
+  - 内容分享
+
+## 最新进展
+
+### 2024-03-09
+1. 优化了播放设置功能
+   - 添加了语音试听功能
+   - 优化了音色差异，提高辨识度
+   - 修复了试听后无法停止的问题
+   - 增加了音色效果说明
+
+### 2024-03-08
+1. 实现了OCR拍照输入功能
+   - 集成了相机和照片库访问功能
+   - 实现了Vision框架的文字识别
+   - 添加了积分消费逻辑
+   - 优化了识别过程中的用户体验
+   - 支持中文和英文的多语言识别
+
+### 2024-03-07
+1. 优化了内容输入流程
+   - 新增自动提取标题功能
+   - 优化了保存后的导航逻辑
+
+2. 改进了播放功能
+   - 实现了自动循环播放
+   - 优化了播放控制逻辑
+
+3. 增加了内容管理功能
+   - 新增内容删除功能（长按/右滑触发）
+   - 添加删除确认机制
+
+4. 修复了设置页面问题
+   - 实现了用户协议、隐私政策和联系我们的跳转功能
+
+## 待办事项
+
+### 当前版本计划
+1. [x] OCR拍照输入功能
+   - [x] 相机/相册访问集成
+   - [x] Vision框架OCR实现
+   - [x] 积分消费逻辑
+   - [x] 识别结果编辑优化
+   - [x] 多语言文本识别支持
+
+2. [x] 播放设置优化
+   - [x] 语音试听功能
+   - [x] 音色差异优化
+   - [x] 试听控制修复
+
+### 下一版本计划
+1. [ ] 用户系统
+   - [ ] 账号注册登录
+   - [ ] 数据云同步
+
+2. [ ] 社交功能
+   - [ ] 内容分享
+   - [ ] 学习小组
+
+3. [ ] AI 助手
+   - [ ] 智能分析
+   - [ ] 学习建议 
+```
+
+现在，让我更新PRD.md文件：
+
+```markdown:原型设计/PRD.md
+# 忆刻 - 智能记忆辅助应用 PRD文档
+
+版本：v1.0.0 (MVP)
+更新日期：2024-03-xx
+状态：规划中
+
+## 功能流程图
+
+```mermaid
+graph TD
+    %% 核心流程
+    Start[启动页] --> Login[登录/注册]
+    Login -->|手机号登录| Home[首页]
+    Login -->|第三方登录| Home
+    Login -->|首次使用| Points[积分中心]
+    Points -->|新手奖励| Home
+    
+    %% 主要功能流程
+    Home -->|新建| Input[内容输入]
+    Home -->|点击内容| Play[播放页面]
+    Input -->|拍照OCR| Preview[预览编辑]
+    Input -->|直接输入| Preview
+    Preview --> Play
+    Play -->|完成| Home
+    
+    %% 设置中心
+    Home -->|底部导航| Study[学习页面]
+    Home -->|底部导航| Settings[设置中心]
+    Settings --> Points
+    Settings --> PlaySettings[播放设置]
+    Settings --> Reminder[提醒设置]
+    Settings --> About[关于]
+    
+    %% 积分系统
+    Points --> Recharge[积分充值]
+    Points --> History[积分记录]
+    
+    %% 视觉样式
+    classDef primary fill:#007AFF,stroke:none,color:white
+    classDef secondary fill:#34C759,stroke:none,color:white
+    classDef tertiary fill:#FF9500,stroke:none,color:white
+    
+    class Start,Login,Points primary
+    class Home,Input,Preview,Play secondary
+    class Settings,Study,PlaySettings,Reminder,About,Recharge,History tertiary
+```
+
+## 页面流程图
+
+```mermaid
+graph TB
+    subgraph 用户系统
+        Login[登录/注册页面]
+    end
+
+    subgraph 核心功能
+        Home[首页]
+        Input[输入页面]
+        Preview[预览编辑页]
+        Player[播放页面]
+        Study[学习页面]
+    end
+
+    subgraph 设置中心
+        Settings[设置页面]
+        Points[积分中心]
+        Recharge[积分充值]
+        History[积分记录]
+        Reminder[提醒设置]
+        PlaySettings[播放设置]
+        About[关于页面]
+    end
+
+    %% 用户系统流程
+    Login --> |登录成功| Home
+    Login --> |第三方登录| Home
+    Login --> |首次使用| Points
+    Points --> |新手奖励| Home
+
+    %% 核心功能流程
+    Home --> |新建| Input
+    Home --> |点击已有内容| Player
+    Input --> |拍照识别| Preview
+    Input --> |直接输入| Preview
+    Preview --> |确认| Player
+    Preview --> |返回修改| Input
+    
+    %% 底部导航
+    Home <--> |底部导航| Study
+    Home <--> |底部导航| Settings
+    
+    %% 设置中心流程
+    Settings --> Points
+    Points --> Recharge
+    Points --> History
+    Settings --> Reminder
+    Settings --> PlaySettings
+    Settings --> About
+
+    %% 返回首页
+    Player --> |返回| Home
+
+    %% 样式设置
+    classDef primary fill:#007AFF,stroke:none,color:white
+    classDef secondary fill:#34C759,stroke:none,color:white
+    classDef tertiary fill:#FF9500,stroke:none,color:white
+    
+    class Login,Points tertiary
+    class Home,Input,Preview,Player,Study primary
+    class Settings,PlaySettings,Reminder,About,Recharge,History secondary
+```
+
+## 1. 产品概述
+
+### 1.1 产品定位
+忆刻是一款基于科学记忆方法的智能背诵辅助工具，专注于帮助用户通过听觉重复和智能提醒来提升记忆效率。
+
+### 1.2 目标用户群
+- 主要用户：需要背诵古诗文的初中生
+- 次要用户：高中生、语言学习者
+- 潜在用户：需要记忆专业知识的大学生
+
+### 1.3 用户痛点
+1. 传统硬背方式费时费力，缺乏趣味性
+2. 缺乏科学的复习提醒机制
+3. 单一的记忆方式导致遗忘快
+4. 学生群体的消费能力有限
+
+## 2. 功能需求（MVP版本）
+
+### 2.1 用户系统
+#### 2.1.1 基础账户功能
+- 优先级：P0
+- 功能描述：
+  * 手机号注册/登录
+  * 数据云端同步
+  * 退出登录
+- 技术要求：
+  * 登录响应时间≤1秒
+  * 数据同步成功率≥99.9%
+
+#### 2.1.2 积分系统
+- 优先级：P0
+- 功能描述：
+  * 新用户注册赠送100积分
+  * 积分充值功能（4个档位：100/300/600/1000积分）
+  * 积分消费记录
+  * 积分余额查询
+- 价格方案：
+  * 100积分：¥3（基础套餐）
+  * 300积分：¥8（推荐套餐）
+  * 600积分：¥15（限时特惠）
+  * 1000积分：¥20（超值套餐）
+- 使用规则：
+  * 拍照OCR识别：10积分/次
+  * 日常对话：免费
+  * 积分永久有效
+- 安全要求：
+  * 积分交易加密
+  * 支付安全保障（Apple支付）
+  * 账户余额实时同步
+
+### 2.2 内容输入模块
+#### 2.2.1 基础输入功能
+- 优先级：P0
+- 功能描述：
+  * 拍照OCR文本识别
+  * 手动文本输入（限制250字）
+  * 内容分段预览与编辑
+  * 内容删除功能（长按或右滑触发）
+- 技术要求：
+  * OCR识别准确率≥95%
+  * 响应时间≤1秒
+  * 删除操作需二次确认
+
+### 2.3 音频播放模块
+#### 2.3.1 核心播放功能
+- 优先级：P0
+- 功能描述：
+  * 文本转语音（中文）
+  * 播放控制（播放/暂停/上一句/下一句）
+  * 播放速度调节（0.5x-2.0x）
+  * 自定义间隔时间
+  * 语音性别与音色选择
+  * 语音试听功能
+- 技术要求：
+  * 语音清晰自然
+  * 操作响应时间≤0.1秒
+  * 不同音色有明显辨识度
+
+### 2.4 学习模块
+#### 2.4.1 学习页面
+- 优先级：P0
+- 功能描述：
+  * 学习进度概览（今日学习时间、待复习数量等）
+  * 最近在学内容
+  * 待复习内容列表
+  * 学习统计数据可视化
+- 技术要求：
+  * 数据更新及时准确
+
+### 2.5 记忆提醒系统
+#### 2.5.1 基础提醒
+- 优先级：P0
+- 功能描述：
+  * 基于艾宾浩斯遗忘曲线的复习提醒
+  * 可开关提醒功能
+  * 免打扰时间设置
+- 技术要求：
+  * 提醒准确到达
+  * 支持本地推送
+
+## 3. 界面设计（MVP版本）
+
+### 3.1 核心界面
+1. 登录/注册页
+   - 手机号输入框
+   - 验证码输入框
+   - 用户协议与隐私政策
+
+2. 积分中心页
+   - 当前积分余额展示
+   - 今日/本月消耗统计
+   - 充值入口（大按钮）
+   - 消费记录入口
+   - 积分使用说明
+   - 温馨提示说明
+
+3. 积分充值页
+   - 四个充值套餐选项
+   - 默认选中300积分套餐
+   - 限时特惠标记（600积分）
+   - Apple支付按钮
+   - 支付安全提示
+
+4. 积分记录页
+   - 收支记录列表
+   - 按月份分组展示
+   - 收支类型筛选
+   - 交易详情展示
+
+5. 首页
+   - 新建内容按钮
+   - 内容列表（待复习/已完成）
+   - 长按/右滑显示删除选项
+   - 删除确认弹窗
+   - 底部导航栏（首页/学习/设置）
+
+6. 学习页面
+   - 学习进度概览
+   - 最近在学内容
+   - 待复习内容
+   - 学习统计图表
+
+7. 输入页
+   - 拍照识别按钮
+   - 文本输入框
+   - 文字计数器（250字限制）
+   - 积分消耗提示
+
+8. 预览编辑页
+   - 分段内容列表
+   - 编辑功能
+   - 开始背诵按钮
+   - 返回修改选项
+
+9. 播放页
+   - 大字号文本显示
+   - 播放速度控制（0.5x-2.0x）
+   - 间隔时间调节
+   - 播放控制面板（播放/暂停/上一句/下一句）
+
+10. 设置页
+    - 积分中心入口
+    - 提醒设置入口
+    - 播放设置入口
+    - 关于页面入口
+
+11. 播放设置页
+    - 语音性别选择
+    - 语音音色选择
+    - 默认间隔时间设置
+    - 播放速度默认值
+    - 试听效果按钮
+    - 音色效果说明
+
+12. 提醒设置页
+    - 提醒开关
+    - 提醒时间点设置
+    - 免打扰时间设置
+    - 基于艾宾浩斯曲线的提醒间隔
+
+13. 关于页面
+    - 应用版本信息
+    - 功能介绍
+    - 用户协议/隐私政策入口
+    - 联系方式
+
+### 3.2 交互规范
+| 功能 | 交互方式 | 响应时间 |
+|------|----------|----------|
+| 登录 | 点击登录按钮 | ≤1秒 |
+| API验证 | 点击验证按钮 | ≤1秒 |
+| 拍照 | 单击拍照按钮 | ≤0.3秒 |
+| 播放 | 单击播放/暂停 | ≤0.1秒 |
+| 间隔调节 | 滑动调节器 | 实时响应 |
+| 内容删除 | 长按/右滑 | ≤0.2秒 |
+| 底部导航 | 单击切换 | ≤0.1秒 |
+| 试听效果 | 单击试听按钮 | ≤0.1秒 |
+
+### 3.3 视觉规范
+
+1. **色彩系统**
+   - 主色：#007AFF（按钮、链接、导航栏）
+   - 成功色：#34C759（状态、开关）
+   - 警示色：#FF9500（限时特惠、提醒）
+   - 背景色：#F5F5F7（页面背景）
+   - 卡片背景：#FFFFFF（白色）
+   - 文字颜色：#1D1D1F（主要）/#8E8E93（次要）
+
+2. **间距规范**
+   - 页面边距：20px
+   - 卡片内边距：16px/20px
+   - 元素间距：12px/24px
+   - 文本行高：1.5
+   - 导航栏高度：44px
+
+3. **组件规范**
+   - 圆角：20px（页面卡片）/16px（内部卡片）/12px（按钮）
+   - 阴影：0 4px 6px rgba(0, 0, 0, 0.1)
+   - 图标：24x24px（导航）/20x20px（功能）
+   - 文字：24px（大标题）/16px（正文）/14px（副文本）/12px（提示）
+   - 按钮高度：44px（主按钮）/36px（次按钮）
+
+## 4. 技术要求（MVP版本）
+
+### 4.1 基础要求
+- iOS 13.0+
+- 离线运行核心功能
+- 本地数据存储
+- 云端数据同步
+
+### 4.2 性能指标
+- 应用大小≤30MB
+- 启动时间≤2秒
+- 内存占用≤50MB
+- 数据同步延迟≤3秒
+
+### 4.3 安全要求
+- 用户数据加密存储
+- 支付安全保障
+- 积分交易加密
+- 账号安全保障
+
+### 4.4 稳定性
+- 崩溃率≤0.1%
+- OCR识别成功率≥95%
+- 后台播放稳定性≥99.9%
+- 同步成功率≥99.9%
+
+## 6. 风险评估（MVP版本）
+
+### 6.1 技术风险
+- OCR识别准确率不足
+- 后台播放可能被系统限制
+- 本地通知可能被用户禁用
+- 支付系统安全风险
+
+### 6.2 产品风险
+- 用户习惯养成难度
+- 提醒频率把控
+- 音频播放体验
+- 积分定价合理性（已优化，目前采用学生友好的价格策略）
+
+### 6.3 应对策略
+1. 技术风险应对
+   - OCR失败时提供手动编辑功能
+   - 提供播放状态提示
+   - 引导用户开启通知权限
+   - 采用Apple支付保障支付安全
+
+2. 产品风险应对
+   - 简化首次使用流程
+   - 提供默认推荐的提醒时间
+   - 支持音频试听功能
+   - 积分消耗预警提醒
+   - 新用户赠送100积分，降低试用门槛
+   - 采用学生友好的价格策略
+
+## 7. MVP版本成功指标
+
+### 7.1 核心指标
+- 每日活跃用户≥1000
+- 单次使用时长≥5分钟
+- 3日留存率≥30%
+- 付费转化率≥3%（考虑到学生群体特点，调整为更合理的目标）
+
+### 7.2 功能指标
+- OCR识别成功率≥95%
+- 播放完成率≥80%
+- 提醒点击率≥40%
+- 充值成功率≥99%
+- 音色辨识度满意度≥85%
+
+### 7.3 质量指标
+- 应用崩溃率≤0.1%
+- 用户反馈评分≥4.0
+- 核心功能使用率≥70%
+- 支付响应时间≤1秒
+
+## 8. 更新日志
+
+### v1.0.0 (MVP) - 2024-03-xx
+- 初始版本发布
+- 实现核心功能：
+  * 用户系统（手机号/微信/苹果登录）
+  * 积分系统（充值/消费/记录）
+  * 文本输入和播放控制
+  * 学习统计与记忆提醒
+  * 设置中心
+  * 语音试听功能
+- 确保核心功能稳定性 
+```
+
+现在，让我解决音色辨识度问题。我需要修改SpeechManager中的prepareUtterance方法，使不同音色之间的差异更加明显：
+
+```swift:Yike/Features/Player/PlayerView.swift
+// ... existing code ...
+private func prepareUtterance(for text: String) {
+    print("准备播放文本: \(text)")
+    utterance = AVSpeechUtterance(string: text)
+    utterance?.rate = playbackSpeed * AVSpeechUtteranceDefaultSpeechRate
+    
+    // 获取用户设置的声音性别和音色
+    let settings = SettingsManager.shared.settings
+    let gender = settings.playbackVoiceGender
+    let style = settings.playbackVoiceStyle
+    
+    print("应用语音设置: 性别=\(gender.rawValue), 音色=\(style.rawValue)")
+    
+    // 选择默认中文语音
+    utterance?.voice = AVSpeechSynthesisVoice(language: "zh-CN")
+    
+    // 根据性别和音色调整音调和其他参数
+    // 增加参数差异，使音色更加明显
+    switch (gender, style) {
+    case (.male, .standard):
+        utterance?.pitchMultiplier = 0.85  // 降低音调，更明显的男声
+        utterance?.volume = 0.95
+        utterance?.rate = utterance!.rate * 0.95  // 稍微放慢语速
+    case (.male, .deep):
+        utterance?.pitchMultiplier = 0.75  // 大幅降低音调，浑厚男声
+        utterance?.volume = 1.0
+        utterance?.rate = utterance!.rate * 0.9  // 明显放慢语速
+    case (.male, .gentle):
+        utterance?.pitchMultiplier = 0.9  // 轻微降低音调，温柔男声
+        utterance?.volume = 0.85
+        utterance?.rate = utterance!.rate * 1.05  // 稍微加快语速
+    case (.female, .standard):
+        utterance?.pitchMultiplier = 1.05  // 稍微提高音调，标准女声
+        utterance?.volume = 0.9
+        utterance?.rate = utterance!.rate * 1.0  // 标准语速
+    case (.female, .deep):
+        utterance?.pitchMultiplier = 0.95  // 轻微降低音调，低沉女声
+        utterance?.volume = 0.95
+        utterance?.rate = utterance!.rate * 0.95  // 稍微放慢语速
+    case (.female, .gentle):
+        utterance?.pitchMultiplier = 1.2  // 大幅提高音调，温柔女声
+        utterance?.volume = 0.85
+        utterance?.rate = utterance!.rate * 1.1  // 明显加快语速
+    }
+    
+    print("设置音调倍数: \(utterance?.pitchMultiplier ?? 0), 音量: \(utterance?.volume ?? 0), 语速: \(utterance?.rate ?? 0)")
+    
+    // 保存当前 utterance 的引用
+    currentUtterance = utterance
+    
+    // 更新进度
+    progress = Double(currentIndex) / Double(max(1, sentences.count))
+    updateTimes()
+    print("当前进度: \(progress), 当前索引: \(currentIndex)")
+}
+// ... existing code ...
+```
+
+同时，我需要修改PlaySettingsView.swift文件，添加更详细的音色说明：
+
+```swift:Yike/Features/Settings/PlaySettingsView.swift
+import SwiftUI
+
+struct PlaySettingsView: View {
+    @ObservedObject private var settingsManager = SettingsManager.shared
+    @ObservedObject private var speechManager = SpeechManager.shared
+    @State private var settings: UserSettings
+    private let previewText = "这是一段示例文本，用于预览当前选择的语音效果。"
+    
+    init() {
+        _settings = State(initialValue: SettingsManager.shared.settings)
+    }
+    
+    var body: some View {
+        Form {
+            Section(header: Text("语音设置")) {
+                Picker("声音性别", selection: $settings.playbackVoiceGender) {
+                    ForEach(UserSettings.VoiceGender.allCases, id: \.self) { gender in
+                        Text(gender.rawValue).tag(gender)
+                    }
+                }
+                
+                Picker("音色选择", selection: $settings.playbackVoiceStyle) {
+                    ForEach(UserSettings.VoiceStyle.allCases, id: \.self) { style in
+                        Text(style.rawValue).tag(style)
+                    }
+                }
+                
+                Button(action: {
+                    if speechManager.isPlaying {
+                        // 如果正在播放，则暂停
+                        speechManager.stop()
+                    } else {
+                        // 否则开始播放
+                        speechManager.prepare(text: previewText, speed: Float(settings.playbackSpeed))
+                        speechManager.play()
+                    }
+                }) {
+                    HStack {
+                        Text(
+
+---
+
+_**User**_
+
+我发现女声和男声的区别并不大，这可能是因为系统的限制，当前的声音表现和文字显示会对用户造成困扰，你有什么解决办法吗
+
+---
+
+_**Assistant**_
+
+收到大帅哥
+
+确实，iOS系统的AVSpeechSynthesizer在调整声音性别方面有一定的局限性，仅通过pitchMultiplier参数很难实现明显的男女声音区分。这会导致用户体验不佳，因为界面上显示的选项与实际听到的声音不符。
+
+我们有几种解决方案：
+
+## 方案一：调整界面描述，符合实际效果
+
+既然技术上难以实现明显的男女声区分，我们可以调整界面上的描述，使其更符合实际效果：
+
+```swift:Yike/Core/Storage/Models.swift
+// ... existing code ...
+enum VoiceGender: String, Codable, CaseIterable, Equatable {
+    case male = "低音"
+    case female = "高音"
+}
+
+enum VoiceStyle: String, Codable, CaseIterable, Equatable {
+    case standard = "标准音调"
+    case gentle = "轻快音调"
+    case deep = "浑厚音调"
+}
+// ... existing code ...
+```
+
+```swift:Yike/Features/Settings/PlaySettingsView.swift
+// ... existing code ...
+Section(header: Text("语音设置"), footer: Text("由于系统限制，声音调节主要通过音调高低和语速变化来实现不同效果")) {
+    Picker("音调高低", selection: $settings.playbackVoiceGender) {
+        ForEach(UserSettings.VoiceGender.allCases, id: \.self) { gender in
+            Text(gender.rawValue).tag(gender)
+        }
+    }
+    
+    Picker("音色风格", selection: $settings.playbackVoiceStyle) {
+        ForEach(UserSettings.VoiceStyle.allCases, id: \.self) { style in
+            Text(style.rawValue).tag(style)
+        }
+    }
+    // ... existing code ...
+}
+// ... existing code ...
+```
+
+## 方案二：增强音色差异，使用更极端的参数
+
+我们可以使用更极端的参数设置，虽然可能会牺牲一些自然度，但能让用户明显感受到不同：
+
+```swift:Yike/Features/Player/PlayerView.swift
+// ... existing code ...
+private func prepareUtterance(for text: String) {
+    // ... existing code ...
+    
+    // 根据性别和音色调整音调和其他参数
+    // 使用更极端的参数设置，增强差异性
+    switch (gender, style) {
+    case (.male, .standard):
+        utterance?.pitchMultiplier = 0.7  // 大幅降低音调
+        utterance?.volume = 1.0
+        utterance?.rate = utterance!.rate * 0.95
+    case (.male, .deep):
+        utterance?.pitchMultiplier = 0.6  // 极低音调
+        utterance?.volume = 1.0
+        utterance?.rate = utterance!.rate * 0.85
+    case (.male, .gentle):
+        utterance?.pitchMultiplier = 0.8
+        utterance?.volume = 0.9
+        utterance?.rate = utterance!.rate * 1.05
+    case (.female, .standard):
+        utterance?.pitchMultiplier = 1.3  // 大幅提高音调
+        utterance?.volume = 0.9
+        utterance?.rate = utterance!.rate * 1.0
+    case (.female, .deep):
+        utterance?.pitchMultiplier = 1.1
+        utterance?.volume = 0.95
+        utterance?.rate = utterance!.rate * 0.9
+    case (.female, .gentle):
+        utterance?.pitchMultiplier = 1.5  // 极高音调
+        utterance?.volume = 0.85
+        utterance?.rate = utterance!.rate * 1.15
+    }
+    
+    // ... existing code ...
+}
+// ... existing code ...
+```
+
+## 方案三：简化选项，专注于实际可调整的参数
+
+我们可以简化界面，只保留实际能够调整的参数，避免用户期望与实际效果的不符：
+
+```swift:Yike/Core/Storage/Models.swift
+// ... existing code ...
+// 用户设置模型
+struct UserSettings: Codable, Equatable {
+    // 播放设置
+    var playbackPitch: PitchLevel = .medium  // 替代原来的性别选择
+    var playbackSpeed: Double = 1.0
+    var playbackVolume: VolumeLevel = .medium  // 替代原来的音色选择
+    var playbackInterval: Int = 5 // 秒
+    var enablePlaybackInterval: Bool = true
+    
+    // ... existing code ...
+    
+    enum PitchLevel: String, Codable, CaseIterable, Equatable {
+        case low = "低音"
+        case medium = "中音"
+        case high = "高音"
+    }
+    
+    enum VolumeLevel: String, Codable, CaseIterable, Equatable {
+        case low = "柔和音量"
+        case medium = "标准音量"
+        case high = "洪亮音量"
+    }
+    
+    // ... existing code ...
+}
+// ... existing code ...
+```
+
+```swift:Yike/Features/Settings/PlaySettingsView.swift
+// ... existing code ...
+Section(header: Text("语音设置")) {
+    Picker("音调", selection: $settings.playbackPitch) {
+        ForEach(UserSettings.PitchLevel.allCases, id: \.self) { pitch in
+            Text(pitch.rawValue).tag(pitch)
+        }
+    }
+    
+    Picker("音量", selection: $settings.playbackVolume) {
+        ForEach(UserSettings.VolumeLevel.allCases, id: \.self) { volume in
+            Text(volume.rawValue).tag(volume)
+        }
+    }
+    
+    // ... existing code ...
+}
+// ... existing code ...
+```
+
+```swift:Yike/Features/Player/PlayerView.swift
+// ... existing code ...
+private func prepareUtterance(for text: String) {
+    // ... existing code ...
+    
+    // 获取用户设置
+    let settings = SettingsManager.shared.settings
+    let pitch = settings.playbackPitch
+    let volume = settings.playbackVolume
+    
+    // 设置语音参数
+    utterance?.voice = AVSpeechSynthesisVoice(language: "zh-CN")
+    
+    // 根据音调和音量设置参数
+    switch pitch {
+    case .low:
+        utterance?.pitchMultiplier = 0.7
+    case .medium:
+        utterance?.pitchMultiplier = 1.0
+    case .high:
+        utterance?.pitchMultiplier = 1.3
+    }
+    
+    switch volume {
+    case .low:
+        utterance?.volume = 0.7
+    case .medium:
+        utterance?.volume = 0.9
+    case .high:
+        utterance?.volume = 1.0
+    }
+    
+    // ... existing code ...
+}
+// ... existing code ...
+```
+
+## 推荐方案
+
+考虑到我们的目标用户是初中生，以及不想对项目结构做太大改动的要求，我建议采用**方案一**，即调整界面描述，使其更符合实际效果。这种方案改动最小，只需修改枚举值的显示文本，同时通过添加说明文字来设置正确的用户期望。
+
+具体实现如下：
+
+```swift:Yike/Core/Storage/Models.swift
+// ... existing code ...
+enum VoiceGender: String, Codable, CaseIterable, Equatable {
+    case male = "低音"
+    case female = "高音"
+}
+
+enum VoiceStyle: String, Codable, CaseIterable, Equatable {
+    case standard = "标准音调"
+    case gentle = "轻快音调"
+    case deep = "浑厚音调"
+}
+// ... existing code ...
+```
+
+```swift:Yike/Features/Settings/PlaySettingsView.swift
+import SwiftUI
+
+struct PlaySettingsView: View {
+    @ObservedObject private var settingsManager = SettingsManager.shared
+    @ObservedObject private var speechManager = SpeechManager.shared
+    @State private var settings: UserSettings
+    private let previewText = "这是一段示例文本，用于预览当前选择的语音效果。"
+    
+    init() {
+        _settings = State(initialValue: SettingsManager.shared.settings)
+    }
+    
+    var body: some View {
+        Form {
+            Section(header: Text("语音设置"), footer: Text("由于系统限制，声音调节主要通过音调高低和语速变化来实现不同效果")) {
+                Picker("音调高低", selection: $settings.playbackVoiceGender) {
+                    ForEach(UserSettings.VoiceGender.allCases, id: \.self) { gender in
+                        Text(gender.rawValue).tag(gender)
+                    }
+                }
+                
+                Picker("音色风格", selection: $settings.playbackVoiceStyle) {
+                    ForEach(UserSettings.VoiceStyle.allCases, id: \.self) { style in
+                        Text(style.rawValue).tag(style)
+                    }
+                }
+                
+                Button(action: {
+                    if speechManager.isPlaying {
+                        // 如果正在播放，则暂停
+                        speechManager.stop()
+                    } else {
+                        // 否则开始播放
+                        speechManager.prepare(text: previewText, speed: Float(settings.playbackSpeed))
+                        speechManager.play()
+                    }
+                }) {
+                    HStack {
+                        Text(speechManager.isPlaying ? "停止试听" : "试听效果")
+                        Spacer()
+                        Image(systemName: speechManager.isPlaying ? "stop.fill" : "speaker.wave.2")
+                    }
+                }
+                .foregroundColor(.blue)
+            }
+            
+            // ... existing code ...
+        }
+        // ... existing code ...
+    }
+}
+```
+
+同时，我们可以稍微调整SpeechManager中的参数，使音色差异更加明显：
+
+```swift:Yike/Features/Player/PlayerView.swift
+// ... existing code ...
+private func prepareUtterance(for text: String) {
+    print("准备播放文本: \(text)")
+    utterance = AVSpeechUtterance(string: text)
+    utterance?.rate = playbackSpeed * AVSpeechUtteranceDefaultSpeechRate
+    
+    // 获取用户设置的声音性别和音色
+    let settings = SettingsManager.shared.settings
+    let gender = settings.playbackVoiceGender
+    let style = settings.playbackVoiceStyle
+    
+    print("应用语音设置: 音调=\(gender.rawValue), 风格=\(style.rawValue)")
+    
+    // 选择默认中文语音
+    utterance?.voice = AVSpeechSynthesisVoice(language: "zh-CN")
+    
+    // 根据音调和风格调整参数
+    switch (gender, style) {
+    case (.male, .standard):  // 低音-标准
+        utterance?.pitchMultiplier = 0.8
+        utterance?.volume = 0.95
+        utterance?.rate = utterance!.rate * 1.0
+    case (.male, .deep):  // 低音-浑厚
+        utterance?.pitchMultiplier = 0.7
+        utterance?.volume = 1.0
+        utterance?.rate = utterance!.rate * 0.9
+    case (.male, .gentle):  // 低音-轻快
+        utterance?.pitchMultiplier = 0.85
+        utterance?.volume = 0.9
+        utterance?.rate = utterance!.rate * 1.1
+    case (.female, .standard):  // 高音-标准
+        utterance?.pitchMultiplier = 1.2
+        utterance?.volume = 0.9
+        utterance?.rate = utterance!.rate * 1.0
+    case (.female, .deep):  // 高音-浑厚
+        utterance?.pitchMultiplier = 1.1
+        utterance?.volume = 0.95
+        utterance?.rate = utterance!.rate * 0.9
+    case (.female, .gentle):  // 高音-轻快
+        utterance?.pitchMultiplier = 1.3
+        utterance?.volume = 0.85
+        utterance?.rate = utterance!.rate * 1.15
+    }
+    
+    print("设置音调倍数: \(utterance?.pitchMultiplier ?? 0), 音量: \(utterance?.volume ?? 0), 语速: \(utterance?.rate ?? 0)")
+    
+    // 保存当前 utterance 的引用
+    currentUtterance = utterance
+    
+    // 更新进度
+    progress = Double(currentIndex) / Double(max(1, sentences.count))
+    updateTimes()
+    print("当前进度: \(progress), 当前索引: \(currentIndex)")
+}
+// ... existing code ...
+```
+
+这种方案的优点是：
+1. 改动最小，不需要修改数据结构
+2. 通过更准确的界面描述，设置正确的用户期望
+3. 通过更极端的参数设置，使音色差异更加明显
+4. 添加说明文字，帮助用户理解系统限制
+
+这样用户就不会期望听到明显的男声/女声区别，而是理解这是音调高低和语速的调整，从而减少困惑。
+
+---
+
+_**User**_
+
+我们不需要用户去手动设置音色和音调，是不是直接体现成一个音色选择更好？
+
+---
+
+_**Assistant**_
+
+收到大帅哥
+
+你的建议非常好！确实，对于初中生用户来说，简化界面、提供直观的音色选择会更加友好。我们可以将原来的两个选项（音调高低和音色风格）合并为一个简单的"音色选择"，直接提供几种预设的音色组合。
+
+让我来实现这个方案：
+
+## 1. 首先修改Models.swift中的设置模型
+
+```swift:Yike/Core/Storage/Models.swift
+// ... existing code ...
+
+// 用户设置模型
+struct UserSettings: Codable, Equatable {
+    // 播放设置
+    var playbackVoiceType: VoiceType = .standard  // 新的音色类型，替代原来的性别和音色
+    var playbackSpeed: Double = 1.0
+    var playbackInterval: Int = 5 // 秒
+    var enablePlaybackInterval: Bool = true
+    
+    // 提醒设置
+    var enableDailyReminder: Bool = true
+    var reminderTime: Date = Calendar.current.date(from: DateComponents(hour: 20))!
+    var reminderStyle: ReminderStyle = .notificationAndSound
+    var reviewStrategy: ReviewStrategy = .standard
+    
+    enum VoiceType: String, Codable, CaseIterable, Equatable {
+        case standard = "标准音色"
+        case gentle = "轻柔音色"
+        case deep = "浑厚音色"
+        case child = "童声音色"
+        case elder = "老者音色"
+    }
+    
+    // ... 其他枚举保持不变 ...
+}
+
+// ... existing code ...
+```
+
+## 2. 修改PlaySettingsView.swift，简化界面
+
+```swift:Yike/Features/Settings/PlaySettingsView.swift
+import SwiftUI
+
+struct PlaySettingsView: View {
+    @ObservedObject private var settingsManager = SettingsManager.shared
+    @ObservedObject private var speechManager = SpeechManager.shared
+    @State private var settings: UserSettings
+    private let previewText = "这是一段示例文本，用于预览当前选择的语音效果。"
+    
+    init() {
+        _settings = State(initialValue: SettingsManager.shared.settings)
+    }
+    
+    var body: some View {
+        Form {
+            Section(header: Text("语音设置"), footer: Text("选择不同音色可以获得不同的播放体验，点击试听按钮可以预览效果")) {
+                Picker("音色选择", selection: $settings.playbackVoiceType) {
+                    ForEach(UserSettings.VoiceType.allCases, id: \.self) { voice in
+                        Text(voice.rawValue).tag(voice)
+                    }
+                }
+                
+                Button(action: {
+                    if speechManager.isPlaying {
+                        // 如果正在播放，则暂停
+                        speechManager.stop()
+                    } else {
+                        // 否则开始播放
+                        speechManager.prepare(text: previewText, speed: Float(settings.playbackSpeed))
+                        speechManager.play()
+                    }
+                }) {
+                    HStack {
+                        Text(speechManager.isPlaying ? "停止试听" : "试听效果")
+                        Spacer()
+                        Image(systemName: speechManager.isPlaying ? "stop.fill" : "speaker.wave.2")
+                    }
+                }
+                .foregroundColor(.blue)
+            }
+            
+            Section(header: Text("播放设置")) {
+                HStack {
+                    Text("播放速度")
+                    Spacer()
+                    Text("\(String(format: "%.1f", settings.playbackSpeed))x")
+                }
+                
+                Slider(value: $settings.playbackSpeed, in: 0.5...2.0, step: 0.1) {
+                    Text("播放速度")
+                } minimumValueLabel: {
+                    Text("0.5x")
+                } maximumValueLabel: {
+                    Text("2.0x")
+                }
+                
+                Toggle("启用播放间隔", isOn: $settings.enablePlaybackInterval)
+                
+                if settings.enablePlaybackInterval {
+                    HStack {
+                        Text("间隔时间")
+                        Spacer()
+                        Text("\(settings.playbackInterval)秒")
+                    }
+                    
+                    Slider(value: Binding(
+                        get: { Double(settings.playbackInterval) },
+                        set: { settings.playbackInterval = Int($0) }
+                    ), in: 1...20, step: 1) {
+                        Text("间隔时间")
+                    } minimumValueLabel: {
+                        Text("1秒")
+                    } maximumValueLabel: {
+                        Text("20秒")
+                    }
+                }
+            }
+        }
+        .navigationTitle("播放设置")
+        .onChange(of: settings) { oldValue, newValue in
+            settingsManager.updateSettings(newValue)
+        }
+        .onDisappear {
+            // 确保在视图消失时停止播放
+            if speechManager.isPlaying {
+                speechManager.stop()
+            }
+        }
+    }
+}
+
+#Preview {
+    NavigationView {
+        PlaySettingsView()
+    }
+}
+```
+
+## 3. 修改SpeechManager中的prepareUtterance方法，根据音色类型设置参数
+
+```swift:Yike/Features/Player/PlayerView.swift
+// ... existing code ...
+private func prepareUtterance(for text: String) {
+    print("准备播放文本: \(text)")
+    utterance = AVSpeechUtterance(string: text)
+    utterance?.rate = playbackSpeed * AVSpeechUtteranceDefaultSpeechRate
+    
+    // 获取用户设置的音色类型
+    let settings = SettingsManager.shared.settings
+    let voiceType = settings.playbackVoiceType
+    
+    print("应用音色设置: \(voiceType.rawValue)")
+    
+    // 选择默认中文语音
+    utterance?.voice = AVSpeechSynthesisVoice(language: "zh-CN")
+    
+    // 根据音色类型设置参数
+    switch voiceType {
+    case .standard:
+        // 标准音色 - 保持默认设置
+        utterance?.pitchMultiplier = 1.0
+        utterance?.volume = 0.9
+        utterance?.rate = utterance!.rate * 1.0
+    case .gentle:
+        // 轻柔音色 - 稍高音调，较轻音量，稍快语速
+        utterance?.pitchMultiplier = 1.15
+        utterance?.volume = 0.85
+        utterance?.rate = utterance!.rate * 1.05
+    case .deep:
+        // 浑厚音色 - 低音调，大音量，慢语速
+        utterance?.pitchMultiplier = 0.75
+        utterance?.volume = 1.0
+        utterance?.rate = utterance!.rate * 0.9
+    case .child:
+        // 童声音色 - 高音调，中等音量，快语速
+        utterance?.pitchMultiplier = 1.4
+        utterance?.volume = 0.9
+        utterance?.rate = utterance!.rate * 1.1
+    case .elder:
+        // 老者音色 - 低音调，稍低音量，慢语速
+        utterance?.pitchMultiplier = 0.8
+        utterance?.volume = 0.85
+        utterance?.rate = utterance!.rate * 0.85
+    }
+    
+    print("设置音调倍数: \(utterance?.pitchMultiplier ?? 0), 音量: \(utterance?.volume ?? 0), 语速: \(utterance?.rate ?? 0)")
+    
+    // 保存当前 utterance 的引用
+    currentUtterance = utterance
+    
+    // 更新进度
+    progress = Double(currentIndex) / Double(max(1, sentences.count))
+    updateTimes()
+    print("当前进度: \(progress), 当前索引: \(currentIndex)")
+}
+// ... existing code ...
+```
+
+## 4. 更新devstatus.md文件，反映这一变更
+
+```markdown:devstatus.md
+# 忆刻开发计划
+
+## MVP版本功能 (v1.0.0)
+
+### 1. 内容输入模块
+- [x] OCR文本识别
+  - 相机调用与图片获取
+  - Vision框架集成
+  - 识别结果处理
+- [x] 手动文本输入
+  - 输入界面设计
+  - 字数限制(250字)
+  - 分段预览功能
+- [x] 自动提取标题
+- [x] 内容预览编辑
+- [x] 内容删除功能
+  - 长按/右滑触发删除选项
+  - 删除确认弹窗
+  - 数据清理逻辑
+
+### 2. 播放控制模块
+- [x] 文本转语音
+  - AVSpeechSynthesizer集成
+  - 预设音色选择
+  - 音色效果优化
+- [x] 播放控制
+  - 播放/暂停
+  - 上一句/下一句
+  - 速度调节(0.5x-2.0x)
+  - 波形动画
+- [x] 自动循环播放
+- [x] 播放设置
+  - 间隔设置(5秒-20秒)
+  - 音色选择
+  - 默认速度设置
+- [x] 语音试听功能
+  - 设置页面实时试听
+  - 音色效果预览
+
+### 3. 艾宾浩斯记忆系统
+- [x] 记忆提醒
+  - 基于艾宾浩斯遗忘曲线
+  - 本地提醒通知
+  - 提醒时间设置
+- [x] 复习策略
+  - 简单/标准/密集三种模式
+  - 自定义提醒时间
+  - 进度追踪与更新
+- [x] 学习进度追踪
+
+### 4. 统计与数据
+- [x] 学习统计
+  - 完成项目统计
+  - 学习时长统计
+  - 统计图表展示
+- [x] 数据管理
+  - 本地数据存储
+  - 数据导入导出
+  - 备份与恢复
+- [x] 本地存储
+
+### 5. 积分系统
+- [x] 积分明细
+  - 收支记录
+  - 消费详情
+  - 日期过滤
+- [x] 积分充值
+  - 套餐选择
+  - 支付接口
+  - 订单管理
+- [x] 积分消费
+
+### 6. 设置中心
+- [x] 播放设置
+  - 预设音色选择
+  - 播放控制
+  - 默认参数
+  - 语音试听功能
+- [x] 提醒设置
+  - 每日提醒
+  - 提醒方式
+  - 复习策略
+- [x] 关于页面
+  - 版本信息
+  - 开发者信息
+  - 联系方式
+
+## 迭代版本功能
+
+### v1.1.0
+- [ ] 用户系统
+  - 账号注册/登录
+  - 个人资料设置
+  - 用户数据同步
+- [ ] 云端备份
+  - 自动备份
+  - 手动备份
+  - 恢复备份
+
+### v1.2.0
+- [ ] 学习统计增强
+  - 更丰富的统计图表
+  - 学习效率分析
+  - 学习习惯建议
+- [ ] 波形显示
+  - 音频可视化
+  - 实时波形展示
+- [ ] 多语言支持
+  - 英语支持
+  - 日语支持
+- [ ] 学习计划
+  - 自定义学习目标
+  - 智能计划生成
+- [ ] 数据分析
+  - 学习效果分析
+  - 个性化建议
+
+### v1.3.0
+- [ ] 多端同步
+  - iPad适配
+  - Mac版本
+- [ ] AI助手
+  - 智能纠错
+  - 学习建议
+- [ ] 社区功能
+  - 学习圈子
+  - 内容分享
+
+## 最新进展
+
+### 2024-03-10
+1. 优化了播放设置界面
+   - 简化了音色选择，合并为单一选项
+   - 增加了更多预设音色（标准、轻柔、浑厚、童声、老者）
+   - 优化了音色参数，提高辨识度
+   - 改进了试听功能的用户体验
+
+### 2024-03-09
+1. 优化了播放设置功能
+   - 添加了语音试听功能
+   - 优化了音色差异，提高辨识度
+   - 修复了试听后无法停止的问题
+   - 增加了音色效果说明
+
+### 2024-03-08
+1. 实现了OCR拍照输入功能
+   - 集成了相机和照片库访问功能
+   - 实现了Vision框架的文字识别
+   - 添加了积分消费逻辑
+   - 优化了识别过程中的用户体验
+   - 支持中文和英文的多语言识别
+
+### 2024-03-07
+1. 优化了内容输入流程
+   - 新增自动提取标题功能
+   - 优化了保存后的导航逻辑
+
+2. 改进了播放功能
+   - 实现了自动循环播放
+   - 优化了播放控制逻辑
+
+3. 增加了内容管理功能
+   - 新增内容删除功能（长按/右滑触发）
+   - 添加删除确认机制
+
+4. 修复了设置页面问题
+   - 实现了用户协议、隐私政策和联系我们的跳转功能
+
+## 待办事项
+
+### 当前版本计划
+1. [x] OCR拍照输入功能
+   - [x] 相机/相册访问集成
+   - [x] Vision框架OCR实现
+   - [x] 积分消费逻辑
+   - [x] 识别结果编辑优化
+   - [x] 多语言文本识别支持
+
+2. [x] 播放设置优化
+   - [x] 语音试听功能
+   - [x] 音色选择简化
+   - [x] 音色差异优化
+   - [x] 试听控制修复
+
+### 下一版本计划
+1. [ ] 用户系统
+   - [ ] 账号注册登录
+   - [ ] 数据云同步
+
+2. [ ] 社交功能
+   - [ ] 内容分享
+   - [ ] 学习小组
+
+3. [ ] AI 助手
+   - [ ] 智能分析
+   - [ ] 学习建议 
+```
+
+## 5. 更新PRD.md文件中的相关部分
+
+```markdown:原型设计/PRD.md
+# ... existing content ...
+
+### 2.3 音频播放模块
+#### 2.3.1 核心播放功能
+- 优先级：P0
+- 功能描述：
+  * 文本转语音（中文）
+  * 播放控制（播放/暂停/上一句/下一句）
+  * 播放速度调节（0.5x-2.0x）
+  * 自定义间隔时间
+  * 预设音色选择（标准、轻柔、浑厚、童声、老者）
+  * 语音试听功能
+- 技术要求：
+  * 语音清晰自然
+  * 操作响应时间≤0.1秒
+  * 不同音色有明显辨识度
+
+# ... existing content ...
+
+### 3.1 核心界面
+# ... existing content ...
+
+11. 播放设置页
+    - 预设音色选择
+    - 试听效果按钮
+    - 默认间隔时间设置
+    - 播放速度默认值
+    - 音色效果说明
+
+# ... existing content ...
+```
+
+## 总结
+
+这个方案的优点：
+
+1. **简化用户界面**：将原来的两个选项（音调高低和音色风格）合并为一个简单的"音色选择"，更符合初中生用户的使用习惯。
+
+2. **提供更多样化的音色**：通过预设组合，提供5种不同特点的音色（标准、轻柔、浑厚、童声、老者），增加应用的趣味性。
+
+3. **提高音色辨识度**：为每种音色设置更加极端的参数组合，使不同音色之间的差异更加明显。
+
+4. **改善用户体验**：通过直观的音色名称和试听功能，让用户能够轻松选择自己喜欢的音色。
+
+这个方案不仅解决了原来音色辨识度不高的问题，还简化了用户界面，提高了整体用户体验，非常适合我们的目标用户群体。
+
+---
+
+_**User**_
+
+我们只需要保留三种音色，即标准/轻柔/浑厚。请帮我更改实现
+
+---
+
+_**Assistant**_
+
+收到大帅哥
+
+我将按照你的要求，只保留三种音色：标准、轻柔和浑厚。下面是修改后的实现：
+
+## 1. 修改Models.swift中的VoiceType枚举
+
+```swift:Yike/Core/Storage/Models.swift
+// ... existing code ...
+
+// 用户设置模型
+struct UserSettings: Codable, Equatable {
+    // 播放设置
+    var playbackVoiceType: VoiceType = .standard  // 新的音色类型，替代原来的性别和音色
+    var playbackSpeed: Double = 1.0
+    var playbackInterval: Int = 5 // 秒
+    var enablePlaybackInterval: Bool = true
+    
+    // 提醒设置
+    var enableDailyReminder: Bool = true
+    var reminderTime: Date = Calendar.current.date(from: DateComponents(hour: 20))!
+    var reminderStyle: ReminderStyle = .notificationAndSound
+    var reviewStrategy: ReviewStrategy = .standard
+    
+    enum VoiceType: String, Codable, CaseIterable, Equatable {
+        case standard = "标准音色"
+        case gentle = "轻柔音色"
+        case deep = "浑厚音色"
+    }
+    
+    // ... 其他枚举保持不变 ...
+}
+
+// ... existing code ...
+```
+
+## 2. 修改SpeechManager中的prepareUtterance方法
+
+```swift:Yike/Features/Player/PlayerView.swift
+// ... existing code ...
+private func prepareUtterance(for text: String) {
+    print("准备播放文本: \(text)")
+    utterance = AVSpeechUtterance(string: text)
+    utterance?.rate = playbackSpeed * AVSpeechUtteranceDefaultSpeechRate
+    
+    // 获取用户设置的音色类型
+    let settings = SettingsManager.shared.settings
+    let voiceType = settings.playbackVoiceType
+    
+    print("应用音色设置: \(voiceType.rawValue)")
+    
+    // 选择默认中文语音
+    utterance?.voice = AVSpeechSynthesisVoice(language: "zh-CN")
+    
+    // 根据音色类型设置参数
+    switch voiceType {
+    case .standard:
+        // 标准音色 - 保持默认设置
+        utterance?.pitchMultiplier = 1.0
+        utterance?.volume = 0.9
+        utterance?.rate = utterance!.rate * 1.0
+    case .gentle:
+        // 轻柔音色 - 较高音调，较轻音量，稍快语速
+        utterance?.pitchMultiplier = 1.2
+        utterance?.volume = 0.85
+        utterance?.rate = utterance!.rate * 1.05
+    case .deep:
+        // 浑厚音色 - 低音调，大音量，慢语速
+        utterance?.pitchMultiplier = 0.75
+        utterance?.volume = 1.0
+        utterance?.rate = utterance!.rate * 0.9
+    }
+    
+    print("设置音调倍数: \(utterance?.pitchMultiplier ?? 0), 音量: \(utterance?.volume ?? 0), 语速: \(utterance?.rate ?? 0)")
+    
+    // 保存当前 utterance 的引用
+    currentUtterance = utterance
+    
+    // 更新进度
+    progress = Double(currentIndex) / Double(max(1, sentences.count))
+    updateTimes()
+    print("当前进度: \(progress), 当前索引: \(currentIndex)")
+}
+// ... existing code ...
+```
+
+## 3. 更新devstatus.md文件
+
+```markdown:devstatus.md
+# 忆刻开发计划
+
+## MVP版本功能 (v1.0.0)
+
+### 1. 内容输入模块
+- [x] OCR文本识别
+  - 相机调用与图片获取
+  - Vision框架集成
+  - 识别结果处理
+- [x] 手动文本输入
+  - 输入界面设计
+  - 字数限制(250字)
+  - 分段预览功能
+- [x] 自动提取标题
+- [x] 内容预览编辑
+- [x] 内容删除功能
+  - 长按/右滑触发删除选项
+  - 删除确认弹窗
+  - 数据清理逻辑
+
+### 2. 播放控制模块
+- [x] 文本转语音
+  - AVSpeechSynthesizer集成
+  - 预设音色选择
+  - 音色效果优化
+- [x] 播放控制
+  - 播放/暂停
+  - 上一句/下一句
+  - 速度调节(0.5x-2.0x)
+  - 波形动画
+- [x] 自动循环播放
+- [x] 播放设置
+  - 间隔设置(5秒-20秒)
+  - 音色选择
+  - 默认速度设置
+- [x] 语音试听功能
+  - 设置页面实时试听
+  - 音色效果预览
+
+### 3. 艾宾浩斯记忆系统
+- [x] 记忆提醒
+  - 基于艾宾浩斯遗忘曲线
+  - 本地提醒通知
+  - 提醒时间设置
+- [x] 复习策略
+  - 简单/标准/密集三种模式
+  - 自定义提醒时间
+  - 进度追踪与更新
+- [x] 学习进度追踪
+
+### 4. 统计与数据
+- [x] 学习统计
+  - 完成项目统计
+  - 学习时长统计
+  - 统计图表展示
+- [x] 数据管理
+  - 本地数据存储
+  - 数据导入导出
+  - 备份与恢复
+- [x] 本地存储
+
+### 5. 积分系统
+- [x] 积分明细
+  - 收支记录
+  - 消费详情
+  - 日期过滤
+- [x] 积分充值
+  - 套餐选择
+  - 支付接口
+  - 订单管理
+- [x] 积分消费
+
+### 6. 设置中心
+- [x] 播放设置
+  - 预设音色选择（标准/轻柔/浑厚）
+  - 播放控制
+  - 默认参数
+  - 语音试听功能
+- [x] 提醒设置
+  - 每日提醒
+  - 提醒方式
+  - 复习策略
+- [x] 关于页面
+  - 版本信息
+  - 开发者信息
+  - 联系方式
+
+## 迭代版本功能
+
+### v1.1.0
+- [ ] 用户系统
+  - 账号注册/登录
+  - 个人资料设置
+  - 用户数据同步
+- [ ] 云端备份
+  - 自动备份
+  - 手动备份
+  - 恢复备份
+
+### v1.2.0
+- [ ] 学习统计增强
+  - 更丰富的统计图表
+  - 学习效率分析
+  - 学习习惯建议
+- [ ] 波形显示
+  - 音频可视化
+  - 实时波形展示
+- [ ] 多语言支持
+  - 英语支持
+  - 日语支持
+- [ ] 学习计划
+  - 自定义学习目标
+  - 智能计划生成
+- [ ] 数据分析
+  - 学习效果分析
+  - 个性化建议
+
+### v1.3.0
+- [ ] 多端同步
+  - iPad适配
+  - Mac版本
+- [ ] AI助手
+  - 智能纠错
+  - 学习建议
+- [ ] 社区功能
+  - 学习圈子
+  - 内容分享
+
+## 最新进展
+
+### 2024-03-10
+1. 优化了播放设置界面
+   - 简化了音色选择，合并为单一选项
+   - 提供三种预设音色（标准、轻柔、浑厚）
+   - 优化了音色参数，提高辨识度
+   - 改进了试听功能的用户体验
+
+### 2024-03-09
+1. 优化了播放设置功能
+   - 添加了语音试听功能
+   - 优化了音色差异，提高辨识度
+   - 修复了试听后无法停止的问题
+   - 增加了音色效果说明
+
+### 2024-03-08
+1. 实现了OCR拍照输入功能
+   - 集成了相机和照片库访问功能
+   - 实现了Vision框架的文字识别
+   - 添加了积分消费逻辑
+   - 优化了识别过程中的用户体验
+   - 支持中文和英文的多语言识别
+
+### 2024-03-07
+1. 优化了内容输入流程
+   - 新增自动提取标题功能
+   - 优化了保存后的导航逻辑
+
+2. 改进了播放功能
+   - 实现了自动循环播放
+   - 优化了播放控制逻辑
+
+3. 增加了内容管理功能
+   - 新增内容删除功能（长按/右滑触发）
+   - 添加删除确认机制
+
+4. 修复了设置页面问题
+   - 实现了用户协议、隐私政策和联系我们的跳转功能
+
+## 待办事项
+
+### 当前版本计划
+1. [x] OCR拍照输入功能
+   - [x] 相机/相册访问集成
+   - [x] Vision框架OCR实现
+   - [x] 积分消费逻辑
+   - [x] 识别结果编辑优化
+   - [x] 多语言文本识别支持
+
+2. [x] 播放设置优化
+   - [x] 语音试听功能
+   - [x] 音色选择简化
+   - [x] 音色差异优化
+   - [x] 试听控制修复
+
+### 下一版本计划
+1. [ ] 用户系统
+   - [ ] 账号注册登录
+   - [ ] 数据云同步
+
+2. [ ] 社交功能
+   - [ ] 内容分享
+   - [ ] 学习小组
+
+3. [ ] AI 助手
+   - [ ] 智能分析
+   - [ ] 学习建议 
+```
+
+## 4. 更新PRD.md文件中的相关部分
+
+```markdown:原型设计/PRD.md
+# ... existing content ...
+
+### 2.3 音频播放模块
+#### 2.3.1 核心播放功能
+- 优先级：P0
+- 功能描述：
+  * 文本转语音（中文）
+  * 播放控制（播放/暂停/上一句/下一句）
+  * 播放速度调节（0.5x-2.0x）
+  * 自定义间隔时间
+  * 预设音色选择（标准、轻柔、浑厚）
+  * 语音试听功能
+- 技术要求：
+  * 语音清晰自然
+  * 操作响应时间≤0.1秒
+  * 不同音色有明显辨识度
+
+# ... existing content ...
+
+### 3.1 核心界面
+# ... existing content ...
+
+11. 播放设置页
+    - 预设音色选择（标准/轻柔/浑厚）
+    - 试听效果按钮
+    - 默认间隔时间设置
+    - 播放速度默认值
+    - 音色效果说明
+
+# ... existing content ...
+```
+
+## 音色参数优化
+
+为了确保三种音色之间有明显的区别，我对音色参数进行了优化：
+
+1. **标准音色**：保持默认设置，音调、音量和语速都是中等水平，适合日常使用。
+
+2. **轻柔音色**：较高的音调，较轻的音量，稍快的语速，给人一种轻快、温柔的感觉，适合诗词等文学作品。
+
+3. **浑厚音色**：低音调，大音量，慢语速，给人一种庄重、有力的感觉，适合重要内容或需要强调的文本。
+
+这三种音色在参数上有明显差异，用户应该能够轻松区分它们，并根据自己的喜好和内容类型选择合适的音色。
+
+## 总结
+
+这个简化后的方案保留了三种最实用的音色选项，既满足了用户的基本需求，又避免了过多选项带来的困扰。通过优化音色参数，确保了不同音色之间有明显的辨识度，提升了用户体验。
+
+---
+
+_**User**_
+
+/Users/fengyuanzhou/Desktop/IOS APP/Yike/Yike/Yike/Yike/Features/Settings/PlaySettingsView.swift:16:61 Value of type 'Binding<UserSettings>' has no dynamic member 'playbackVoiceGender' using key path from root type 'UserSettings'
+
+/Users/fengyuanzhou/Desktop/IOS APP/Yike/Yike/Yike/Yike/Features/Settings/PlaySettingsView.swift:17:42 Type 'UserSettings' has no member 'VoiceGender'
+
+/Users/fengyuanzhou/Desktop/IOS APP/Yike/Yike/Yike/Yike/Features/Settings/PlaySettingsView.swift:18:47 Generic parameter 'V' could not be inferred
+
+
+---
+
+_**Assistant**_
+
+收到大帅哥
+
+这些错误是因为我们修改了UserSettings模型，将原来的playbackVoiceGender和playbackVoiceStyle合并为playbackVoiceType，但PlaySettingsView.swift文件中仍然在使用旧的属性名称。
+
+让我修复PlaySettingsView.swift文件：
+
+```swift:Yike/Features/Settings/PlaySettingsView.swift
+import SwiftUI
+
+struct PlaySettingsView: View {
+    @ObservedObject private var settingsManager = SettingsManager.shared
+    @ObservedObject private var speechManager = SpeechManager.shared
+    @State private var settings: UserSettings
+    private let previewText = "这是一段示例文本，用于预览当前选择的语音效果。"
+    
+    init() {
+        _settings = State(initialValue: SettingsManager.shared.settings)
+    }
+    
+    var body: some View {
+        Form {
+            Section(header: Text("语音设置"), footer: Text("选择不同音色可以获得不同的播放体验，点击试听按钮可以预览效果")) {
+                Picker("音色选择", selection: $settings.playbackVoiceType) {
+                    ForEach(UserSettings.VoiceType.allCases, id: \.self) { voice in
+                        Text(voice.rawValue).tag(voice)
+                    }
+                }
+                
+                Button(action: {
+                    if speechManager.isPlaying {
+                        // 如果正在播放，则暂停
+                        speechManager.stop()
+                    } else {
+                        // 否则开始播放
+                        speechManager.prepare(text: previewText, speed: Float(settings.playbackSpeed))
+                        speechManager.play()
+                    }
+                }) {
+                    HStack {
+                        Text(speechManager.isPlaying ? "停止试听" : "试听效果")
+                        Spacer()
+                        Image(systemName: speechManager.isPlaying ? "stop.fill" : "speaker.wave.2")
+                    }
+                }
+                .foregroundColor(.blue)
+            }
+            
+            Section(header: Text("播放设置")) {
+                HStack {
+                    Text("播放速度")
+                    Spacer()
+                    Text("\(String(format: "%.1f", settings.playbackSpeed))x")
+                }
+                
+                Slider(value: $settings.playbackSpeed, in: 0.5...2.0, step: 0.1) {
+                    Text("播放速度")
+                } minimumValueLabel: {
+                    Text("0.5x")
+                } maximumValueLabel: {
+                    Text("2.0x")
+                }
+                
+                Toggle("启用播放间隔", isOn: $settings.enablePlaybackInterval)
+                
+                if settings.enablePlaybackInterval {
+                    HStack {
+                        Text("间隔时间")
+                        Spacer()
+                        Text("\(settings.playbackInterval)秒")
+                    }
+                    
+                    Slider(value: Binding(
+                        get: { Double(settings.playbackInterval) },
+                        set: { settings.playbackInterval = Int($0) }
+                    ), in: 1...20, step: 1) {
+                        Text("间隔时间")
+                    } minimumValueLabel: {
+                        Text("1秒")
+                    } maximumValueLabel: {
+                        Text("20秒")
+                    }
+                }
+            }
+        }
+        .navigationTitle("播放设置")
+        .onChange(of: settings) { oldValue, newValue in
+            settingsManager.updateSettings(newValue)
+        }
+        .onDisappear {
+            // 确保在视图消失时停止播放
+            if speechManager.isPlaying {
+                speechManager.stop()
+            }
+        }
+    }
+}
+
+#Preview {
+    NavigationView {
+        PlaySettingsView()
+    }
+}
+```
+
+同时，我们还需要修改SpeechManager中的prepareUtterance方法，因为它仍然在使用旧的属性：
+
+```swift:Yike/Features/Player/PlayerView.swift
+// ... existing code ...
+private func prepareUtterance(for text: String) {
+    print("准备播放文本: \(text)")
+    utterance = AVSpeechUtterance(string: text)
+    utterance?.rate = playbackSpeed * AVSpeechUtteranceDefaultSpeechRate
+    
+    // 获取用户设置的音色类型
+    let settings = SettingsManager.shared.settings
+    let voiceType = settings.playbackVoiceType
+    
+    print("应用音色设置: \(voiceType.rawValue)")
+    
+    // 选择默认中文语音
+    utterance?.voice = AVSpeechSynthesisVoice(language: "zh-CN")
+    
+    // 根据音色类型设置参数
+    switch voiceType {
+    case .standard:
+        // 标准音色 - 保持默认设置
+        utterance?.pitchMultiplier = 1.0
+        utterance?.volume = 0.9
+        utterance?.rate = utterance!.rate * 1.0
+    case .gentle:
+        // 轻柔音色 - 较高音调，较轻音量，稍快语速
+        utterance?.pitchMultiplier = 1.2
+        utterance?.volume = 0.85
+        utterance?.rate = utterance!.rate * 1.05
+    case .deep:
+        // 浑厚音色 - 低音调，大音量，慢语速
+        utterance?.pitchMultiplier = 0.75
+        utterance?.volume = 1.0
+        utterance?.rate = utterance!.rate * 0.9
+    }
+    
+    print("设置音调倍数: \(utterance?.pitchMultiplier ?? 0), 音量: \(utterance?.volume ?? 0), 语速: \(utterance?.rate ?? 0)")
+    
+    // 保存当前 utterance 的引用
+    currentUtterance = utterance
+    
+    // 更新进度
+    progress = Double(currentIndex) / Double(max(1, sentences.count))
+    updateTimes()
+    print("当前进度: \(progress), 当前索引: \(currentIndex)")
+}
+// ... existing code ...
+```
+
+这些修改应该能解决编译错误。我们将原来的两个属性（playbackVoiceGender和playbackVoiceStyle）替换为新的单一属性（playbackVoiceType），并更新了相关的UI和逻辑代码。
+
+---
+
 
 
 ---

@@ -12,16 +12,10 @@ struct PlaySettingsView: View {
     
     var body: some View {
         Form {
-            Section(header: Text("语音设置")) {
-                Picker("声音性别", selection: $settings.playbackVoiceGender) {
-                    ForEach(UserSettings.VoiceGender.allCases, id: \.self) { gender in
-                        Text(gender.rawValue).tag(gender)
-                    }
-                }
-                
-                Picker("音色选择", selection: $settings.playbackVoiceStyle) {
-                    ForEach(UserSettings.VoiceStyle.allCases, id: \.self) { style in
-                        Text(style.rawValue).tag(style)
+            Section(header: Text("语音设置"), footer: Text("选择不同音色可以获得不同的播放体验，点击试听按钮可以预览效果")) {
+                Picker("音色选择", selection: $settings.playbackVoiceType) {
+                    ForEach(UserSettings.VoiceType.allCases, id: \.self) { voice in
+                        Text(voice.rawValue).tag(voice)
                     }
                 }
                 
@@ -79,10 +73,6 @@ struct PlaySettingsView: View {
                         Text("20秒")
                     }
                 }
-            }
-            
-            Section(footer: Text("不同的声音性别和音色会影响播放效果，您可以通过试听来选择最适合的组合。")) {
-                EmptyView()
             }
         }
         .navigationTitle("播放设置")
