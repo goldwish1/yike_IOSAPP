@@ -1,0 +1,17 @@
+/* 文本编辑相关 */
+"Cut" = "剪切";
+"Copy" = "复制";
+"Paste" = "粘贴";
+"Select" = "选择";
+"Select All" = "全选";
+"Delete" = "删除";
+
+/* 输入提示 */
+"Please enter content to memorize (within 250 characters)" = "请输入要背诵的内容（250字以内）";
+"Please take a photo or select an image from the album for OCR recognition" = "请通过拍照或从相册选择图片进行OCR识别";
+"Recognizing text..." = "正在识别文字...";
+
+/* 按钮文本 */
+"Next" = "下一步";
+"Camera Input" = "拍照输入";
+"Manual Input" = "手动输入"; 

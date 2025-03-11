@@ -1,0 +1,17 @@
+/* Text editing related */
+"Cut" = "Cut";
+"Copy" = "Copy";
+"Paste" = "Paste";
+"Select" = "Select";
+"Select All" = "Select All";
+"Delete" = "Delete";
+
+/* Input prompts */
+"Please enter content to memorize (within 250 characters)" = "Please enter content to memorize (within 250 characters)";
+"Please take a photo or select an image from the album for OCR recognition" = "Please take a photo or select an image from the album for OCR recognition";
+"Recognizing text..." = "Recognizing text...";
+
+/* Button text */
+"Next" = "Next";
+"Camera Input" = "Camera Input";
+"Manual Input" = "Manual Input"; 
