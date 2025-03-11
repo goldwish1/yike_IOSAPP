@@ -546,8 +546,12 @@ struct PlayerView: View {
                 Button(action: {
                     navigateToEdit = true
                 }) {
-                    Image(systemName: "pencil")
+                    Image(systemName: "square.and.pencil")
+                        .font(.system(size: 16))
                         .foregroundColor(.blue)
+                        .padding(8)
+                        .background(Color(.systemGray6))
+                        .clipShape(Circle())
                 }
                 
                 Button(action: {
