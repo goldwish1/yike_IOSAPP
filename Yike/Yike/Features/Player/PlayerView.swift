@@ -336,6 +336,7 @@ struct PlayerView: View {
     @State private var isPlayingApiAudio = false
     @State private var navigateToEdit = false
     @State private var shouldPopToRoot = false
+    @State private var apiAudioIntervalTimer: DispatchWorkItem? = nil
     @Environment(\.presentationMode) var presentationMode
     
     var body: some View {
@@ -419,6 +420,8 @@ struct PlayerView: View {
                         if isPlayingApiAudio {
                             AudioPlayerService.shared.pause()
                             isPlayingApiAudio = false
+                            // 取消间隔计时器
+                            cancelApiAudioIntervalTimer()
                         } else {
                             if AudioPlayerService.shared.duration > 0 {
                                 AudioPlayerService.shared.resume()
@@ -579,12 +582,16 @@ struct PlayerView: View {
             }
         }
         .onDisappear {
+            print("PlayerView 离开视图")
             // 停止本地语音播放
             speechManager.stop()
             
             // 停止API音频播放
             AudioPlayerService.shared.stop()
             isPlayingApiAudio = false
+            
+            // 取消API音频间隔计时器
+            cancelApiAudioIntervalTimer()
         }
         .onChange(of: shouldPopToRoot) { newValue in
             if newValue {
@@ -604,6 +611,9 @@ struct PlayerView: View {
     
     // 使用API音色播放
     private func playWithApiVoice() {
+        // 取消之前的间隔计时器
+        cancelApiAudioIntervalTimer()
+        
         isLoadingApiAudio = true
         apiAudioError = nil
         
@@ -635,8 +645,36 @@ struct PlayerView: View {
                 
                 // 播放音频
                 AudioPlayerService.shared.play(url: audioURL) {
+                    // 注意：这个回调在音频播放完成时被调用
+                    // 不要在这里直接更新UI状态，因为这不是在主线程上
+                    
+                    // 在主线程上更新UI状态
                     DispatchQueue.main.async {
+                        // 更新播放状态
                         isPlayingApiAudio = false
+                        
+                        // 检查是否启用了播放间隔
+                        if settingsManager.settings.enablePlaybackInterval {
+                            // 获取间隔时间
+                            let intervalSeconds = settingsManager.settings.playbackInterval
+                            print("API音频播放完成，启动间隔计时器: \(intervalSeconds)秒")
+                            
+                            // 创建一个新的计时器任务
+                            let workItem = DispatchWorkItem {
+                                // 这个代码块会在间隔时间后执行
+                                print("间隔时间结束，重新播放API音频")
+                                // 确保我们仍在当前视图中
+                                if !isPlayingApiAudio {
+                                    playWithApiVoice()
+                                }
+                            }
+                            
+                            // 保存计时器任务的引用，以便稍后可以取消它
+                            apiAudioIntervalTimer = workItem
+                            
+                            // 安排计时器任务在指定的间隔时间后执行
+                            DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(intervalSeconds), execute: workItem)
+                        }
                     }
                 }
                 
@@ -647,6 +685,15 @@ struct PlayerView: View {
                     dataManager.deductPoints(5, reason: "使用在线语音")
                 }
             }
+        }
+    }
+    
+    // 取消API音频间隔计时器
+    private func cancelApiAudioIntervalTimer() {
+        if apiAudioIntervalTimer != nil {
+            print("取消API音频间隔计时器")
+            apiAudioIntervalTimer?.cancel()
+            apiAudioIntervalTimer = nil
         }
     }
     

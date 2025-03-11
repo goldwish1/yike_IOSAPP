@@ -74,6 +74,7 @@ class AudioPlayerService: NSObject, AVAudioPlayerDelegate {
         player.stop()
         audioPlayer = nil
         isPlaying = false
+        // 停止播放时不调用完成回调，因为这不是自然播放完成
         completionHandler = nil
         print("停止播放音频")
     }
