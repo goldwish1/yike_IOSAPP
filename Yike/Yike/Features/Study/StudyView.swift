@@ -139,7 +139,7 @@ struct StudyView: View {
             .padding(.vertical, 60)
         } else {
             ForEach(items) { item in
-                NavigationLink(destination: PlayerView(memoryItem: item)) {
+                NavigationLink(destination: PlayerView(memoryItems: items, initialIndex: items.firstIndex(of: item) ?? 0)) {
                     StudyItemRow(item: item)
                         .contextMenu {
                             Button(role: .destructive, action: {
@@ -253,7 +253,7 @@ struct StudyItemRow: View {
             
             Spacer()
             
-            NavigationLink(destination: PlayerView(memoryItem: item)) {
+            NavigationLink(destination: PlayerView(memoryItems: [item], initialIndex: 0)) {
                 Image(systemName: "play.fill")
                     .font(.headline)
                     .foregroundColor(.white)

@@ -322,10 +322,31 @@ class SpeechManager: NSObject, ObservableObject, AVSpeechSynthesizerDelegate, @u
             print("进度更新: 字符位置=\(characterRange.location)/\(utterance.speechString.count), 句子进度=\(progress), 总进度=\(totalProgress)")
         }
     }
+    
+    func reset() {
+        // 重置播放状态，但不停止当前播放
+        invalidateTimer()
+        isPlaying = false
+        progress = 0.0
+        currentIndex = 0
+        // 清理当前的 utterance
+        utterance = nil
+        currentUtterance = nil
+        // 清空句子数组
+        sentences = []
+        updateTimes()
+    }
 }
 
 struct PlayerView: View {
+    // 单个记忆项目（向后兼容）
     let memoryItem: MemoryItem
+    
+    // 记忆项目列表和当前索引（用于项目间导航）
+    let memoryItems: [MemoryItem]
+    @State private var currentItemIndex: Int
+    let enableItemNavigation: Bool
+    
     @ObservedObject private var speechManager = SpeechManager.shared
     @ObservedObject private var settingsManager = SettingsManager.shared
     @ObservedObject private var dataManager = DataManager.shared
@@ -339,10 +360,43 @@ struct PlayerView: View {
     @State private var apiAudioIntervalTimer: DispatchWorkItem? = nil
     @Environment(\.presentationMode) var presentationMode
     
+    // 原有初始化方法（单个记忆项目，向后兼容）
+    init(memoryItem: MemoryItem) {
+        self.memoryItem = memoryItem
+        self.memoryItems = [memoryItem]
+        self._currentItemIndex = State(initialValue: 0)
+        self.enableItemNavigation = false
+    }
+    
+    // 新增初始化方法（支持项目间导航）
+    init(memoryItems: [MemoryItem], initialIndex: Int) {
+        guard initialIndex >= 0 && initialIndex < memoryItems.count else {
+            // 防止索引越界
+            self.memoryItem = memoryItems.first ?? MemoryItem(id: UUID(), title: "", content: "", progress: 0, reviewStage: 0, lastReviewDate: nil, nextReviewDate: nil)
+            self.memoryItems = memoryItems
+            self._currentItemIndex = State(initialValue: 0)
+            self.enableItemNavigation = memoryItems.count > 1
+            return
+        }
+        
+        self.memoryItem = memoryItems[initialIndex]
+        self.memoryItems = memoryItems
+        self._currentItemIndex = State(initialValue: initialIndex)
+        self.enableItemNavigation = memoryItems.count > 1
+    }
+    
+    // 获取当前显示的记忆项目
+    private var currentMemoryItem: MemoryItem {
+        if enableItemNavigation && currentItemIndex >= 0 && currentItemIndex < memoryItems.count {
+            return memoryItems[currentItemIndex]
+        }
+        return memoryItem
+    }
+    
     var body: some View {
         VStack(spacing: 24) {
             // 标题
-            Text(memoryItem.title)
+            Text(currentMemoryItem.title)
                 .font(.title)
                 .fontWeight(.bold)
                 .multilineTextAlignment(.center)
@@ -350,7 +404,7 @@ struct PlayerView: View {
             
             // 内容
             ScrollView {
-                Text(memoryItem.content)
+                Text(currentMemoryItem.content)
                     .font(.body)
                     .lineSpacing(8)
                     .padding()
@@ -401,16 +455,19 @@ struct PlayerView: View {
                 if settingsManager.settings.useApiVoice {
                     // API音频播放控制
                     Button(action: {
-                        // API音频不支持上一句功能
+                        if enableItemNavigation && currentItemIndex > 0 {
+                            // 在线语音模式下，导航到上一个记忆项目
+                            navigateToPreviousItem()
+                        }
                     }) {
                         Image(systemName: "backward.fill")
                             .font(.system(size: 24))
-                            .foregroundColor(.gray)
+                            .foregroundColor(enableItemNavigation && currentItemIndex > 0 ? .primary : .gray)
                             .frame(width: 60, height: 60)
                             .background(Color(.systemGray6))
                             .clipShape(Circle())
                     }
-                    .disabled(true)
+                    .disabled(!enableItemNavigation || currentItemIndex <= 0)
                     
                     Button(action: {
                         if isLoadingApiAudio {
@@ -449,16 +506,19 @@ struct PlayerView: View {
                     .disabled(isLoadingApiAudio)
                     
                     Button(action: {
-                        // API音频不支持下一句功能
+                        if enableItemNavigation && currentItemIndex < memoryItems.count - 1 {
+                            // 在线语音模式下，导航到下一个记忆项目
+                            navigateToNextItem()
+                        }
                     }) {
                         Image(systemName: "forward.fill")
                             .font(.system(size: 24))
-                            .foregroundColor(.gray)
+                            .foregroundColor(enableItemNavigation && currentItemIndex < memoryItems.count - 1 ? .primary : .gray)
                             .frame(width: 60, height: 60)
                             .background(Color(.systemGray6))
                             .clipShape(Circle())
                     }
-                    .disabled(true)
+                    .disabled(!enableItemNavigation || currentItemIndex >= memoryItems.count - 1)
                 } else {
                     // 本地语音播放控制
                     Button(action: {
@@ -471,6 +531,7 @@ struct PlayerView: View {
                             .background(Color(.systemGray6))
                             .clipShape(Circle())
                     }
+                    .disabled(!speechManager.isPlaying)
                     
                     Button(action: {
                         if speechManager.isPlaying {
@@ -478,7 +539,7 @@ struct PlayerView: View {
                         } else {
                             if speechManager.progress == 0 {
                                 speechManager.prepare(
-                                    text: memoryItem.content, 
+                                    text: currentMemoryItem.content, 
                                     speed: selectedSpeed,
                                     intervalSeconds: settingsManager.settings.playbackInterval
                                 )
@@ -504,6 +565,7 @@ struct PlayerView: View {
                             .background(Color(.systemGray6))
                             .clipShape(Circle())
                     }
+                    .disabled(!speechManager.isPlaying)
                 }
             }
             
@@ -564,7 +626,7 @@ struct PlayerView: View {
             }
         )
         .background(
-            NavigationLink(destination: PreviewEditView(memoryItem: memoryItem, shouldPopToRoot: $shouldPopToRoot), isActive: $navigateToEdit) {
+            NavigationLink(destination: PreviewEditView(memoryItem: currentMemoryItem, shouldPopToRoot: $shouldPopToRoot), isActive: $navigateToEdit) {
                 EmptyView()
             }
         )
@@ -578,7 +640,7 @@ struct PlayerView: View {
                 // 使用本地音色
                 if speechManager.progress == 0 {
                     speechManager.prepare(
-                        text: memoryItem.content, 
+                        text: currentMemoryItem.content, 
                         speed: selectedSpeed,
                         intervalSeconds: settingsManager.settings.playbackInterval
                     )
@@ -630,7 +692,7 @@ struct PlayerView: View {
         
         // 调用API生成语音
         SiliconFlowTTSService.shared.generateSpeech(
-            text: memoryItem.content,
+            text: currentMemoryItem.content,
             voice: settingsManager.settings.apiVoiceType.rawValue,
             speed: selectedSpeed
         ) { audioURL, error in
@@ -689,7 +751,7 @@ struct PlayerView: View {
                 isPlayingApiAudio = true
                 
                 // 扣除积分（仅在首次生成时扣除，缓存的不扣除）
-                if !SiliconFlowTTSService.shared.isCached(text: memoryItem.content, voice: settingsManager.settings.apiVoiceType.rawValue, speed: selectedSpeed) {
+                if !SiliconFlowTTSService.shared.isCached(text: currentMemoryItem.content, voice: settingsManager.settings.apiVoiceType.rawValue, speed: selectedSpeed) {
                     dataManager.deductPoints(5, reason: "使用在线语音")
                 }
             }
@@ -708,7 +770,7 @@ struct PlayerView: View {
     // 更新记忆进度
     private func updateMemoryProgress() {
         // 更新学习进度和复习阶段
-        var updatedItem = memoryItem
+        var updatedItem = currentMemoryItem
         
         if updatedItem.isNew {
             // 首次学习，设置为第一阶段
@@ -745,5 +807,62 @@ struct PlayerView: View {
         let minutes = Int(time) / 60
         let seconds = Int(time) % 60
         return String(format: "%02d:%02d", minutes, seconds)
+    }
+    
+    // 导航到上一个记忆项目
+    private func navigateToPreviousItem() {
+        guard enableItemNavigation, currentItemIndex > 0 else { return }
+        
+        // 停止当前播放
+        stopPlayback()
+        
+        // 更新索引
+        currentItemIndex -= 1
+        
+        // 重置播放状态
+        resetPlaybackState()
+        
+        print("导航到上一个记忆项目，当前索引：\(currentItemIndex)")
+    }
+    
+    // 导航到下一个记忆项目
+    private func navigateToNextItem() {
+        guard enableItemNavigation, currentItemIndex < memoryItems.count - 1 else { return }
+        
+        // 停止当前播放
+        stopPlayback()
+        
+        // 更新索引
+        currentItemIndex += 1
+        
+        // 重置播放状态
+        resetPlaybackState()
+        
+        print("导航到下一个记忆项目，当前索引：\(currentItemIndex)")
+    }
+    
+    // 停止所有播放
+    private func stopPlayback() {
+        // 停止系统语音
+        if speechManager.isPlaying {
+            speechManager.stop()
+        }
+        
+        // 停止API语音
+        if isPlayingApiAudio {
+            AudioPlayerService.shared.stop()
+            isPlayingApiAudio = false
+        }
+        
+        // 取消API音频间隔计时器
+        cancelApiAudioIntervalTimer()
+    }
+    
+    // 重置播放状态
+    private func resetPlaybackState() {
+        speechManager.reset()
+        isPlayingApiAudio = false
+        isLoadingApiAudio = false
+        apiAudioError = nil
     }
 }

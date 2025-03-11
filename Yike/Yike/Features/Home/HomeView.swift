@@ -42,7 +42,7 @@ struct HomeView: View {
                         }
                         
                         ForEach(todayItems) { item in
-                            NavigationLink(destination: PlayerView(memoryItem: item)) {
+                            NavigationLink(destination: PlayerView(memoryItems: todayItems, initialIndex: todayItems.firstIndex(of: item) ?? 0)) {
                                 MemoryItemCard(item: item)
                                     .contextMenu {
                                         Button(role: .destructive, action: {
@@ -92,7 +92,7 @@ struct HomeView: View {
                         }
                         
                         ForEach(recentItems) { item in
-                            NavigationLink(destination: PlayerView(memoryItem: item)) {
+                            NavigationLink(destination: PlayerView(memoryItems: recentItems, initialIndex: recentItems.firstIndex(of: item) ?? 0)) {
                                 MemoryItemCard(item: item)
                                     .contextMenu {
                                         Button(role: .destructive, action: {
@@ -196,7 +196,7 @@ struct MemoryItemCard: View {
                 
                 Spacer()
                 
-                NavigationLink(destination: PlayerView(memoryItem: item)) {
+                NavigationLink(destination: PlayerView(memoryItems: [item], initialIndex: 0)) {
                     Image(systemName: "play.fill")
                         .font(.headline)
                         .foregroundColor(.white)

@@ -1,7 +1,7 @@
 import Foundation
 
 // 记忆项目模型
-struct MemoryItem: Identifiable, Codable {
+struct MemoryItem: Identifiable, Codable, Equatable {
     var id: UUID
     var title: String
     var content: String
@@ -32,6 +32,11 @@ struct MemoryItem: Identifiable, Codable {
         let calendar = Calendar.current
         let components = calendar.dateComponents([.day], from: calendar.startOfDay(for: Date()), to: calendar.startOfDay(for: nextReviewDate))
         return components.day
+    }
+    
+    // 实现Equatable协议的相等性比较方法
+    static func == (lhs: MemoryItem, rhs: MemoryItem) -> Bool {
+        return lhs.id == rhs.id
     }
 }
 
