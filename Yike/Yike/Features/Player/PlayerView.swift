@@ -334,6 +334,8 @@ struct PlayerView: View {
     @State private var isLoadingApiAudio = false
     @State private var apiAudioError: String? = nil
     @State private var isPlayingApiAudio = false
+    @State private var navigateToEdit = false
+    @State private var shouldPopToRoot = false
     @Environment(\.presentationMode) var presentationMode
     
     var body: some View {
@@ -537,12 +539,26 @@ struct PlayerView: View {
         .padding(.bottom, 24)
         .navigationBarTitle("", displayMode: .inline)
         .navigationBarItems(
-            trailing: Button(action: {
-                updateMemoryProgress()
-                showCompletionAlert = true
-            }) {
-                Text("完成学习")
-                    .foregroundColor(.blue)
+            trailing: HStack {
+                Button(action: {
+                    navigateToEdit = true
+                }) {
+                    Image(systemName: "pencil")
+                        .foregroundColor(.blue)
+                }
+                
+                Button(action: {
+                    updateMemoryProgress()
+                    showCompletionAlert = true
+                }) {
+                    Text("完成学习")
+                        .foregroundColor(.blue)
+                }
+            }
+        )
+        .background(
+            NavigationLink(destination: PreviewEditView(memoryItem: memoryItem, shouldPopToRoot: $shouldPopToRoot), isActive: $navigateToEdit) {
+                EmptyView()
             }
         )
         .onAppear {
@@ -569,6 +585,11 @@ struct PlayerView: View {
             // 停止API音频播放
             AudioPlayerService.shared.stop()
             isPlayingApiAudio = false
+        }
+        .onChange(of: shouldPopToRoot) { newValue in
+            if newValue {
+                presentationMode.wrappedValue.dismiss()
+            }
         }
         .alert(isPresented: $showCompletionAlert) {
             Alert(

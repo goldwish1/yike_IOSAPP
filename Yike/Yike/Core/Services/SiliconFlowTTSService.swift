@@ -176,4 +176,26 @@ class SiliconFlowTTSService {
     func isCached(text: String, voice: String, speed: Float) -> Bool {
         return getCachedAudioURL(for: text, voice: voice, speed: speed) != nil
     }
+    
+    /// 清除特定文本内容的所有缓存
+    /// - Parameter text: 要清除缓存的文本内容
+    func clearCache(for text: String) {
+        let cacheDir = getCacheDirectory()
+        let fileManager = FileManager.default
+        
+        guard let fileURLs = try? fileManager.contentsOfDirectory(at: cacheDir, includingPropertiesForKeys: nil, options: .skipsHiddenFiles) else {
+            return
+        }
+        
+        let textHash = text.hash
+        
+        for fileURL in fileURLs {
+            let fileName = fileURL.lastPathComponent
+            // 检查文件名是否包含该文本的哈希值
+            if fileName.contains("tts_\(textHash)_") {
+                try? fileManager.removeItem(at: fileURL)
+                print("已删除缓存: \(fileURL.path)")
+            }
+        }
+    }
 } 
