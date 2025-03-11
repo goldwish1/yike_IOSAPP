@@ -674,6 +674,10 @@ struct PlayerView: View {
                             
                             // 安排计时器任务在指定的间隔时间后执行
                             DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(intervalSeconds), execute: workItem)
+                        } else {
+                            // 如果未启用播放间隔，则直接循环播放
+                            print("API音频播放完成，未启用间隔，直接循环播放")
+                            playWithApiVoice()
                         }
                     }
                 }
