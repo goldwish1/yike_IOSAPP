@@ -35,7 +35,7 @@ struct PlaySettingsView: View {
             
             if settings.useApiVoice {
                 // 在线API音色设置
-                Section(header: Text("在线音色设置"), footer: Text("选择不同音色可以获得不同的播放体验，点击试听按钮可以预览效果。使用在线音色需要消耗积分。")) {
+                Section(header: Text("在线音色设置"), footer: Text("选择不同音色可以获得不同的播放体验，点击试听按钮可以预览效果。试听功能完全免费，正式使用在线音色需要消耗积分。")) {
                     Picker("音色分类", selection: $selectedCategory) {
                         ForEach(UserSettings.ApiVoiceCategory.allCases, id: \.self) { category in
                             Text(category.rawValue).tag(category)
@@ -151,7 +151,7 @@ struct PlaySettingsView: View {
             }
             
             if settings.useApiVoice {
-                Section(header: Text("关于在线语音"), footer: Text("在线语音由硅基流动API提供，每次使用会消耗5积分。生成的语音会缓存到本地，重复播放不会重复消耗积分。")) {
+                Section(header: Text("关于在线语音"), footer: Text("在线语音由硅基流动API提供，试听功能完全免费，正式使用每次会消耗5积分。生成的语音会缓存到本地，重复播放不会重复消耗积分。")) {
                     Button(action: {
                         SiliconFlowTTSService.shared.cleanExpiredCache()
                     }) {
@@ -183,7 +183,7 @@ struct PlaySettingsView: View {
                 dataManager.markApiVoiceAlertAsShown()
             }
         } message: {
-            Text("使用在线高质量语音将消耗积分，每次使用消耗5积分。\n\n已生成的语音会缓存到本地，重复播放不会重复消耗积分。\n\n您当前的积分余额：\(dataManager.points)积分")
+            Text("使用在线高质量语音将消耗积分，每次使用消耗5积分。试听功能完全免费。\n\n已生成的语音会缓存到本地，重复播放不会重复消耗积分。\n\n您当前的积分余额：\(dataManager.points)积分")
         }
     }
     
@@ -191,14 +191,6 @@ struct PlaySettingsView: View {
     private func testApiVoice() {
         isTestingApiVoice = true
         apiVoiceTestError = nil
-        
-        // 检查积分是否足够
-        let dataManager = DataManager.shared
-        if dataManager.points < 5 {
-            isTestingApiVoice = false
-            apiVoiceTestError = "积分不足，无法试听。当前积分: \(dataManager.points)"
-            return
-        }
         
         // 调用API生成语音
         SiliconFlowTTSService.shared.generateSpeech(
@@ -226,8 +218,8 @@ struct PlaySettingsView: View {
                     }
                 }
                 
-                // 扣除积分
-                dataManager.deductPoints(5, reason: "试听API音色")
+                // 试听功能设置为免费，不扣除积分
+                // dataManager.deductPoints(5, reason: "试听API音色")
             }
         }
     }
