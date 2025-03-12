@@ -639,11 +639,9 @@ struct PlayerView: View {
                 }
             }
         )
-        .background(
-            NavigationLink(destination: PreviewEditView(memoryItem: currentMemoryItem, shouldPopToRoot: $shouldPopToRoot), isActive: $navigateToEdit) {
-                EmptyView()
-            }
-        )
+        .navigationDestination(isPresented: $navigateToEdit) {
+            PreviewEditView(memoryItem: currentMemoryItem, shouldPopToRoot: $shouldPopToRoot)
+        }
         .onAppear {
             selectedSpeed = Float(settingsManager.settings.playbackSpeed)
             
