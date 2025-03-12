@@ -25,8 +25,11 @@ class SiliconFlowTTSService {
     ///   - speed: 语速
     ///   - completion: 完成回调，返回本地音频文件URL或错误
     func generateSpeech(text: String, voice: String, speed: Float, completion: @escaping (URL?, Error?) -> Void) {
+        // 预处理文本，优化停顿，根据速度调整停顿强度
+        let processedText = preprocessText(text, speed: speed)
+        
         // 检查缓存
-        if let cachedAudioURL = getCachedAudioURL(for: text, voice: voice, speed: speed) {
+        if let cachedAudioURL = getCachedAudioURL(for: processedText, voice: voice, speed: speed) {
             print("找到缓存音频: \(cachedAudioURL.path)")
             completion(cachedAudioURL, nil)
             return
@@ -46,7 +49,7 @@ class SiliconFlowTTSService {
         // 构建请求体
         let requestBody: [String: Any] = [
             "model": "FunAudioLLM/CosyVoice2-0.5B",
-            "input": text,
+            "input": processedText,
             "voice": "FunAudioLLM/CosyVoice2-0.5B:\(voice)",
             "speed": speed,
             "response_format": "mp3"
@@ -80,11 +83,106 @@ class SiliconFlowTTSService {
             }
             
             // 保存音频文件到缓存
-            let audioURL = self.saveAudioToCache(data: data, text: text, voice: voice, speed: speed)
+            let audioURL = self.saveAudioToCache(data: data, text: processedText, voice: voice, speed: speed)
             completion(audioURL, nil)
         }
         
         task.resume()
+    }
+    
+    /// 预处理文本，优化停顿
+    /// - Parameters:
+    ///   - text: 原始文本
+    ///   - speed: 播放速度，用于调整停顿强度
+    /// - Returns: 处理后的文本
+    private func preprocessText(_ text: String, speed: Float = 1.0) -> String {
+        // 检测文本是否为古诗文格式
+        let isClassicalPoem = isClassicalChinesePoem(text)
+        
+        // 如果不是古诗文，则返回原文本
+        if !isClassicalPoem {
+            return text
+        }
+        
+        var processedText = text
+        
+        // 根据速度调整停顿标记
+        let pauseMark = getPauseMarkForSpeed(speed)
+        
+        // 1. 增强标点符号的停顿效果
+        // 在标点符号前添加停顿标记，使停顿更明显
+        processedText = processedText.replacingOccurrences(of: "，", with: "\(pauseMark)，")
+        processedText = processedText.replacingOccurrences(of: "。", with: "\(pauseMark)。")
+        
+        // 2. 处理古诗文中的行末停顿
+        // 在每行末尾添加停顿标记
+        let lines = processedText.components(separatedBy: "\n")
+        processedText = lines.map { line -> String in
+            var processedLine = line.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !processedLine.isEmpty {
+                // 如果行末没有标点，添加停顿标记
+                if !["，", "。", "、", "；", "！", "？", "："].contains(String(processedLine.last!)) {
+                    processedLine += pauseMark
+                }
+            }
+            return processedLine
+        }.joined(separator: "\n")
+        
+        // 3. 清理重复的停顿标记
+        processedText = processedText.replacingOccurrences(of: "、、", with: "、")
+        processedText = processedText.replacingOccurrences(of: "，、", with: "，")
+        processedText = processedText.replacingOccurrences(of: "。、", with: "。")
+        
+        return processedText
+    }
+    
+    /// 根据播放速度获取适当的停顿标记
+    /// - Parameter speed: 播放速度
+    /// - Returns: 停顿标记
+    private func getPauseMarkForSpeed(_ speed: Float) -> String {
+        // 低速播放时使用更强的停顿标记
+        if speed <= 0.8 {
+            return "，" // 低速时使用逗号作为停顿标记，效果更强
+        } else if speed < 1.2 {
+            return "、，" // 中速时使用顿号+逗号
+        } else {
+            return "、" // 高速时使用顿号即可
+        }
+    }
+    
+    /// 判断文本是否为古诗文格式
+    /// - Parameter text: 要判断的文本
+    /// - Returns: 是否为古诗文
+    private func isClassicalChinesePoem(_ text: String) -> Bool {
+        // 简单判断是否为古诗文的规则：
+        // 1. 行数大于1
+        // 2. 每行字数相近（5-7字为主）
+        // 3. 包含古诗文常见标点
+        
+        let lines = text.components(separatedBy: "\n")
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+        
+        // 至少有两行
+        if lines.count < 2 {
+            return false
+        }
+        
+        // 检查行长度
+        let lineLengths = lines.map { $0.count }
+        let averageLength = lineLengths.reduce(0, +) / lineLengths.count
+        
+        // 古诗文通常每行5-7字，允许有标点符号，所以范围稍宽松
+        let isRegularLength = averageLength >= 4 && averageLength <= 12
+        
+        // 检查是否包含古诗文常见标点
+        let hasClassicalPunctuation = text.contains("，") || text.contains("。") || text.contains("、") || text.contains("；")
+        
+        // 检查是否包含古诗文常见词语
+        let hasClassicalWords = text.contains("若") || text.contains("于") || text.contains("之") || 
+                               text.contains("乎") || text.contains("也") || text.contains("兮")
+        
+        return isRegularLength && (hasClassicalPunctuation || hasClassicalWords)
     }
     
     /// 获取缓存的音频URL
@@ -174,7 +272,10 @@ class SiliconFlowTTSService {
     ///   - speed: 语速
     /// - Returns: 是否已缓存
     func isCached(text: String, voice: String, speed: Float) -> Bool {
-        return getCachedAudioURL(for: text, voice: voice, speed: speed) != nil
+        // 检查原始文本和预处理后的文本是否有缓存
+        let processedText = preprocessText(text, speed: speed)
+        return getCachedAudioURL(for: text, voice: voice, speed: speed) != nil || 
+               (processedText != text && getCachedAudioURL(for: processedText, voice: voice, speed: speed) != nil)
     }
     
     /// 清除特定文本内容的所有缓存
@@ -187,12 +288,21 @@ class SiliconFlowTTSService {
             return
         }
         
+        // 获取原始文本的哈希值
         let textHash = text.hash
+        
+        // 获取不同速度下预处理文本的哈希值
+        let slowProcessedTextHash = preprocessText(text, speed: 0.5).hash
+        let normalProcessedTextHash = preprocessText(text, speed: 1.0).hash
+        let fastProcessedTextHash = preprocessText(text, speed: 1.5).hash
         
         for fileURL in fileURLs {
             let fileName = fileURL.lastPathComponent
-            // 检查文件名是否包含该文本的哈希值
-            if fileName.contains("tts_\(textHash)_") {
+            // 检查文件名是否包含原始文本或任何速度下预处理后文本的哈希值
+            if fileName.contains("tts_\(textHash)_") || 
+               fileName.contains("tts_\(slowProcessedTextHash)_") ||
+               fileName.contains("tts_\(normalProcessedTextHash)_") ||
+               fileName.contains("tts_\(fastProcessedTextHash)_") {
                 try? fileManager.removeItem(at: fileURL)
                 print("已删除缓存: \(fileURL.path)")
             }
