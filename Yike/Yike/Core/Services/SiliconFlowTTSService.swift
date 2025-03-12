@@ -1,10 +1,12 @@
 import Foundation
 import AVFoundation
+import Combine
+import SwiftUI
 
 /// 硅基流动文本转语音服务
-class SiliconFlowTTSService {
+@objc class SiliconFlowTTSService: NSObject {
     // 单例模式
-    static let shared = SiliconFlowTTSService()
+    @objc static let shared = SiliconFlowTTSService()
     
     // API密钥
     private let apiKey = "sk-lutyvbdzpvahcfjktdvjlsoheraogfbvsdigfwligyrnlolv"
@@ -13,7 +15,9 @@ class SiliconFlowTTSService {
     // 音频缓存目录
     private let cacheFolderName = "SiliconFlowTTSCache"
     
-    private init() {
+    // 允许子类重写初始化方法
+    internal override init() {
+        super.init()
         // 创建缓存目录
         createCacheDirectoryIfNeeded()
     }

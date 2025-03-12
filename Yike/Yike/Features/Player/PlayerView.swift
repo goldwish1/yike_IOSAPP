@@ -517,6 +517,7 @@ struct PlayerView: View {
                         }
                     }
                     .disabled(isLoadingApiAudio)
+                    .accessibilityIdentifier("playButton")
                     
                     Button(action: {
                         if enableItemNavigation && currentItemIndex < memoryItems.count - 1 {

@@ -39,6 +39,7 @@ struct PointsCenterView: View {
                         Text("\(dataManager.points)")
                             .font(.system(size: 48, weight: .bold))
                             .foregroundColor(.white)
+                            .accessibilityIdentifier("pointsValue")
                         
                         HStack {
                             NavigationLink(destination: PointsHistoryView()) {

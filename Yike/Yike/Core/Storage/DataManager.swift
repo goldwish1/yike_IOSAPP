@@ -1,15 +1,16 @@
 import Foundation
 import Combine
 
-class DataManager: ObservableObject {
-    static let shared = DataManager()
+@objc class DataManager: NSObject, ObservableObject {
+    @objc static let shared = DataManager()
     
     @Published var memoryItems: [MemoryItem] = []
     @Published var points: Int = 100 // 新用户默认100积分
     @Published var pointsRecords: [PointsRecord] = []
     @Published var hasShownApiVoiceAlert: Bool = false // 是否已显示过在线语音提示
     
-    private init() {
+    internal override init() {
+        super.init()
         // 从本地加载数据
         loadData()
         

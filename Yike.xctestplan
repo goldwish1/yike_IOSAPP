@@ -1,0 +1,43 @@
+{
+  "configurations" : [
+    {
+      "id" : "AB12BD41-7490-4D79-B156-F9082F6C1803",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:Yike.xcodeproj",
+      "identifier" : "B875D4142D75ED57005A1A9E",
+      "name" : "Yike"
+    }
+  },
+  "testTargets" : [
+    {
+      "parallelizable" : true,
+      "selectedTags" : {
+        "includeXCTests" : true
+      },
+      "target" : {
+        "containerPath" : "container:Yike.xcodeproj",
+        "identifier" : "B875D4292D75ED58005A1A9E",
+        "name" : "YikeTests"
+      }
+    },
+    {
+      "parallelizable" : true,
+      "selectedTags" : {
+        "includeXCTests" : true
+      },
+      "target" : {
+        "containerPath" : "container:Yike.xcodeproj",
+        "identifier" : "B875D4332D75ED58005A1A9E",
+        "name" : "YikeUITests"
+      }
+    }
+  ],
+  "version" : 1
+}

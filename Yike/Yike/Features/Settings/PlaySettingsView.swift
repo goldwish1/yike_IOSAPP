@@ -20,6 +20,7 @@ struct PlaySettingsView: View {
         Form {
             Section(header: Text("语音来源"), footer: Text("选择使用本地语音合成或在线API语音合成")) {
                 Toggle("使用在线高质量语音", isOn: $settings.useApiVoice)
+                    .accessibilityIdentifier("useApiVoiceSwitch")
                     .onChange(of: settings.useApiVoice) { oldValue, newValue in
                         // 切换语音来源时停止播放
                         if speechManager.isPlaying {
