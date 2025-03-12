@@ -118,15 +118,7 @@ struct CameraOptionsView: View {
     }
     
     private func processImage(_ image: UIImage) {
-        // 检查积分是否足够
-        if dataManager.points < 10 {
-            alertTitle = "积分不足"
-            alertMessage = "OCR识别需要10积分，当前积分余额不足"
-            showAlert = true
-            isPresented = false
-            return
-        }
-        
+        // OCR识别现在是免费的，不需要检查积分
         isRecognizing = true
         
         // 使用OCR服务识别文本
@@ -136,13 +128,6 @@ struct CameraOptionsView: View {
             switch result {
             case .success(let text):
                 recognizedText = text
-                // 扣除积分
-                let success = dataManager.deductPoints(10, reason: "OCR识别")
-                if !success {
-                    alertTitle = "积分扣除失败"
-                    alertMessage = "请稍后重试"
-                    showAlert = true
-                }
                 isPresented = false
                 
             case .failure(let error):

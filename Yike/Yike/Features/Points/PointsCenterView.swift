@@ -90,9 +90,9 @@ struct PointsCenterView: View {
                             Spacer()
                             
                             VStack(alignment: .trailing, spacing: 4) {
-                                Text("10积分/次")
+                                Text("免费")
                                     .font(.subheadline)
-                                    .foregroundColor(.blue)
+                                    .foregroundColor(.green)
                                 
                                 Button(action: {}) {
                                     Text("使用")
