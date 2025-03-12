@@ -29,9 +29,22 @@
 		B875D4342D75ED58005A1A9E /* YikeUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = YikeUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		B82C8B9B2D7F953D00B033ED /* Exceptions for "Yike" folder in "Yike" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = B875D4142D75ED57005A1A9E /* Yike */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		B875D4172D75ED57005A1A9E /* Yike */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				B82C8B9B2D7F953D00B033ED /* Exceptions for "Yike" folder in "Yike" target */,
+			);
 			path = Yike;
 			sourceTree = "<group>";
 		};
@@ -192,6 +205,7 @@
 			knownRegions = (
 				en,
 				Base,
+				"zh-Hans",
 			);
 			mainGroup = B875D40C2D75ED57005A1A9E;
 			minimizedProjectReferenceProxies = 1;

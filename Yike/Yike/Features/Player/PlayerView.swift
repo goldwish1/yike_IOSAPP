@@ -25,12 +25,22 @@ class SpeechManager: NSObject, ObservableObject, AVSpeechSynthesizerDelegate, @u
         super.init()
         synthesizer.delegate = self
         
-        // 配置音频会话
+        // 不在这里设置音频会话，避免与AudioPlayerService冲突
+        // 在需要播放时再设置
+    }
+    
+    /// 设置音频会话
+    private func setupAudioSession() {
         do {
-            try AVAudioSession.sharedInstance().setCategory(.playback, mode: .spokenAudio)
-            try AVAudioSession.sharedInstance().setActive(true)
+            // 检查当前会话状态，避免与AudioPlayerService冲突
+            let currentCategory = AVAudioSession.sharedInstance().category
+            if currentCategory != .playback {
+                try AVAudioSession.sharedInstance().setCategory(.playback, mode: .spokenAudio)
+                try AVAudioSession.sharedInstance().setActive(true)
+                print("SpeechManager: 设置音频会话成功")
+            }
         } catch {
-            print("设置音频会话失败: \(error)")
+            print("SpeechManager: 设置音频会话失败: \(error)")
         }
     }
     
@@ -100,6 +110,9 @@ class SpeechManager: NSObject, ObservableObject, AVSpeechSynthesizerDelegate, @u
             print("播放失败: utterance 为空")
             return
         }
+        
+        // 在播放前设置音频会话
+        setupAudioSession()
         
         // 如果已经在播放，先不要打断
         if isPlaying {
