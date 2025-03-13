@@ -3,6 +3,33 @@ import AVFoundation
 import MediaPlayer
 
 /// 音频播放器服务
+/// 
+/// 主要功能说明：
+/// 1. 基础播放控制
+///    - play(url:completion:) - 播放音频文件
+///    - pause() - 暂停播放
+///    - resume() - 继续播放
+///    - stop() - 停止播放
+/// 
+/// 2. 播放控制
+///    - setVolume(_:) - 设置音量大小
+///    - seek(to:) - 跳转到指定时间点
+///    - currentTime - 获取当前播放时间
+///    - duration - 获取音频总时长
+/// 
+/// 3. 后台播放支持
+///    - beginBackgroundTask() - 开始后台播放任务
+///    - endBackgroundTask() - 结束后台播放任务
+/// 
+/// 4. 系统集成
+///    - setupAudioSession() - 设置音频会话
+///    - setupRemoteCommandCenter() - 设置锁屏控制中心
+///    - setupNowPlaying(title:artist:) - 设置锁屏显示信息
+/// 
+/// 5. 错误处理
+///    - audioPlayerDidFinishPlaying(_:successfully:) - 处理播放完成
+///    - audioPlayerDecodeErrorDidOccur(_:error:) - 处理播放错误
+///
 class AudioPlayerService: NSObject, AVAudioPlayerDelegate {
     // 单例模式
     static let shared = AudioPlayerService()
@@ -93,9 +120,6 @@ class AudioPlayerService: NSObject, AVAudioPlayerDelegate {
     }
     
     /// 播放音频文件
-    /// - Parameters:
-    ///   - url: 音频文件URL
-    ///   - completion: 播放完成回调
     func play(url: URL, completion: (() -> Void)? = nil) {
         // 停止当前播放
         stop()
@@ -246,7 +270,9 @@ class AudioPlayerService: NSObject, AVAudioPlayerDelegate {
     
     // MARK: - AVAudioPlayerDelegate
     
+    /// 音频播放完成时的回调方法
     func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
+        // 更新播放状态
         isPlaying = false
         print("音频播放完成")
         
@@ -256,11 +282,14 @@ class AudioPlayerService: NSObject, AVAudioPlayerDelegate {
         // 结束后台任务
         endBackgroundTask()
         
+        // 执行完成回调并清空
         completionHandler?()
         completionHandler = nil
     }
     
+    /// 音频解码错误的回调方法
     func audioPlayerDecodeErrorDidOccur(_ player: AVAudioPlayer, error: Error?) {
+        // 更新播放状态
         isPlaying = false
         print("音频解码错误: \(error?.localizedDescription ?? "未知错误")")
         
@@ -270,6 +299,7 @@ class AudioPlayerService: NSObject, AVAudioPlayerDelegate {
         // 结束后台任务
         endBackgroundTask()
         
+        // 执行完成回调并清空
         completionHandler?()
         completionHandler = nil
     }
