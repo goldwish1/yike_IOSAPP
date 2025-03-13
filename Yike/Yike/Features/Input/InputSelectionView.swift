@@ -109,12 +109,12 @@ struct InputSelectionView: View {
                           (selectedMethod == .camera && recognizedText.isEmpty) ||
                           isRecognizing)
                 
-                // 使用原来的NavigationLink方式
-                NavigationLink(destination: PreviewEditView(
-                    text: selectedMethod == .manual ? manualText : recognizedText,
-                    shouldPopToRoot: $shouldPopToRoot
-                ), isActive: $navigateToPreview) {
-                    EmptyView()
+                // 使用新的导航方式
+                .navigationDestination(isPresented: $navigateToPreview) {
+                    PreviewEditView(
+                        text: selectedMethod == .manual ? manualText : recognizedText,
+                        shouldPopToRoot: $shouldPopToRoot
+                    )
                 }
             }
             .navigationTitle("新建内容")
