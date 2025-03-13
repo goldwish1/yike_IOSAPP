@@ -671,7 +671,7 @@ struct PlayerView: View {
             // 取消API音频间隔计时器
             cancelApiAudioIntervalTimer()
         }
-        .onChange(of: shouldPopToRoot) { newValue in
+        .onChange(of: shouldPopToRoot) { oldValue, newValue in
             if newValue {
                 presentationMode.wrappedValue.dismiss()
             }
