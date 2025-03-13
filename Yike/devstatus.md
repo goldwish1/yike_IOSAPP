@@ -224,6 +224,21 @@
 4. 修复了设置页面问题
    - 实现了用户协议、隐私政策和联系我们的跳转功能
 
+### 2024-03-18
+1. 制定了PlayerView功能拆分和重构计划
+   - 分析了当前PlayerView.swift的功能和结构
+   - 确定了代码存在的问题和优化方向
+   - 制定了详细的拆分方案
+
+2. 实施了PlayerView功能拆分和重构
+   - 将SpeechManager移至独立文件
+   - 创建了LocalVoicePlaybackManager处理本地语音播放
+   - 创建了ApiVoicePlaybackManager处理API语音播放
+   - 创建了PlaybackControlViewModel处理播放控制逻辑
+   - 拆分UI组件：PlayerControlsView、PlaybackProgressView、WaveformAnimationView、SpeedSelectionView
+   - 重构了PlayerView，使用MVVM架构
+   - 优化了代码结构和可维护性
+
 ## 待办事项
 
 ### 当前版本计划
@@ -284,6 +299,32 @@
    - [x] 测试报告与问题修复
      - [x] 测试结果分析
      - [x] 问题修复与验证
+
+6. [x] PlayerView功能拆分和重构
+   - [x] 代码分析与规划
+     - [x] 分析当前代码结构和功能
+     - [x] 确定拆分方向和模块划分
+     - [x] 制定重构计划
+   - [x] 核心功能拆分
+     - [x] 将SpeechManager移至独立文件
+     - [x] 创建LocalVoicePlaybackManager处理本地语音播放
+     - [x] 创建ApiVoicePlaybackManager处理API语音播放
+     - [x] 创建PlaybackControlViewModel处理播放控制逻辑
+   - [x] UI组件拆分
+     - [x] 创建PlayerControlsView处理播放控制UI
+     - [x] 创建PlaybackProgressView处理进度显示
+     - [x] 创建WaveformAnimationView处理波形动画
+     - [x] 创建SpeedSelectionView处理速度选择
+   - [x] 重构PlayerView
+     - [x] 简化PlayerView，专注于组合UI组件
+     - [x] 使用ViewModel处理业务逻辑
+     - [x] 优化状态管理
+     - [x] 改进错误处理
+   - [ ] 测试与优化
+     - [ ] 编写单元测试
+     - [ ] 进行UI测试
+     - [ ] 性能优化
+     - [ ] 代码审查
 
 ### 下一版本计划
 1. [ ] 用户系统
