@@ -764,7 +764,7 @@ struct PlayerView: View {
                 
                 // 扣除积分（仅在首次生成时扣除，缓存的不扣除）
                 if !SiliconFlowTTSService.shared.isCached(text: currentMemoryItem.content, voice: settingsManager.settings.apiVoiceType.rawValue, speed: selectedSpeed) {
-                    dataManager.deductPoints(5, reason: "使用在线语音")
+                    _ = dataManager.deductPoints(5, reason: "使用在线语音")
                 }
             }
         }
