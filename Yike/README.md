@@ -22,35 +22,7 @@
 
 ## 项目结构
 
-```
-Yike/
-├── App/
-│   ├── YikeApp.swift
-│   └── ContentView.swift
-├── Core/
-│   └── Storage/
-│       ├── DataManager.swift
-│       ├── Models.swift
-│       └── SettingsManager.swift
-└── Features/
-    ├── Home/
-    │   └── HomeView.swift
-    ├── Input/
-    │   ├── InputSelectionView.swift
-    │   └── PreviewEditView.swift
-    ├── Player/
-    │   └── PlayerView.swift
-    ├── Study/
-    │   └── StudyView.swift
-    ├── Points/
-    │   ├── PointsCenterView.swift
-    │   └── PointsHistoryView.swift
-    └── Settings/
-        ├── SettingsView.swift
-        ├── PlaySettingsView.swift
-        ├── ReminderSettingsView.swift
-        └── AboutView.swift
-```
+- 参考 @directory文件
 
 ## 最新更新
 
