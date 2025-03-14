@@ -12,6 +12,7 @@ struct InputSelectionView: View {
     @State private var selectedImage: UIImage? = nil
     @State private var isRecognizing = false
     @EnvironmentObject private var dataManager: DataManager
+    @EnvironmentObject private var router: NavigationRouter
     @Environment(\.presentationMode) var presentationMode
     
     enum InputMethod {
@@ -20,12 +21,8 @@ struct InputSelectionView: View {
     
     var body: some View {
         ZStack {
-            NavigationLink(destination: PreviewEditView(
-                text: selectedMethod == .manual ? manualText : recognizedText,
-                shouldPopToRoot: $shouldPopToRoot
-            ), isActive: $navigateToPreview) {
-                EmptyView()
-            }
+            // 使用兼容 iOS 16 以下版本的导航链接
+            adaptiveNavigationLink
             
             VStack(spacing: 20) {
                 // 输入方式选择
@@ -99,7 +96,12 @@ struct InputSelectionView: View {
                 // 下一步按钮
                 Button(action: {
                     print("点击下一步按钮，当前文本长度: \(selectedMethod == .manual ? manualText.count : recognizedText.count)")
-                    navigateToPreview = true
+                    if #available(iOS 16.0, *) {
+                        let text = selectedMethod == .manual ? manualText : recognizedText
+                        router.navigate(to: .preview(text: text, shouldPopToRoot: $shouldPopToRoot))
+                    } else {
+                        navigateToPreview = true
+                    }
                 }) {
                     Text("下一步")
                         .font(.headline)
@@ -148,6 +150,30 @@ struct InputSelectionView: View {
                         .foregroundColor(.white)
                         .padding(.top)
                 }
+            }
+        }
+    }
+    
+    // 兼容 iOS 16 以下版本的导航链接
+    @ViewBuilder
+    private var adaptiveNavigationLink: some View {
+        if #available(iOS 16.0, *) {
+            EmptyView()
+                .navigationDestination(isPresented: $navigateToPreview) {
+                    PreviewEditView(
+                        text: selectedMethod == .manual ? manualText : recognizedText,
+                        shouldPopToRoot: $shouldPopToRoot
+                    )
+                }
+        } else {
+            NavigationLink(
+                destination: PreviewEditView(
+                    text: selectedMethod == .manual ? manualText : recognizedText,
+                    shouldPopToRoot: $shouldPopToRoot
+                ),
+                isActive: $navigateToPreview
+            ) {
+                EmptyView()
             }
         }
     }

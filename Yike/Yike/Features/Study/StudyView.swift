@@ -2,6 +2,7 @@ import SwiftUI
 
 struct StudyView: View {
     @EnvironmentObject var dataManager: DataManager
+    @EnvironmentObject var router: NavigationRouter
     @State private var showingDeleteAlert = false
     @State private var itemToDelete: MemoryItem?
     
@@ -31,64 +32,7 @@ struct StudyView: View {
     }
     
     var body: some View {
-        NavigationView {
-            VStack(spacing: 0) {
-                // 统计概览
-                VStack(spacing: 16) {
-                    HStack(spacing: 16) {
-                        StatCard(title: "本周学习", value: "\(weeklyStudyHours)", unit: "小时")
-                        StatCard(title: "完成项目", value: "\(completedItems.count)", unit: "个")
-                    }
-                    
-                    HStack(spacing: 16) {
-                        StatCard(title: "今日待复习", value: "\(todayItems.count)", unit: "个")
-                        StatCard(title: "总学习项", value: "\(dataManager.memoryItems.count)", unit: "个")
-                    }
-                }
-                .padding()
-                .background(Color(.systemBackground))
-                
-                // 分段选择器
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 16) {
-                        ForEach(StudySection.allCases, id: \.self) { section in
-                            Button(action: {
-                                selectedSection = section
-                            }) {
-                                Text(section.rawValue)
-                                    .font(.subheadline)
-                                    .padding(.horizontal, 16)
-                                    .padding(.vertical, 8)
-                                    .background(
-                                        RoundedRectangle(cornerRadius: 16)
-                                            .fill(selectedSection == section ? Color.blue : Color(.systemGray6))
-                                    )
-                                    .foregroundColor(selectedSection == section ? .white : .primary)
-                            }
-                        }
-                    }
-                    .padding(.horizontal)
-                }
-                .padding(.vertical, 8)
-                .background(Color(.systemBackground))
-                
-                // 内容列表
-                ScrollView {
-                    LazyVStack(spacing: 16) {
-                        switch selectedSection {
-                        case .today:
-                            studyItemList(items: todayItems, emptyMessage: "今日没有需要复习的内容")
-                        case .inProgress:
-                            studyItemList(items: inProgressItems, emptyMessage: "没有正在学习的内容")
-                        case .new:
-                            studyItemList(items: newItems, emptyMessage: "没有未开始的内容")
-                        case .completed:
-                            studyItemList(items: completedItems, emptyMessage: "还没有完成的内容")
-                        }
-                    }
-                    .padding()
-                }
-            }
+        contentView
             .navigationTitle("学习")
             .navigationBarItems(trailing: addButton)
             .alert("确认删除", isPresented: $showingDeleteAlert) {
@@ -104,6 +48,65 @@ struct StudyView: View {
             } message: {
                 Text("确定要删除「\(itemToDelete?.title ?? "")」吗？此操作不可撤销。")
             }
+    }
+    
+    private var contentView: some View {
+        VStack(spacing: 0) {
+            // 统计概览
+            VStack(spacing: 16) {
+                HStack(spacing: 16) {
+                    StatCard(title: "本周学习", value: "\(weeklyStudyHours)", unit: "小时")
+                    StatCard(title: "完成项目", value: "\(completedItems.count)", unit: "个")
+                }
+                
+                HStack(spacing: 16) {
+                    StatCard(title: "今日待复习", value: "\(todayItems.count)", unit: "个")
+                    StatCard(title: "总学习项", value: "\(dataManager.memoryItems.count)", unit: "个")
+                }
+            }
+            .padding()
+            .background(Color(.systemBackground))
+            
+            // 分段选择器
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 16) {
+                    ForEach(StudySection.allCases, id: \.self) { section in
+                        Button(action: {
+                            selectedSection = section
+                        }) {
+                            Text(section.rawValue)
+                                .font(.subheadline)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 8)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 16)
+                                        .fill(selectedSection == section ? Color.blue : Color(.systemGray6))
+                                )
+                                .foregroundColor(selectedSection == section ? .white : .primary)
+                        }
+                    }
+                }
+                .padding(.horizontal)
+            }
+            .padding(.vertical, 8)
+            .background(Color(.systemBackground))
+            
+            // 内容列表
+            ScrollView {
+                LazyVStack(spacing: 16) {
+                    switch selectedSection {
+                    case .today:
+                        studyItemList(items: todayItems, emptyMessage: "今日没有需要复习的内容")
+                    case .inProgress:
+                        studyItemList(items: inProgressItems, emptyMessage: "没有正在学习的内容")
+                    case .new:
+                        studyItemList(items: newItems, emptyMessage: "没有未开始的内容")
+                    case .completed:
+                        studyItemList(items: completedItems, emptyMessage: "还没有完成的内容")
+                    }
+                }
+                .padding()
+            }
         }
     }
     
@@ -113,13 +116,28 @@ struct StudyView: View {
     }
     
     private var addButton: some View {
-        NavigationLink(destination: InputSelectionView()) {
-            Image(systemName: "plus")
-                .font(.system(size: 20, weight: .bold))
-                .frame(width: 36, height: 36)
-                .background(Color.blue)
-                .clipShape(Circle())
-                .foregroundColor(.white)
+        Group {
+            if #available(iOS 16.0, *) {
+                Button {
+                    router.navigate(to: .input)
+                } label: {
+                    Image(systemName: "plus")
+                        .font(.system(size: 20, weight: .bold))
+                        .frame(width: 36, height: 36)
+                        .background(Color.blue)
+                        .clipShape(Circle())
+                        .foregroundColor(.white)
+                }
+            } else {
+                NavigationLink(destination: InputSelectionView()) {
+                    Image(systemName: "plus")
+                        .font(.system(size: 20, weight: .bold))
+                        .frame(width: 36, height: 36)
+                        .background(Color.blue)
+                        .clipShape(Circle())
+                        .foregroundColor(.white)
+                }
+            }
         }
     }
     
@@ -139,27 +157,57 @@ struct StudyView: View {
             .padding(.vertical, 60)
         } else {
             ForEach(items) { item in
-                NavigationLink(destination: PlayerView(memoryItems: items, initialIndex: items.firstIndex(of: item) ?? 0)) {
-                    StudyItemRow(item: item)
-                        .contextMenu {
-                            Button(role: .destructive, action: {
-                                itemToDelete = item
-                                showingDeleteAlert = true
-                            }) {
-                                Label("删除", systemImage: "trash")
-                            }
-                        }
-                        .swipeActions(edge: .trailing) {
-                            Button(role: .destructive) {
-                                itemToDelete = item
-                                showingDeleteAlert = true
-                            } label: {
-                                Label("删除", systemImage: "trash")
-                            }
-                        }
-                }
-                .buttonStyle(PlainButtonStyle())
+                studyItemRow(item: item, items: items)
             }
+        }
+    }
+    
+    @ViewBuilder
+    private func studyItemRow(item: MemoryItem, items: [MemoryItem]) -> some View {
+        if #available(iOS 16.0, *) {
+            Button {
+                router.navigate(to: .player(memoryItems: items, initialIndex: items.firstIndex(of: item) ?? 0))
+            } label: {
+                StudyItemRow(item: item)
+                    .contextMenu {
+                        Button(role: .destructive, action: {
+                            itemToDelete = item
+                            showingDeleteAlert = true
+                        }) {
+                            Label("删除", systemImage: "trash")
+                        }
+                    }
+                    .swipeActions(edge: .trailing) {
+                        Button(role: .destructive) {
+                            itemToDelete = item
+                            showingDeleteAlert = true
+                        } label: {
+                            Label("删除", systemImage: "trash")
+                        }
+                    }
+            }
+            .buttonStyle(PlainButtonStyle())
+        } else {
+            NavigationLink(destination: PlayerView(memoryItems: items, initialIndex: items.firstIndex(of: item) ?? 0)) {
+                StudyItemRow(item: item)
+                    .contextMenu {
+                        Button(role: .destructive, action: {
+                            itemToDelete = item
+                            showingDeleteAlert = true
+                        }) {
+                            Label("删除", systemImage: "trash")
+                        }
+                    }
+                    .swipeActions(edge: .trailing) {
+                        Button(role: .destructive) {
+                            itemToDelete = item
+                            showingDeleteAlert = true
+                        } label: {
+                            Label("删除", systemImage: "trash")
+                        }
+                    }
+            }
+            .buttonStyle(PlainButtonStyle())
         }
     }
 }

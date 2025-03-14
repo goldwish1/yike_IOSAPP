@@ -239,6 +239,16 @@
    - 重构了PlayerView，使用MVVM架构
    - 优化了代码结构和可维护性
 
+### 2024-03-19
+1. 完成了导航系统升级
+   - 创建了NavigationService和NavigationRouter服务类
+   - 实现了iOS 16+和iOS 16以下版本的兼容性支持
+   - 将NavigationView升级为NavigationStack
+   - 使用新的navigationDestination API替换旧的NavigationLink
+   - 优化了导航体验和过渡动画
+   - 重构了导航相关代码以提高可维护性
+   - 确保了向后兼容性，支持iOS 13.0+
+
 ## 待办事项
 
 ### 当前版本计划
@@ -339,8 +349,8 @@
    - [ ] 智能分析
    - [ ] 学习建议 
 
-4. [ ] 导航系统升级
-   - [ ] 将NavigationView升级为NavigationStack
-   - [ ] 使用新的navigationDestination API替换旧的NavigationLink
-   - [ ] 优化导航体验和过渡动画
-   - [ ] 重构导航相关代码以提高可维护性 
+4. [x] 导航系统升级
+   - [x] 将NavigationView升级为NavigationStack
+   - [x] 使用新的navigationDestination API替换旧的NavigationLink
+   - [x] 优化导航体验和过渡动画
+   - [x] 重构导航相关代码以提高可维护性 

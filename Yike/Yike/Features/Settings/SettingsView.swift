@@ -2,6 +2,7 @@ import SwiftUI
 
 struct SettingsView: View {
     @ObservedObject private var settingsManager = SettingsManager.shared
+    @EnvironmentObject private var router: NavigationRouter
     @State private var settings: UserSettings
     @State private var showingAboutSheet = false
     @EnvironmentObject var dataManager: DataManager
@@ -11,48 +12,109 @@ struct SettingsView: View {
     }
     
     var body: some View {
-        NavigationView {
-            List {
-                // 播放设置
-                Section(header: Text("播放设置")) {
-                    NavigationLink(destination: PlaySettingsView()) {
-                        SettingRow(icon: "speaker.wave.2.fill", iconColor: .blue, title: "播放设置")
-                    }
-                }
-                
-                // 复习设置
-                Section(header: Text("复习设置")) {
-                    NavigationLink(destination: ReminderSettingsView()) {
-                        SettingRow(icon: "bell.fill", iconColor: .orange, title: "提醒设置")
-                    }
-                }
-                
-                // 积分管理
-                Section(header: Text("积分管理")) {
-                    NavigationLink(destination: PointsCenterView()) {
-                        SettingRow(icon: "creditcard.fill", iconColor: .green, title: "积分中心")
-                        
-                        Spacer()
-                        
+        contentView
+            .navigationTitle("设置")
+            .sheet(isPresented: $showingAboutSheet) {
+                AboutView()
+            }
+    }
+    
+    private var contentView: some View {
+        List {
+            // 播放设置
+            Section(header: Text("播放设置")) {
+                settingRow(
+                    icon: "speaker.wave.2.fill",
+                    iconColor: .blue,
+                    title: "播放设置",
+                    destination: .playSettings
+                )
+            }
+            
+            // 复习设置
+            Section(header: Text("复习设置")) {
+                settingRow(
+                    icon: "bell.fill",
+                    iconColor: .orange,
+                    title: "提醒设置",
+                    destination: .reminderSettings
+                )
+            }
+            
+            // 积分管理
+            Section(header: Text("积分管理")) {
+                settingRow(
+                    icon: "creditcard.fill",
+                    iconColor: .green,
+                    title: "积分中心",
+                    destination: .pointsCenter,
+                    trailing: {
                         Text("\(dataManager.points)")
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                     }
-                }
-                
-                // 关于我们
-                Section(header: Text("其他")) {
-                    Button(action: {
-                        showingAboutSheet = true
-                    }) {
-                        SettingRow(icon: "info.circle.fill", iconColor: .gray, title: "关于")
-                    }
+                )
+            }
+            
+            // 关于我们
+            Section(header: Text("其他")) {
+                Button(action: {
+                    showingAboutSheet = true
+                }) {
+                    SettingRow(icon: "info.circle.fill", iconColor: .gray, title: "关于")
                 }
             }
-            .listStyle(InsetGroupedListStyle())
-            .navigationTitle("设置")
-            .sheet(isPresented: $showingAboutSheet) {
-                AboutView()
+        }
+        .listStyle(InsetGroupedListStyle())
+    }
+    
+    @ViewBuilder
+    private func settingRow(
+        icon: String,
+        iconColor: Color,
+        title: String,
+        destination: AppRoute,
+        @ViewBuilder trailing: () -> some View = { EmptyView() }
+    ) -> some View {
+        if #available(iOS 16.0, *) {
+            Button {
+                router.navigate(to: destination)
+            } label: {
+                HStack {
+                    SettingRow(icon: icon, iconColor: iconColor, title: title)
+                    Spacer()
+                    trailing()
+                }
+            }
+            .foregroundColor(.primary)
+        } else {
+            switch destination {
+            case .playSettings:
+                NavigationLink(destination: PlaySettingsView()) {
+                    HStack {
+                        SettingRow(icon: icon, iconColor: iconColor, title: title)
+                        Spacer()
+                        trailing()
+                    }
+                }
+            case .reminderSettings:
+                NavigationLink(destination: ReminderSettingsView()) {
+                    HStack {
+                        SettingRow(icon: icon, iconColor: iconColor, title: title)
+                        Spacer()
+                        trailing()
+                    }
+                }
+            case .pointsCenter:
+                NavigationLink(destination: PointsCenterView()) {
+                    HStack {
+                        SettingRow(icon: icon, iconColor: iconColor, title: title)
+                        Spacer()
+                        trailing()
+                    }
+                }
+            default:
+                EmptyView()
             }
         }
     }
