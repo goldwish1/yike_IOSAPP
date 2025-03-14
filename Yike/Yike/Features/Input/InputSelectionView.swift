@@ -20,6 +20,13 @@ struct InputSelectionView: View {
     
     var body: some View {
         ZStack {
+            NavigationLink(destination: PreviewEditView(
+                text: selectedMethod == .manual ? manualText : recognizedText,
+                shouldPopToRoot: $shouldPopToRoot
+            ), isActive: $navigateToPreview) {
+                EmptyView()
+            }
+            
             VStack(spacing: 20) {
                 // 输入方式选择
                 HStack(spacing: 10) {
@@ -91,7 +98,7 @@ struct InputSelectionView: View {
                 
                 // 下一步按钮
                 Button(action: {
-                    print("点击下一步按钮，当前文本长度: \(manualText.isEmpty ? recognizedText.count : manualText.count)")
+                    print("点击下一步按钮，当前文本长度: \(selectedMethod == .manual ? manualText.count : recognizedText.count)")
                     navigateToPreview = true
                 }) {
                     Text("下一步")
@@ -108,14 +115,6 @@ struct InputSelectionView: View {
                 .disabled((selectedMethod == .manual && manualText.isEmpty) ||
                           (selectedMethod == .camera && recognizedText.isEmpty) ||
                           isRecognizing)
-                
-                // 使用新的导航方式
-                .navigationDestination(isPresented: $navigateToPreview) {
-                    PreviewEditView(
-                        text: selectedMethod == .manual ? manualText : recognizedText,
-                        shouldPopToRoot: $shouldPopToRoot
-                    )
-                }
             }
             .navigationTitle("新建内容")
             .sheet(isPresented: $showCamera) {

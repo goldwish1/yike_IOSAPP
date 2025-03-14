@@ -32,6 +32,18 @@ Yike/
 │   │       ├── Settings/     # 设置功能
 │   │       ├── Input/        # 输入功能
 │   │       ├── Player/       # 播放功能
+│   │       │   ├── PlayerView.swift            # 播放页面主视图
+│   │       │   ├── Services/                   # 播放相关服务
+│   │       │   │   ├── SpeechManager.swift     # 语音管理器
+│   │       │   │   ├── LocalVoicePlaybackManager.swift  # 本地语音播放管理器
+│   │       │   │   └── ApiVoicePlaybackManager.swift    # API语音播放管理器
+│   │       │   ├── ViewModels/                 # 视图模型
+│   │       │   │   └── PlaybackControlViewModel.swift   # 播放控制视图模型
+│   │       │   └── Views/                      # 子视图组件
+│   │       │       ├── PlayerControlsView.swift         # 播放控制视图
+│   │       │       ├── PlaybackProgressView.swift       # 播放进度视图
+│   │       │       ├── WaveformAnimationView.swift      # 波形动画视图
+│   │       │       └── SpeedSelectionView.swift         # 速度选择视图
 │   │       ├── Points/       # 积分功能
 │   │       ├── Study/        # 学习功能
 │   │       └── Home/         # 首页功能
@@ -76,6 +88,18 @@ Yike/
        - `Settings/`: 设置相关功能
        - `Input/`: 内容输入功能（OCR、手动输入等）
        - `Player/`: 播放功能（语音播放、控制等）
+         - `PlayerView.swift`: 播放页面主视图，整合各个子组件
+         - `Services/`: 播放相关服务
+           - `SpeechManager.swift`: 语音管理器，处理文本转语音核心功能
+           - `LocalVoicePlaybackManager.swift`: 本地语音播放管理器，处理系统语音合成
+           - `ApiVoicePlaybackManager.swift`: API语音播放管理器，处理在线语音合成
+         - `ViewModels/`: 视图模型
+           - `PlaybackControlViewModel.swift`: 播放控制视图模型，处理播放状态和业务逻辑
+         - `Views/`: 子视图组件
+           - `PlayerControlsView.swift`: 播放控制视图，包含播放/暂停、上一条/下一条按钮
+           - `PlaybackProgressView.swift`: 播放进度视图，显示播放进度和时间
+           - `WaveformAnimationView.swift`: 波形动画视图，显示播放状态的动画效果
+           - `SpeedSelectionView.swift`: 速度选择视图，提供播放速度调节功能
        - `Points/`: 积分系统功能
        - `Study/`: 学习相关功能
        - `Home/`: 首页功能
