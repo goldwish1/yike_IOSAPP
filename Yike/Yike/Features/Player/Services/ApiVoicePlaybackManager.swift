@@ -24,6 +24,9 @@ class ApiVoicePlaybackManager: ObservableObject {
     private let dataManager = DataManager.shared
     private let settingsManager = SettingsManager.shared
     
+    private var sentences: [String] = []
+    private var currentSentenceIndex: Int = 0
+    
     private init() {
         // 监听AudioPlayerService的状态变化
         Timer.publish(every: 0.1, on: .main, in: .common)
@@ -47,6 +50,23 @@ class ApiVoicePlaybackManager: ObservableObject {
         // 取消之前的间隔计时器
         cancelIntervalTimer()
         
+        // 如果是新的文本或者是重新开始播放，则分割句子
+        if sentences.isEmpty || text != sentences.joined() {
+            sentences = splitIntoSentences(text)
+            currentSentenceIndex = 0
+        }
+        
+        // 如果没有句子或者已经播放完所有句子，则重置
+        if sentences.isEmpty || currentSentenceIndex >= sentences.count {
+            sentences = splitIntoSentences(text)
+            currentSentenceIndex = 0
+        }
+        
+        // 如果仍然没有句子，则返回
+        if sentences.isEmpty {
+            return
+        }
+        
         isLoading = true
         error = nil
         
@@ -57,9 +77,12 @@ class ApiVoicePlaybackManager: ObservableObject {
             return
         }
         
+        // 获取当前句子
+        let currentSentence = sentences[currentSentenceIndex]
+        
         // 调用API生成语音
         SiliconFlowTTSService.shared.generateSpeech(
-            text: text,
+            text: currentSentence,
             voice: voice,
             speed: speed
         ) { [weak self] audioURL, error in
@@ -85,8 +108,17 @@ class ApiVoicePlaybackManager: ObservableObject {
                         // 更新播放状态
                         self.isPlaying = false
                         
-                        // 调用完成回调
-                        completion?()
+                        // 移动到下一个句子
+                        self.currentSentenceIndex += 1
+                        
+                        // 如果已经播放完所有句子
+                        if self.currentSentenceIndex >= self.sentences.count {
+                            // 重置句子索引
+                            self.currentSentenceIndex = 0
+                            
+                            // 调用完成回调
+                            completion?()
+                        }
                         
                         // 检查是否启用了播放间隔
                         if self.settingsManager.settings.enablePlaybackInterval {
@@ -109,8 +141,8 @@ class ApiVoicePlaybackManager: ObservableObject {
                             // 安排计时器任务在指定的间隔时间后执行
                             DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(intervalSeconds), execute: workItem)
                         } else {
-                            // 如果未启用播放间隔，则直接循环播放
-                            print("API音频播放完成，未启用间隔，直接循环播放")
+                            // 如果未启用播放间隔，则直接播放下一句
+                            print("API音频播放完成，未启用间隔，直接播放下一句")
                             self.play(text: text, voice: voice, speed: speed)
                         }
                     }
@@ -119,11 +151,40 @@ class ApiVoicePlaybackManager: ObservableObject {
                 self.isPlaying = true
                 
                 // 扣除积分（仅在首次生成时扣除，缓存的不扣除）
-                if !SiliconFlowTTSService.shared.isCached(text: text, voice: voice, speed: speed) {
+                if !SiliconFlowTTSService.shared.isCached(text: currentSentence, voice: voice, speed: speed) {
                     _ = self.dataManager.deductPoints(5, reason: "使用在线语音")
                 }
             }
         }
+    }
+    
+    /// 将文本分割成句子
+    /// - Parameter text: 要分割的文本
+    /// - Returns: 句子数组
+    private func splitIntoSentences(_ text: String) -> [String] {
+        // 使用常见的句子分隔符分割文本
+        let separators = ["。", "！", "？", ".", "!", "?", "\n"]
+        var sentences: [String] = []
+        var currentSentence = ""
+        
+        for char in text {
+            currentSentence.append(char)
+            
+            // 如果当前字符是分隔符，则添加当前句子到数组中
+            if separators.contains(String(char)) {
+                if !currentSentence.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                    sentences.append(currentSentence)
+                    currentSentence = ""
+                }
+            }
+        }
+        
+        // 添加最后一个句子（如果有）
+        if !currentSentence.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            sentences.append(currentSentence)
+        }
+        
+        return sentences
     }
     
     /// 暂停播放
@@ -146,6 +207,8 @@ class ApiVoicePlaybackManager: ObservableObject {
         isPlaying = false
         // 取消间隔计时器
         cancelIntervalTimer()
+        // 重置句子索引
+        currentSentenceIndex = 0
     }
     
     /// 切换播放/暂停状态
