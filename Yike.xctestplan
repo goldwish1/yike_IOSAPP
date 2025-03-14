@@ -1,26 +1,35 @@
 {
   "configurations" : [
     {
-      "id" : "AB12BD41-7490-4D79-B156-F9082F6C1803",
-      "name" : "Test Scheme Action",
+      "id" : "B8D9F5A0-1234-5678-9ABC-DEF012345678",
+      "name" : "测试配置",
       "options" : {
-
+        "targetForVariableExpansion" : {
+          "containerPath" : "container:Yike.xcodeproj",
+          "identifier" : "YikeTests",
+          "name" : "YikeTests"
+        }
       }
     }
   ],
   "defaultOptions" : {
+    "codeCoverage" : {
+      "targets" : [
+        {
+          "containerPath" : "container:Yike.xcodeproj",
+          "identifier" : "Yike",
+          "name" : "Yike"
+        }
+      ]
+    },
     "targetForVariableExpansion" : {
       "containerPath" : "container:Yike.xcodeproj",
-      "identifier" : "B875D4142D75ED57005A1A9E",
+      "identifier" : "Yike",
       "name" : "Yike"
     }
   },
   "testTargets" : [
     {
-      "parallelizable" : true,
-      "selectedTags" : {
-        "includeXCTests" : true
-      },
       "target" : {
         "containerPath" : "container:Yike.xcodeproj",
         "identifier" : "B875D4292D75ED58005A1A9E",
@@ -28,10 +37,8 @@
       }
     },
     {
+      "enabled" : false,
       "parallelizable" : true,
-      "selectedTags" : {
-        "includeXCTests" : true
-      },
       "target" : {
         "containerPath" : "container:Yike.xcodeproj",
         "identifier" : "B875D4332D75ED58005A1A9E",

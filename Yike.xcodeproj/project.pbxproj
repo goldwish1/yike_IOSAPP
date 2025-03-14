@@ -49,11 +49,6 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		B82C90192D83B98D00B033ED /* YikeUITests_record */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = YikeUITests_record;
-			sourceTree = "<group>";
-		};
 		B875D4172D75ED57005A1A9E /* Yike */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -113,7 +108,6 @@
 				B875D4172D75ED57005A1A9E /* Yike */,
 				B875D42D2D75ED58005A1A9E /* YikeTests */,
 				B875D4372D75ED58005A1A9E /* YikeUITests */,
-				B82C90192D83B98D00B033ED /* YikeUITests_record */,
 				B875D4162D75ED57005A1A9E /* Products */,
 			);
 			sourceTree = "<group>";
@@ -144,9 +138,6 @@
 			);
 			dependencies = (
 				B82C901F2D83B98D00B033ED /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				B82C90192D83B98D00B033ED /* YikeUITests_record */,
 			);
 			name = YikeUITests_record;
 			packageProductDependencies = (
