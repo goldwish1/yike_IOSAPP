@@ -36,3 +36,9 @@ https://docusaurus.io/zh-CN/docs
 请帮我撰写今天的开发日志，包括开发时间记录（真实记录我们今天的交互时间）、完成的功能（包括修改了哪些文件）、遇到的问题、你的思考、后续的开发规划，并保存在doc/report文件夹中
 
 我们需要实现积分消耗功能的完整测试，计划使用XCTEST框架，请复述下对我需求的理解，然后确认实现方案，不要急着改代码
+
+cd "/Users/fengyuanzhou/Desktop/IOS APP/Yike/Yike" && xcodebuild -project Yike.xcodeproj -scheme Yike -destination "platform=iOS Simulator,name=iPhone 15" clean build
+
+这种模块化的结构使代码更易于维护和扩展，同时也符合 MVVM 架构模式
+
+后台播放一定要在xcode中增加，不要写在项目代码里
