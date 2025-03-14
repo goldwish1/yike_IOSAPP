@@ -75,7 +75,7 @@ class MockUserDefaults: UserDefaults {
     }
     
     override func removeObject(forKey defaultName: String) {
-        storage.removeKey(forKey: defaultName)
+        storage.removeValue(forKey: defaultName)
     }
     
     override func bool(forKey defaultName: String) -> Bool {
@@ -166,8 +166,8 @@ extension XCTestCase {
         XCTAssertTrue(abs(expression1 - expression2) <= accuracy, message)
     }
     
-    /// 断言两个浮点数近似相等
-    func XCTAssertApproximatelyEqual(_ expression1: Float, _ expression2: Float, accuracy: Float = 0.0001, _ message: String = "") {
+    /// 断言两个浮点数近似相等（Float版本）
+    func XCTAssertApproximatelyEqualFloat(_ expression1: Float, _ expression2: Float, accuracy: Float = 0.0001, _ message: String = "") {
         XCTAssertTrue(abs(expression1 - expression2) <= accuracy, message)
     }
 } 

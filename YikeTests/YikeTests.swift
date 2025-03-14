@@ -81,12 +81,13 @@ class YikeBaseTests: XCTestCase {
 /// 测试数据提供者
 struct TestDataProvider {
     // 测试用户数据
-    static let testUser = User(id: "test_user_id", name: "测试用户", points: 100)
+    static let testUserName = "测试用户"
+    static let testUserPoints = 100
     
     // 测试记忆项目数据
     static let testMemoryItems = [
-        MemoryItem(id: "item1", title: "测试项目1", content: "这是测试内容1", category: "测试分类"),
-        MemoryItem(id: "item2", title: "测试项目2", content: "这是测试内容2", category: "测试分类")
+        MemoryItem(id: UUID(), title: "测试项目1", content: "这是测试内容1", progress: 0.0, reviewStage: 0),
+        MemoryItem(id: UUID(), title: "测试项目2", content: "这是测试内容2", progress: 0.0, reviewStage: 0)
     ]
     
     // 测试音频数据
