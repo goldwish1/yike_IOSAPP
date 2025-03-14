@@ -276,18 +276,11 @@ class SpeechManager: NSObject, ObservableObject, AVSpeechSynthesizerDelegate, @u
         intervalTimer = Timer.scheduledTimer(withTimeInterval: TimeInterval(intervalSeconds), repeats: false) { [weak self] _ in
             guard let self = self else { return }
             
-            // 检查是否有更多句子需要播放
-            if self.currentIndex < self.sentences.count - 1 {
-                // 播放下一句
-                self.currentIndex += 1
-                self.prepareUtterance(for: self.sentences[self.currentIndex])
-                self.play()
-            } else {
-                // 如果是最后一句，重新开始（循环播放）
-                self.currentIndex = 0
-                self.prepareUtterance(for: self.sentences[self.currentIndex])
-                self.play()
-            }
+            // 间隔结束后，重新从第一句开始播放
+            self.currentIndex = 0
+            self.prepareUtterance(for: self.sentences[self.currentIndex])
+            self.play()
+            print("间隔结束，重新开始播放")
         }
     }
     
@@ -331,24 +324,28 @@ class SpeechManager: NSObject, ObservableObject, AVSpeechSynthesizerDelegate, @u
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            if SettingsManager.shared.settings.enablePlaybackInterval {
+            // 检查是否是最后一句
+            let isLastSentence = self.currentIndex >= self.sentences.count - 1
+            
+            if isLastSentence && SettingsManager.shared.settings.enablePlaybackInterval {
+                // 如果是最后一句且启用了间隔，启动间隔计时器
                 self.isPlaying = false
                 self.startIntervalTimer()
-                print("启动间隔计时器")
+                print("播放完最后一句，启动间隔计时器")
+            } else if isLastSentence {
+                // 如果是最后一句但没有启用间隔，直接重新开始（循环播放）
+                self.currentIndex = 0
+                self.prepareUtterance(for: self.sentences[self.currentIndex])
+                self.isPlaying = false
+                self.play()
+                print("播放完最后一句，直接重新开始")
             } else {
-                print("准备播放下一句")
-                if self.currentIndex < self.sentences.count - 1 {
-                    self.currentIndex += 1
-                    self.prepareUtterance(for: self.sentences[self.currentIndex])
-                    self.isPlaying = false
-                    self.play()
-                } else {
-                    // 如果是最后一句，重新开始（循环播放）
-                    self.currentIndex = 0
-                    self.prepareUtterance(for: self.sentences[self.currentIndex])
-                    self.isPlaying = false
-                    self.play()
-                }
+                // 如果不是最后一句，继续播放下一句
+                self.currentIndex += 1
+                self.prepareUtterance(for: self.sentences[self.currentIndex])
+                self.isPlaying = false
+                self.play()
+                print("播放完一句，继续播放下一句")
             }
         }
     }
