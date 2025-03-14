@@ -117,6 +117,10 @@ import SwiftUI
         // 在标点符号前添加停顿标记，使停顿更明显
         processedText = processedText.replacingOccurrences(of: "，", with: "\(pauseMark)，")
         processedText = processedText.replacingOccurrences(of: "。", with: "\(pauseMark)。")
+        processedText = processedText.replacingOccurrences(of: "？", with: "\(pauseMark)？")
+        processedText = processedText.replacingOccurrences(of: "?", with: "\(pauseMark)?")
+        processedText = processedText.replacingOccurrences(of: "！", with: "\(pauseMark)！")
+        processedText = processedText.replacingOccurrences(of: "!", with: "\(pauseMark)!")
         
         // 2. 处理古诗文中的行末停顿
         // 在每行末尾添加停顿标记
@@ -125,7 +129,7 @@ import SwiftUI
             var processedLine = line.trimmingCharacters(in: .whitespacesAndNewlines)
             if !processedLine.isEmpty {
                 // 如果行末没有标点，添加停顿标记
-                if !["，", "。", "、", "；", "！", "？", "："].contains(String(processedLine.last!)) {
+                if !["，", "。", "、", "；", "！", "？", "：", "!", "?"].contains(String(processedLine.last!)) {
                     processedLine += pauseMark
                 }
             }
@@ -136,6 +140,10 @@ import SwiftUI
         processedText = processedText.replacingOccurrences(of: "、、", with: "、")
         processedText = processedText.replacingOccurrences(of: "，、", with: "，")
         processedText = processedText.replacingOccurrences(of: "。、", with: "。")
+        processedText = processedText.replacingOccurrences(of: "？、", with: "？")
+        processedText = processedText.replacingOccurrences(of: "?、", with: "?")
+        processedText = processedText.replacingOccurrences(of: "！、", with: "！")
+        processedText = processedText.replacingOccurrences(of: "!、", with: "!")
         
         return processedText
     }
