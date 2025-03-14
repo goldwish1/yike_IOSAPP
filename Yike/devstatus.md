@@ -339,9 +339,8 @@
    - [ ] 智能分析
    - [ ] 学习建议 
 
-NavigationLink(destination: PreviewEditView(
-    text: selectedMethod == .manual ? manualText : recognizedText,
-    shouldPopToRoot: $shouldPopToRoot
-), isActive: $navigateToPreview) {
-    EmptyView()
-} 
+4. [ ] 导航系统升级
+   - [ ] 将NavigationView升级为NavigationStack
+   - [ ] 使用新的navigationDestination API替换旧的NavigationLink
+   - [ ] 优化导航体验和过渡动画
+   - [ ] 重构导航相关代码以提高可维护性 
