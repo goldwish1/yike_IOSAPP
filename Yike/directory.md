@@ -7,6 +7,11 @@ Yike/
 ├── test_results.json
 ├── YikeTests/
 ├── YikeUITests/
+├── YikeUITests_record/                # UI测试录制目录
+│   ├── YikeUITests_record.swift       # UI测试录制主文件
+│   ├── YikeUITests_recordLaunchTests.swift # 启动测试文件
+│   ├── info.plist                     # 配置文件
+│   └── .DS_Store
 ├── Yike/
 │   ├── devstatus.md
 │   ├── en.lproj/
@@ -79,7 +84,11 @@ Yike/
 2. `test_results.json`: 测试结果数据
 3. `YikeTests/`: 单元测试目录
 4. `YikeUITests/`: UI测试目录
-5. `Yike/`: 主项目目录
+5. `YikeUITests_record/`: UI测试录制目录
+   - `YikeUITests_record.swift`: UI测试录制主文件
+   - `YikeUITests_recordLaunchTests.swift`: 启动测试文件
+   - `info.plist`: 测试配置文件
+6. `Yike/`: 主项目目录
    - `devstatus.md`: 开发状态文档
    - `en.lproj/`: 英文本地化资源
    - `zh-Hans.lproj/`: 简体中文本地化资源
@@ -140,6 +149,6 @@ Yike/
    - `Persistence.swift`: 数据持久化管理
    - `Preview Content/`: SwiftUI 预览资源
    - `Assets.xcassets/`: 项目资源文件
-6. `Yike.xctestplan`: 测试计划文件
-7. `TestResults.xcresult/`: Xcode 测试结果
-8. `TestResults/`: 测试结果目录 
+7. `Yike.xctestplan`: 测试计划文件
+8. `TestResults.xcresult/`: Xcode 测试结果
+9. `TestResults/`: 测试结果目录 

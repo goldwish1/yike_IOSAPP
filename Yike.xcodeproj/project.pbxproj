@@ -7,6 +7,13 @@
 	objects = {
 
 /* Begin PBXContainerItemProxy section */
+		B82C901E2D83B98D00B033ED /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B875D40D2D75ED57005A1A9E /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B875D4142D75ED57005A1A9E;
+			remoteInfo = Yike;
+		};
 		B875D42B2D75ED58005A1A9E /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = B875D40D2D75ED57005A1A9E /* Project object */;
@@ -25,6 +32,7 @@
 
 /* Begin PBXFileReference section */
 		B82C8BF32D823E4800B033ED /* Yike.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = Yike.xctestplan; sourceTree = "<group>"; };
+		B82C90182D83B98D00B033ED /* YikeUITests_record.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = YikeUITests_record.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B875D4152D75ED57005A1A9E /* Yike.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Yike.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B875D42A2D75ED58005A1A9E /* YikeTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = YikeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B875D4342D75ED58005A1A9E /* YikeUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = YikeUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -41,6 +49,11 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		B82C90192D83B98D00B033ED /* YikeUITests_record */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = YikeUITests_record;
+			sourceTree = "<group>";
+		};
 		B875D4172D75ED57005A1A9E /* Yike */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -62,6 +75,13 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		B82C90152D83B98D00B033ED /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		B875D4122D75ED57005A1A9E /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -93,6 +113,7 @@
 				B875D4172D75ED57005A1A9E /* Yike */,
 				B875D42D2D75ED58005A1A9E /* YikeTests */,
 				B875D4372D75ED58005A1A9E /* YikeUITests */,
+				B82C90192D83B98D00B033ED /* YikeUITests_record */,
 				B875D4162D75ED57005A1A9E /* Products */,
 			);
 			sourceTree = "<group>";
@@ -103,6 +124,7 @@
 				B875D4152D75ED57005A1A9E /* Yike.app */,
 				B875D42A2D75ED58005A1A9E /* YikeTests.xctest */,
 				B875D4342D75ED58005A1A9E /* YikeUITests.xctest */,
+				B82C90182D83B98D00B033ED /* YikeUITests_record.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -110,6 +132,29 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		B82C90172D83B98D00B033ED /* YikeUITests_record */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B82C90202D83B98D00B033ED /* Build configuration list for PBXNativeTarget "YikeUITests_record" */;
+			buildPhases = (
+				B82C90142D83B98D00B033ED /* Sources */,
+				B82C90152D83B98D00B033ED /* Frameworks */,
+				B82C90162D83B98D00B033ED /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				B82C901F2D83B98D00B033ED /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				B82C90192D83B98D00B033ED /* YikeUITests_record */,
+			);
+			name = YikeUITests_record;
+			packageProductDependencies = (
+			);
+			productName = YikeUITests_record;
+			productReference = B82C90182D83B98D00B033ED /* YikeUITests_record.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 		B875D4142D75ED57005A1A9E /* Yike */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = B875D43E2D75ED58005A1A9E /* Build configuration list for PBXNativeTarget "Yike" */;
@@ -188,6 +233,10 @@
 				LastSwiftUpdateCheck = 1620;
 				LastUpgradeCheck = 1620;
 				TargetAttributes = {
+					B82C90172D83B98D00B033ED = {
+						CreatedOnToolsVersion = 16.2;
+						TestTargetID = B875D4142D75ED57005A1A9E;
+					};
 					B875D4142D75ED57005A1A9E = {
 						CreatedOnToolsVersion = 16.2;
 					};
@@ -219,11 +268,19 @@
 				B875D4142D75ED57005A1A9E /* Yike */,
 				B875D4292D75ED58005A1A9E /* YikeTests */,
 				B875D4332D75ED58005A1A9E /* YikeUITests */,
+				B82C90172D83B98D00B033ED /* YikeUITests_record */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		B82C90162D83B98D00B033ED /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		B875D4132D75ED57005A1A9E /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -248,6 +305,13 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		B82C90142D83B98D00B033ED /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		B875D4112D75ED57005A1A9E /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -272,6 +336,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		B82C901F2D83B98D00B033ED /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B875D4142D75ED57005A1A9E /* Yike */;
+			targetProxy = B82C901E2D83B98D00B033ED /* PBXContainerItemProxy */;
+		};
 		B875D42C2D75ED58005A1A9E /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = B875D4142D75ED57005A1A9E /* Yike */;
@@ -285,6 +354,42 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		B82C90212D83B98D00B033ED /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = L894TN6N22;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "goldwish.YikeUITests-record";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Yike;
+			};
+			name = Debug;
+		};
+		B82C90222D83B98D00B033ED /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = L894TN6N22;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "goldwish.YikeUITests-record";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Yike;
+			};
+			name = Release;
+		};
 		B875D43C2D75ED58005A1A9E /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -543,6 +648,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		B82C90202D83B98D00B033ED /* Build configuration list for PBXNativeTarget "YikeUITests_record" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B82C90212D83B98D00B033ED /* Debug */,
+				B82C90222D83B98D00B033ED /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		B875D4102D75ED57005A1A9E /* Build configuration list for PBXProject "Yike" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
