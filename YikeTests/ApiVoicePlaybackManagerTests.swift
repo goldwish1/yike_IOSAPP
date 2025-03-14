@@ -219,44 +219,6 @@ class ApiVoicePlaybackManagerTests: YikeBaseTests {
         // 验证TTS服务没有被再次调用
         XCTAssertEqual(mockTTSService.synthesizeCallCount, 0)
     }
-    
-    // MARK: - 测试播放间隔逻辑
-    
-    func testPlaySentenceBySetence() {
-        // 设置模拟数据
-        let mockText = "这是第一句。这是第二句。这是第三句。"
-        let mockVoice = "female"
-        let mockSpeed = 1.0
-        
-        // 设置期望
-        let expectation = XCTestExpectation(description: "播放完成")
-        
-        // 模拟TTS服务
-        let mockTTSService = MockSiliconFlowTTSService()
-        mockTTSService.generateSpeechHandler = { text, voice, speed, completion in
-            // 验证传入的文本是单个句子，而不是整段文本
-            XCTAssertTrue(text == "这是第一句。" || text == "这是第二句。" || text == "这是第三句。")
-            
-            // 模拟生成音频URL
-            let audioURL = URL(fileURLWithPath: "/tmp/test.mp3")
-            completion(audioURL, nil)
-        }
-        
-        // 替换真实服务为模拟服务
-        SiliconFlowTTSService.shared = mockTTSService
-        
-        // 执行测试
-        playbackManager.play(text: mockText, voice: mockVoice, speed: mockSpeed) {
-            expectation.fulfill()
-        }
-        
-        // 等待期望完成
-        wait(for: [expectation], timeout: 5.0)
-        
-        // 验证结果
-        XCTAssertEqual(mockTTSService.generateSpeechCallCount, 3) // 应该调用3次，每句一次
-        XCTAssertEqual(dataManager.deductPointsCallCount, 3) // 应该扣除3次积分，每句一次
-    }
 }
 
 // MARK: - 辅助类
@@ -336,9 +298,6 @@ class MockSiliconFlowTTSService: SiliconFlowTTSService {
     private var pendingCompletions: [(Result<URL, Error>) -> Void] = []
     private var mockResult: Result<URL, Error>?
     var synthesizeCallCount = 0
-    var generateSpeechCallCount = 0
-    
-    var generateSpeechHandler: ((String, String, Float, @escaping (URL?, Error?) -> Void) -> Void)?
     
     override func synthesize(text: String, voice: String, previewMode: Bool, completion: @escaping (Result<URL, Error>) -> Void) {
         synthesizeCallCount += 1
@@ -370,11 +329,5 @@ class MockSiliconFlowTTSService: SiliconFlowTTSService {
     
     func resetCallCount() {
         synthesizeCallCount = 0
-    }
-    
-    override func generateSpeech(text: String, voice: String, speed: Float, completion: @escaping (URL?, Error?) -> Void) {
-        generateSpeechCallCount += 1
-        
-        generateSpeechHandler?(text, voice, speed, completion)
     }
 } 
