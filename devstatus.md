@@ -36,7 +36,10 @@
   - [x] 模拟语音合成功能
   - [x] 实现合成状态管理
   - [x] 添加合成事件回调
-- [ ] 创建MockVisionFramework
+- [x] 创建MockVisionFramework
+  - [x] 模拟OCR识别功能
+  - [x] 实现识别结果生成
+  - [x] 添加识别错误模拟
 
 ### 4. 服务层测试
 - [ ] 测试 AudioPlayerService
