@@ -9,6 +9,21 @@ struct MemoryItem: Identifiable, Codable, Equatable {
     var reviewStage: Int // 0: 未开始, 1-5: 艾宾浩斯复习阶段
     var lastReviewDate: Date?
     var nextReviewDate: Date?
+    var createdAt: Date // 创建时间
+    var lastReviewedAt: Date? // 最后复习时间，与lastReviewDate保持一致，为了兼容测试代码
+    
+    // 初始化方法
+    init(id: UUID, title: String, content: String, progress: Double, reviewStage: Int, lastReviewDate: Date? = nil, nextReviewDate: Date? = nil, createdAt: Date = Date(), lastReviewedAt: Date? = nil) {
+        self.id = id
+        self.title = title
+        self.content = content
+        self.progress = progress
+        self.reviewStage = reviewStage
+        self.lastReviewDate = lastReviewDate
+        self.nextReviewDate = nextReviewDate
+        self.createdAt = createdAt
+        self.lastReviewedAt = lastReviewedAt ?? lastReviewDate
+    }
     
     var isNew: Bool {
         return reviewStage == 0

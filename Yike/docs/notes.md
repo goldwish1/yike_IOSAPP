@@ -24,7 +24,7 @@
  
 我们要开发一个文章自动创建脚本，我们现在在项目的根目录。这是我们的PRD；请先帮我创建readme文档，然后思考下实现方案并将方案和开发计划更新到 @developstatus.md 中
 
-https://docusaurus.io/zh-CN/docs
+
 
 请帮我生成HTML可以预览的原型图，包括所有页面
 
@@ -37,8 +37,12 @@ https://docusaurus.io/zh-CN/docs
 
 我们需要实现积分消耗功能的完整测试，计划使用XCTEST框架，请复述下对我需求的理解，然后确认实现方案，不要急着改代码
 
+--- 
+
 cd "/Users/fengyuanzhou/Desktop/IOS APP/Yike/Yike" && xcodebuild -project Yike.xcodeproj -scheme Yike -destination "platform=iOS Simulator,name=iPhone 15" clean build
 
 这种模块化的结构使代码更易于维护和扩展，同时也符合 MVVM 架构模式
 
 后台播放一定要在xcode中增加，不要写在项目代码里
+
+不要让cursor解决测试用例的问题，而是让cursor针对功能设计和测试；

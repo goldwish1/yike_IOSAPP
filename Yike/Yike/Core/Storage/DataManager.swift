@@ -9,6 +9,9 @@ import Combine
     @Published var pointsRecords: [PointsRecord] = []
     @Published var hasShownApiVoiceAlert: Bool = false // 是否已显示过在线语音提示
     
+    // 用于测试的标志，指示是否使用持久化存储
+    private var usePersistentStorage: Bool = true
+    
     internal override init() {
         super.init()
         // 从本地加载数据
@@ -18,6 +21,17 @@ import Combine
         if memoryItems.isEmpty {
             addSampleData()
         }
+    }
+    
+    // 创建用于测试的实例
+    static func createForTesting() -> DataManager {
+        let manager = DataManager()
+        manager.usePersistentStorage = false // 测试时不使用持久化存储
+        manager.memoryItems = []
+        manager.points = 100
+        manager.pointsRecords = []
+        manager.hasShownApiVoiceAlert = false
+        return manager
     }
     
     // MARK: - Memory Items Methods
@@ -41,6 +55,71 @@ import Combine
     
     func deleteMemoryItem(_ item: MemoryItem) {
         deleteMemoryItem(id: item.id)
+    }
+    
+    // 获取所有记忆项目
+    func getAllMemoryItems() -> [MemoryItem] {
+        return memoryItems
+    }
+    
+    // 根据ID获取记忆项目
+    func getMemoryItem(id: UUID) -> MemoryItem? {
+        return memoryItems.first(where: { $0.id == id })
+    }
+    
+    // 创建新的记忆项目
+    func createMemoryItem(title: String, content: String) -> MemoryItem {
+        let item = MemoryItem(
+            id: UUID(),
+            title: title,
+            content: content,
+            progress: 0.0,
+            reviewStage: 0,
+            lastReviewDate: nil,
+            nextReviewDate: nil,
+            createdAt: Date(),
+            lastReviewedAt: nil
+        )
+        addMemoryItem(item)
+        return item
+    }
+    
+    // 更新记忆项目的特定属性
+    func updateMemoryItem(id: UUID, title: String? = nil, content: String? = nil, progress: Double? = nil, reviewStage: Int? = nil) -> Bool {
+        guard let index = memoryItems.firstIndex(where: { $0.id == id }) else {
+            return false
+        }
+        
+        var item = memoryItems[index]
+        
+        if let title = title {
+            item.title = title
+        }
+        
+        if let content = content {
+            item.content = content
+        }
+        
+        if let progress = progress {
+            item.progress = progress
+        }
+        
+        if let reviewStage = reviewStage {
+            item.reviewStage = reviewStage
+        }
+        
+        memoryItems[index] = item
+        saveData()
+        return true
+    }
+    
+    // 删除所有数据（用于测试）
+    func deleteAllData() {
+        memoryItems.removeAll()
+        points = 100
+        pointsRecords.removeAll()
+        hasShownApiVoiceAlert = false
+        saveData()
     }
     
     // MARK: - Points Management
@@ -71,7 +150,12 @@ import Combine
     
     // MARK: - Data Persistence
     
-    private func saveData() {
+    func saveData() {
+        // 如果是测试模式，不进行持久化存储
+        if !usePersistentStorage {
+            return
+        }
+        
         // 保存到UserDefaults，在实际项目中应考虑使用CoreData或文件系统
         let encoder = JSONEncoder()
         if let encoded = try? encoder.encode(memoryItems) {
@@ -88,6 +172,11 @@ import Combine
     }
     
     private func loadData() {
+        // 如果是测试模式，不从持久化存储加载
+        if !usePersistentStorage {
+            return
+        }
+        
         // 从UserDefaults加载，在实际项目中应考虑使用CoreData或文件系统
         let decoder = JSONDecoder()
         
@@ -111,14 +200,18 @@ import Combine
     
     // 添加示例数据以便测试
     private func addSampleData() {
+        let now = Date()
+        
         let item1 = MemoryItem(
             id: UUID(),
             title: "静夜思",
             content: "床前明月光，疑是地上霜。举头望明月，低头思故乡。",
             progress: 0.4,
             reviewStage: 2,
-            lastReviewDate: Date(),
-            nextReviewDate: Calendar.current.date(byAdding: .day, value: 0, to: Date())!
+            lastReviewDate: now,
+            nextReviewDate: Calendar.current.date(byAdding: .day, value: 0, to: now)!,
+            createdAt: Calendar.current.date(byAdding: .day, value: -7, to: now)!,
+            lastReviewedAt: now
         )
         
         let item2 = MemoryItem(
@@ -127,8 +220,10 @@ import Combine
             content: "白日依山尽，黄河入海流。欲穷千里目，更上一层楼。",
             progress: 0.6,
             reviewStage: 3,
-            lastReviewDate: Date(),
-            nextReviewDate: Calendar.current.date(byAdding: .day, value: 3, to: Date())!
+            lastReviewDate: now,
+            nextReviewDate: Calendar.current.date(byAdding: .day, value: 3, to: now)!,
+            createdAt: Calendar.current.date(byAdding: .day, value: -14, to: now)!,
+            lastReviewedAt: now
         )
         
         let item3 = MemoryItem(
@@ -138,7 +233,9 @@ import Combine
             progress: 0.0,
             reviewStage: 0,
             lastReviewDate: nil,
-            nextReviewDate: nil
+            nextReviewDate: nil,
+            createdAt: now,
+            lastReviewedAt: nil
         )
         
         let item4 = MemoryItem(
@@ -147,8 +244,10 @@ import Combine
             content: "春眠不觉晓，处处闻啼鸟。夜来风雨声，花落知多少。",
             progress: 1.0,
             reviewStage: 5,
-            lastReviewDate: Date(),
-            nextReviewDate: nil
+            lastReviewDate: now,
+            nextReviewDate: nil,
+            createdAt: Calendar.current.date(byAdding: .day, value: -30, to: now)!,
+            lastReviewedAt: now
         )
         
         memoryItems = [item1, item2, item3, item4]
@@ -158,14 +257,14 @@ import Combine
             id: UUID(),
             amount: 100,
             reason: "新用户奖励",
-            date: Calendar.current.date(byAdding: .day, value: -30, to: Date())!
+            date: Calendar.current.date(byAdding: .day, value: -30, to: now)!
         )
         
         let record2 = PointsRecord(
             id: UUID(),
             amount: -10,
             reason: "OCR识别",
-            date: Calendar.current.date(byAdding: .day, value: -2, to: Date())!
+            date: Calendar.current.date(byAdding: .day, value: -2, to: now)!
         )
         
         pointsRecords = [record1, record2]

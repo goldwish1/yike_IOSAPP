@@ -1,14 +1,14 @@
-# Yike 应用测试指南
+# 忆刻应用测试指南
 
-本文档提供了关于如何设置和运行 Yike 应用测试的详细说明。
+本文档提供了关于如何设置和运行忆刻应用测试的详细说明。
 
 ## 测试环境设置
 
 ### 前提条件
 
 - Xcode 15.0 或更高版本
-- iOS 17.0 或更高版本的模拟器或设备
-- 已克隆的 Yike 项目代码库
+- iOS 13.0 或更高版本的模拟器或设备
+- 已克隆的忆刻项目代码库
 
 ### 测试结构
 
@@ -20,20 +20,26 @@
 
 2. **测试辅助工具 (TestHelpers)**
    - 提供通用的测试功能和模拟对象
-   - 包括文件操作、条件等待、模拟延迟等功能
+   - 包括文件操作、条件等待、随机数据生成等功能
 
-3. **模拟对象**
+3. **测试数据提供者 (TestDataProvider)**
+   - 提供测试所需的示例数据
+   - 包括内容数据、积分数据、学习数据等
+
+4. **模拟对象**
    - MockUserDefaults - 模拟用户默认设置
    - MockFileManager - 模拟文件管理器
+   - MockURLSession - 模拟网络请求
    - MockAVAudioPlayer - 模拟音频播放器
-
-4. **测试数据提供者 (TestDataProvider)**
-   - 提供测试所需的示例数据
+   - MockAVSpeechSynthesizer - 模拟语音合成器
+   - MockVisionFramework - 模拟OCR识别
 
 5. **功能测试类**
-   - AudioPlayerServiceTests - 测试音频播放服务
-   - PointsConsumptionTests - 测试点数消费功能
-   - PointsIntegrationTests - 测试点数集成功能
+   - 服务层测试 - 测试核心服务功能
+   - 数据层测试 - 测试数据管理功能
+   - 视图模型测试 - 测试视图模型功能
+   - 集成测试 - 测试多个组件的交互
+   - 性能测试 - 测试性能指标
 
 ## 运行测试
 
@@ -85,7 +91,7 @@ class NewFeatureTests: YikeBaseTests {
         super.tearDown()
     }
     
-    func testNewFeature() {
+    func test_Feature_Condition_ExpectedResult() {
         // 测试代码
         XCTAssertTrue(true, "测试应该通过")
     }
@@ -118,10 +124,22 @@ let success = TestHelpers.waitForCondition {
 }
 XCTAssertTrue(success, "操作应该完成")
 
-// 模拟延迟
-TestHelpers.delay(0.5) {
-    // 延迟执行的代码
-}
+// 生成随机测试数据
+let randomString = TestHelpers.randomString(length: 10)
+let randomInt = TestHelpers.randomInt(min: 1, max: 100)
+```
+
+### 使用测试数据提供者
+
+```swift
+// 生成测试内容
+let testContent = TestDataProvider.generateTestContent()
+
+// 生成多个测试内容
+let testContents = TestDataProvider.generateTestContents(count: 5)
+
+// 生成测试积分记录
+let testPointRecord = TestDataProvider.generateTestPointRecord()
 ```
 
 ## 测试覆盖率
@@ -140,17 +158,32 @@ TestHelpers.delay(0.5) {
 2. Xcode 会显示代码覆盖率报告
 3. 绿色表示已覆盖的代码，红色表示未覆盖的代码
 
-## 持续集成
+## 测试最佳实践
 
-本项目已配置为使用 GitHub Actions 进行持续集成。每次推送代码或创建拉取请求时，都会自动运行测试。
+1. **测试命名约定**
+   - 使用格式：test_[被测功能]_[测试条件]_[预期结果]
+   - 例如：test_Login_ValidCredentials_SuccessfulLogin
 
-### 本地验证 CI 配置
+2. **测试结构**
+   - 准备 (Arrange) - 设置测试环境和数据
+   - 执行 (Act) - 执行被测试的功能
+   - 验证 (Assert) - 验证结果是否符合预期
 
-在推送代码前，可以使用以下命令在本地运行测试：
+3. **测试隔离**
+   - 每个测试应该独立运行，不依赖其他测试的状态
+   - 使用 setUp 和 tearDown 方法确保测试环境的一致性
 
-```bash
-xcodebuild test -project Yike.xcodeproj -scheme Yike -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.0' -testPlan Yike
-```
+4. **边缘情况测试**
+   - 测试空输入、无效输入和极限值
+   - 测试错误处理和恢复机制
+
+5. **异步测试**
+   - 使用 XCTestExpectation 处理异步操作
+   - 设置合理的超时时间
+
+6. **性能测试**
+   - 使用 measure 方法测量性能
+   - 设置基准值并监控性能变化
 
 ## 故障排除
 
@@ -171,4 +204,4 @@ xcodebuild test -project Yike.xcodeproj -scheme Yike -destination 'platform=iOS 
 
 ### 获取帮助
 
-如有问题，请联系项目维护者或在项目仓库中创建 Issue。 
+如有问题，请联系项目维护者或在项目仓库中创建 Issue。
