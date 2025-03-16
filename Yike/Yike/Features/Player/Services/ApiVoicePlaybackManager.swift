@@ -59,7 +59,7 @@ class ApiVoicePlaybackManager: ObservableObject {
         // 如果未缓存，检查积分是否足够
         if !isCached && dataManager.points < 5 {
             isLoading = false
-            error = "积分不足，无法使用在线语音。当前积分: \(dataManager.points)"
+            error = "积分不足，无法使用在线语音。点击此处前往积分中心充值。"
             print("【积分日志】积分不足，无法使用在线语音")
             return
         }

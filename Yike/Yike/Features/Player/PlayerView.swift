@@ -12,6 +12,7 @@ struct PlayerView: View {
     
     @StateObject private var viewModel: PlaybackControlViewModel
     @ObservedObject private var settingsManager = SettingsManager.shared
+    @EnvironmentObject private var router: NavigationRouter
     @State private var shouldPopToRoot = false
     @Environment(\.presentationMode) var presentationMode
     
@@ -73,10 +74,19 @@ struct PlayerView: View {
             PlayerControlsView(viewModel: viewModel, useApiVoice: settingsManager.settings.useApiVoice)
             
             if let error = viewModel.error {
-                Text(error)
-                    .foregroundColor(.red)
-                    .font(.footnote)
-                    .padding(.horizontal)
+                Button(action: {
+                    if error.contains("积分不足") {
+                        // 导航到积分中心
+                        router.navigate(to: .pointsCenter)
+                    }
+                }) {
+                    Text(error)
+                        .foregroundColor(.red)
+                        .font(.footnote)
+                        .padding(.horizontal)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                }
+                .buttonStyle(PlainButtonStyle())
             }
             
             // 播放速度选择
