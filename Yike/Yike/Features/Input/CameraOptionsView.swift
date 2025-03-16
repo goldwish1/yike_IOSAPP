@@ -118,7 +118,7 @@ struct CameraOptionsView: View {
     }
     
     private func processImage(_ image: UIImage) {
-        // OCR识别现在是免费的，不需要检查积分
+        // OCR识别功能是完全免费的，不需要检查或扣除积分
         isRecognizing = true
         
         // 使用OCR服务识别文本
