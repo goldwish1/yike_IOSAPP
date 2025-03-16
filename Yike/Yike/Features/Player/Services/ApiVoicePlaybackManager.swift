@@ -50,10 +50,17 @@ class ApiVoicePlaybackManager: ObservableObject {
         isLoading = true
         error = nil
         
-        // 检查积分是否足够
-        if dataManager.points < 5 {
+        print("【积分日志】开始播放API语音，当前积分: \(dataManager.points)")
+        
+        // 检查是否已缓存
+        let isCached = SiliconFlowTTSService.shared.isCached(text: text, voice: voice, speed: speed)
+        print("【积分日志】是否已缓存: \(isCached)")
+        
+        // 如果未缓存，检查积分是否足够
+        if !isCached && dataManager.points < 5 {
             isLoading = false
             error = "积分不足，无法使用在线语音。当前积分: \(dataManager.points)"
+            print("【积分日志】积分不足，无法使用在线语音")
             return
         }
         
@@ -70,11 +77,13 @@ class ApiVoicePlaybackManager: ObservableObject {
                 
                 if let error = error {
                     self.error = "加载失败: \(error.localizedDescription)"
+                    print("【积分日志】API请求失败，不扣除积分: \(error.localizedDescription)")
                     return
                 }
                 
                 guard let audioURL = audioURL else {
                     self.error = "加载失败: 未知错误"
+                    print("【积分日志】API请求返回空URL，不扣除积分")
                     return
                 }
                 
@@ -119,8 +128,12 @@ class ApiVoicePlaybackManager: ObservableObject {
                 self.isPlaying = true
                 
                 // 扣除积分（仅在首次生成时扣除，缓存的不扣除）
-                if !SiliconFlowTTSService.shared.isCached(text: text, voice: voice, speed: speed) {
-                    _ = self.dataManager.deductPoints(5, reason: "使用在线语音")
+                if !isCached {
+                    print("【积分日志】未使用缓存，需要扣除积分")
+                    let success = self.dataManager.deductPoints(5, reason: "使用在线语音")
+                    print("【积分日志】积分扣除结果: \(success ? "成功" : "失败")，扣除后积分: \(self.dataManager.points)")
+                } else {
+                    print("【积分日志】使用缓存，不扣除积分")
                 }
             }
         }

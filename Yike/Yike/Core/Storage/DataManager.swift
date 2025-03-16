@@ -125,20 +125,25 @@ import Combine
     // MARK: - Points Management
     
     func addPoints(_ amount: Int, reason: String) {
+        print("【积分日志】添加积分前: \(points)")
         points += amount
         let record = PointsRecord(id: UUID(), amount: amount, reason: reason, date: Date())
         pointsRecords.append(record)
         saveData()
+        print("【积分日志】添加积分后: \(points)，添加金额: \(amount)，原因: \(reason)")
     }
     
     func deductPoints(_ amount: Int, reason: String) -> Bool {
+        print("【积分日志】尝试扣除积分: \(amount)，当前积分: \(points)，原因: \(reason)")
         if points >= amount {
             points -= amount
             let record = PointsRecord(id: UUID(), amount: -amount, reason: reason, date: Date())
             pointsRecords.append(record)
             saveData()
+            print("【积分日志】扣除积分成功，剩余积分: \(points)")
             return true
         }
+        print("【积分日志】扣除积分失败，积分不足")
         return false
     }
     

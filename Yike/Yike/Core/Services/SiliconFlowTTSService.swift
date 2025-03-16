@@ -2,6 +2,7 @@ import Foundation
 import AVFoundation
 import Combine
 import SwiftUI
+import CommonCrypto
 
 /// 硅基流动文本转语音服务
 @objc class SiliconFlowTTSService: NSObject {
@@ -32,15 +33,20 @@ import SwiftUI
         // 预处理文本，优化停顿，根据速度调整停顿强度
         let processedText = preprocessText(text, speed: speed)
         
+        print("【缓存日志】开始生成语音，文本长度: \(text.count)，音色: \(voice)，速度: \(speed)")
+        
         // 检查缓存
         if let cachedAudioURL = getCachedAudioURL(for: processedText, voice: voice, speed: speed) {
-            print("找到缓存音频: \(cachedAudioURL.path)")
+            print("【缓存日志】找到缓存音频: \(cachedAudioURL.path)")
             completion(cachedAudioURL, nil)
             return
         }
         
+        print("【缓存日志】未找到缓存，需要请求API")
+        
         // 构建请求
         guard let url = URL(string: baseURL) else {
+            print("【缓存日志】无效的URL")
             completion(nil, NSError(domain: "SiliconFlowTTSService", code: 1001, userInfo: [NSLocalizedDescriptionKey: "无效的URL"]))
             return
         }
@@ -202,7 +208,16 @@ import SwiftUI
         let cacheFileName = generateCacheFileName(text: text, voice: voice, speed: speed)
         let cacheURL = getCacheDirectory().appendingPathComponent(cacheFileName)
         
-        return FileManager.default.fileExists(atPath: cacheURL.path) ? cacheURL : nil
+        let exists = FileManager.default.fileExists(atPath: cacheURL.path)
+        print("【缓存日志】检查缓存文件: \(cacheFileName), 是否存在: \(exists)")
+        
+        if exists {
+            print("【缓存日志】找到缓存文件: \(cacheURL.path)")
+        } else {
+            print("【缓存日志】未找到缓存文件: \(cacheURL.path)")
+        }
+        
+        return exists ? cacheURL : nil
     }
     
     /// 保存音频到缓存
@@ -212,9 +227,9 @@ import SwiftUI
         
         do {
             try data.write(to: fileURL)
-            print("音频已缓存: \(fileURL.path)")
+            print("【缓存日志】音频已缓存: \(fileURL.path)")
         } catch {
-            print("缓存音频失败: \(error.localizedDescription)")
+            print("【缓存日志】缓存音频失败: \(error.localizedDescription)")
         }
         
         return fileURL
@@ -222,12 +237,32 @@ import SwiftUI
     
     /// 生成缓存文件名
     private func generateCacheFileName(text: String, voice: String, speed: Float) -> String {
-        // 使用文本、音色和速度的哈希值作为文件名
-        let textHash = text.hash
-        let voiceHash = voice.hash
+        // 使用稳定的哈希算法，而不是Swift的String.hash属性
+        let textData = text.data(using: .utf8) ?? Data()
+        let voiceData = voice.data(using: .utf8) ?? Data()
         let speedString = String(format: "%.1f", speed)
         
-        return "tts_\(textHash)_\(voiceHash)_\(speedString).mp3"
+        // 使用简单的MD5哈希算法
+        let textHash = md5Hash(data: textData)
+        let voiceHash = md5Hash(data: voiceData)
+        
+        let fileName = "tts_\(textHash)_\(voiceHash)_\(speedString).mp3"
+        print("【缓存日志】生成缓存文件名: \(fileName) 用于文本: \(text.prefix(20))...")
+        
+        return fileName
+    }
+    
+    /// 计算MD5哈希值
+    private func md5Hash(data: Data) -> String {
+        // 使用CommonCrypto计算MD5
+        var digest = [UInt8](repeating: 0, count: Int(CC_MD5_DIGEST_LENGTH))
+        data.withUnsafeBytes { buffer in
+            _ = CC_MD5(buffer.baseAddress, CC_LONG(buffer.count), &digest)
+        }
+        
+        // 将字节数组转换为十六进制字符串
+        let hexString = digest.map { String(format: "%02x", $0) }.joined()
+        return hexString
     }
     
     /// 获取缓存目录
@@ -284,10 +319,29 @@ import SwiftUI
     ///   - speed: 语速
     /// - Returns: 是否已缓存
     func isCached(text: String, voice: String, speed: Float) -> Bool {
+        print("【缓存日志】检查缓存状态 - 原始文本: \"\(text.prefix(20))...\"")
+        
         // 检查原始文本和预处理后的文本是否有缓存
         let processedText = preprocessText(text, speed: speed)
-        return getCachedAudioURL(for: text, voice: voice, speed: speed) != nil || 
-               (processedText != text && getCachedAudioURL(for: processedText, voice: voice, speed: speed) != nil)
+        
+        // 生成缓存文件名
+        let originalFileName = generateCacheFileName(text: text, voice: voice, speed: speed)
+        let processedFileName = generateCacheFileName(text: processedText, voice: voice, speed: speed)
+        
+        // 获取缓存文件路径
+        let originalCacheURL = getCacheDirectory().appendingPathComponent(originalFileName)
+        let processedCacheURL = getCacheDirectory().appendingPathComponent(processedFileName)
+        
+        // 检查文件是否存在
+        let originalExists = FileManager.default.fileExists(atPath: originalCacheURL.path)
+        let processedExists = (processedText != text) && FileManager.default.fileExists(atPath: processedCacheURL.path)
+        
+        print("【缓存日志】检查缓存状态 - 原始文本缓存: \(originalExists), 文件: \(originalFileName)")
+        if processedText != text {
+            print("【缓存日志】检查缓存状态 - 处理后文本缓存: \(processedExists), 文件: \(processedFileName)")
+        }
+        
+        return originalExists || processedExists
     }
     
     /// 清除特定文本内容的所有缓存
@@ -318,6 +372,25 @@ import SwiftUI
                 try? fileManager.removeItem(at: fileURL)
                 print("已删除缓存: \(fileURL.path)")
             }
+        }
+    }
+    
+    /// 清除所有缓存
+    func clearAllCache() {
+        let cacheDir = getCacheDirectory()
+        let fileManager = FileManager.default
+        
+        do {
+            let fileURLs = try fileManager.contentsOfDirectory(at: cacheDir, includingPropertiesForKeys: nil, options: .skipsHiddenFiles)
+            
+            for fileURL in fileURLs {
+                try fileManager.removeItem(at: fileURL)
+                print("【缓存日志】已删除缓存: \(fileURL.path)")
+            }
+            
+            print("【缓存日志】已清除所有缓存文件")
+        } catch {
+            print("【缓存日志】清除缓存失败: \(error.localizedDescription)")
         }
     }
 } 

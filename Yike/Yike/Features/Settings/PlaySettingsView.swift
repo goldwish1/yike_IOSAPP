@@ -163,6 +163,17 @@ struct PlaySettingsView: View {
                         }
                     }
                     .foregroundColor(.red)
+                    
+                    Button(action: {
+                        SiliconFlowTTSService.shared.clearAllCache()
+                    }) {
+                        HStack {
+                            Text("清除所有缓存")
+                            Spacer()
+                            Image(systemName: "trash.fill")
+                        }
+                    }
+                    .foregroundColor(.red)
                 }
             }
         }
@@ -193,6 +204,8 @@ struct PlaySettingsView: View {
         isTestingApiVoice = true
         apiVoiceTestError = nil
         
+        print("【试听日志】开始试听API音色: \(settings.apiVoiceType.rawValue)，当前积分: \(dataManager.points)")
+        
         // 调用API生成语音
         SiliconFlowTTSService.shared.generateSpeech(
             text: previewText,
@@ -203,24 +216,30 @@ struct PlaySettingsView: View {
                 if let error = error {
                     isTestingApiVoice = false
                     apiVoiceTestError = "试听失败: \(error.localizedDescription)"
+                    print("【试听日志】试听失败: \(error.localizedDescription)")
                     return
                 }
                 
                 guard let audioURL = audioURL else {
                     isTestingApiVoice = false
                     apiVoiceTestError = "试听失败: 未知错误"
+                    print("【试听日志】试听失败: 未知错误")
                     return
                 }
+                
+                print("【试听日志】试听成功，开始播放音频")
                 
                 // 播放音频
                 AudioPlayerService.shared.play(url: audioURL) {
                     DispatchQueue.main.async {
                         isTestingApiVoice = false
+                        print("【试听日志】试听播放完成")
                     }
                 }
                 
                 // 试听功能设置为免费，不扣除积分
                 // dataManager.deductPoints(5, reason: "试听API音色")
+                print("【试听日志】试听功能免费，不扣除积分，当前积分: \(self.dataManager.points)")
             }
         }
     }
