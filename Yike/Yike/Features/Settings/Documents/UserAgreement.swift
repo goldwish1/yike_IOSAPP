@@ -7,16 +7,16 @@ struct UserAgreementView: View {
         NavigationView {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
-                    Text("忆刻用户协议")
+                    Text("记得住用户协议")
                         .font(.largeTitle)
                         .fontWeight(.bold)
                         .padding(.bottom, 8)
                     
                     Group {
-                        Text("欢迎使用忆刻应用！")
+                        Text("欢迎使用记得住应用！")
                             .font(.headline)
                         
-                        Text("本协议是您与忆刻应用（以下简称\"本应用\"）之间关于您使用本应用服务所订立的协议。请您仔细阅读本协议，您点击\"同意\"按钮或继续使用本应用，即表示您已充分理解并同意本协议的全部内容。")
+                        Text("本协议是您与记得住应用（以下简称\"本应用\"）之间关于您使用本应用服务所订立的协议。请您仔细阅读本协议，您点击\"同意\"按钮或继续使用本应用，即表示您已充分理解并同意本协议的全部内容。")
                             .padding(.bottom, 8)
                         
                         Text("一、服务内容")
@@ -42,7 +42,7 @@ struct UserAgreementView: View {
                         Text("四、隐私保护")
                             .font(.headline)
                         
-                        Text("4.1 保护用户隐私是本应用的基本政策，本应用会按照《忆刻隐私政策》的规定收集、使用、储存和分享您的个人信息。\n4.2 本应用不会向任何第三方提供、公开或共享您的个人信息，除非事先获得您的明确授权。")
+                        Text("4.1 保护用户隐私是本应用的基本政策，本应用会按照《记得住隐私政策》的规定收集、使用、储存和分享您的个人信息。\n4.2 本应用不会向任何第三方提供、公开或共享您的个人信息，除非事先获得您的明确授权。")
                             .padding(.bottom, 8)
                         
                         Text("五、免责声明")

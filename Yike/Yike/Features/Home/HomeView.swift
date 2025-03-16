@@ -30,7 +30,7 @@ struct HomeView: View {
     
     var body: some View {
         contentView
-            .navigationTitle("忆刻")
+            .navigationTitle("记得住")
             .navigationBarItems(trailing: addButton)
             .alert("确认删除", isPresented: $showingDeleteAlert) {
                 Button("取消", role: .cancel) {

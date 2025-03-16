@@ -43,6 +43,20 @@
 
 ### 4. 服务层测试
 - [ ] 测试 AudioPlayerService
+  - [x] 创建测试用例框架
+  - [ ] 实现基本播放功能测试
+  - [ ] 实现播放控制测试
+  - [ ] 实现错误处理测试
+  - [ ] 实现后台播放测试
+  - [ ] 问题分析与解决方案
+    - 问题：Method Swizzling导致的空指针异常
+      - 原因：使用`class_getClassMethod`获取初始化方法，但初始化方法是实例方法
+      - 原因：MockAVAudioPlayer不是AVAudioPlayer的子类，导致类型不兼容
+      - 原因：Swift中初始化方法有特殊的运行时表示，不易通过Method Swizzling替换
+    - 解决方案：
+      - 方案1：将MockAVAudioPlayer修改为AVAudioPlayer的子类
+      - 方案2：使用`class_getInstanceMethod`替代`class_getClassMethod`
+      - 方案3：重新设计测试策略，使用依赖注入而非Method Swizzling
 - [ ] 测试 SiliconFlowTTSService
 - [ ] 测试 NavigationService
 - [ ] 测试 OCRService
