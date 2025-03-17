@@ -242,9 +242,9 @@ import CommonCrypto
         let voiceData = voice.data(using: .utf8) ?? Data()
         let speedString = String(format: "%.1f", speed)
         
-        // 使用简单的MD5哈希算法
-        let textHash = md5Hash(data: textData)
-        let voiceHash = md5Hash(data: voiceData)
+        // 使用SHA256哈希算法
+        let textHash = sha256Hash(data: textData)
+        let voiceHash = sha256Hash(data: voiceData)
         
         let fileName = "tts_\(textHash)_\(voiceHash)_\(speedString).mp3"
         print("【缓存日志】生成缓存文件名: \(fileName) 用于文本: \(text.prefix(20))...")
@@ -252,12 +252,12 @@ import CommonCrypto
         return fileName
     }
     
-    /// 计算MD5哈希值
-    private func md5Hash(data: Data) -> String {
-        // 使用CommonCrypto计算MD5
-        var digest = [UInt8](repeating: 0, count: Int(CC_MD5_DIGEST_LENGTH))
+    /// 计算SHA256哈希值
+    private func sha256Hash(data: Data) -> String {
+        // 使用CommonCrypto计算SHA256
+        var digest = [UInt8](repeating: 0, count: Int(CC_SHA256_DIGEST_LENGTH))
         data.withUnsafeBytes { buffer in
-            _ = CC_MD5(buffer.baseAddress, CC_LONG(buffer.count), &digest)
+            _ = CC_SHA256(buffer.baseAddress, CC_LONG(buffer.count), &digest)
         }
         
         // 将字节数组转换为十六进制字符串
