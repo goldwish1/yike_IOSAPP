@@ -297,13 +297,11 @@ class PlaybackControlViewModel: ObservableObject {
     
     /// 停止所有播放
     func stopPlayback() {
-        print("【调试】PlaybackControlViewModel.stopPlayback() - 开始")
         // 停止系统语音
         localVoiceManager.stop()
         
         // 停止API语音
         apiVoiceManager.stop()
-        print("【调试】PlaybackControlViewModel.stopPlayback() - 完成")
     }
     
     /// 重置播放状态
@@ -314,13 +312,11 @@ class PlaybackControlViewModel: ObservableObject {
     
     /// 清理资源
     func cleanup() {
-        print("【调试】PlaybackControlViewModel.cleanup() - 开始")
         // 停止所有播放
         stopPlayback()
         
         // 清理所有订阅
         cancellables.removeAll()
-        print("【调试】PlaybackControlViewModel.cleanup() - 已清理订阅")
         
         // 重置错误状态
         error = nil
@@ -329,16 +325,12 @@ class PlaybackControlViewModel: ObservableObject {
         isPlaying = false
         isLoading = false
         progress = 0.0
-        print("【调试】PlaybackControlViewModel.cleanup() - 已重置状态")
         
         // 再次确保语音管理器的状态被清理
         DispatchQueue.main.async {
-            print("【调试】PlaybackControlViewModel.cleanup() - 异步操作开始")
             self.apiVoiceManager.stop()
             self.localVoiceManager.stop()
-            print("【调试】PlaybackControlViewModel.cleanup() - 异步操作完成")
         }
-        print("【调试】PlaybackControlViewModel.cleanup() - 完成")
     }
     
     /// 更新记忆进度
