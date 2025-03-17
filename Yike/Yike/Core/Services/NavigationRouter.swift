@@ -91,7 +91,16 @@ class NavigationRouter: ObservableObject {
     @Published var path = NavigationPath()
     
     // 当前选中的标签页
-    @Published var selectedTab: ContentView.Tab = .home
+    @Published var selectedTab: ContentView.Tab = .home {
+        didSet {
+            // 当标签切换时，自动清空导航路径
+            if oldValue != selectedTab {
+                if #available(iOS 16.0, *) {
+                    path = NavigationPath()
+                }
+            }
+        }
+    }
     
     // 各种导航状态
     @Published var navigateToInput = false
