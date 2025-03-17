@@ -134,13 +134,17 @@ struct PlayerView: View {
                 title: Text("学习进度已更新"),
                 message: Text("你已完成一次学习，记忆进度已更新。"),
                 dismissButton: .default(Text("确定")) {
+                    print("【调试】确认按钮点击 - 开始处理")
                     // 先确保所有音频播放停止
                     viewModel.stopPlayback()
+                    print("【调试】确认按钮点击 - stopPlayback()后")
                     // 再进行完整清理
                     viewModel.cleanup()
+                    print("【调试】确认按钮点击 - cleanup()后")
                     
                     // 短暂延迟确保异步操作完成后再关闭页面
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        print("【调试】确认按钮点击 - 准备关闭页面")
                         presentationMode.wrappedValue.dismiss()
                     }
                 }

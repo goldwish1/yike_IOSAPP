@@ -17,6 +17,9 @@ class ApiVoicePlaybackManager: ObservableObject {
     @Published var error: String? = nil
     @Published var progress: Double = 0.0
     
+    // 新增标志位控制是否允许循环播放
+    private var allowAutoReplay: Bool = true
+   
     private var intervalTimer: DispatchWorkItem? = nil
     private var cancellables = Set<AnyCancellable>()
     
@@ -44,6 +47,10 @@ class ApiVoicePlaybackManager: ObservableObject {
     ///   - speed: 播放速度
     ///   - completion: 完成回调
     func play(text: String, voice: String, speed: Float, completion: (() -> Void)? = nil) {
+        // 重置循环播放标志
+        allowAutoReplay = true
+        print("【调试】ApiVoicePlaybackManager.play() - 开始 - isPlaying: \(isPlaying), threadID: \(Thread.current.description), allowAutoReplay: \(allowAutoReplay)")
+        
         // 取消之前的间隔计时器
         cancelIntervalTimer()
         
@@ -91,6 +98,8 @@ class ApiVoicePlaybackManager: ObservableObject {
                 self.audioPlayerService.play(url: audioURL) {
                     // 在主线程上更新UI状态
                     DispatchQueue.main.async {
+                        print("【调试】音频播放完成回调 - isPlaying: \(self.isPlaying), threadID: \(Thread.current.description), allowAutoReplay: \(self.allowAutoReplay)")
+                        
                         // 更新播放状态
                         self.isPlaying = false
                         
@@ -98,29 +107,40 @@ class ApiVoicePlaybackManager: ObservableObject {
                         completion?()
                         
                         // 检查是否启用了播放间隔
-                        if self.settingsManager.settings.enablePlaybackInterval {
-                            // 获取间隔时间
-                            let intervalSeconds = self.settingsManager.settings.playbackInterval
-                            print("API音频播放完成，启动间隔计时器: \(intervalSeconds)秒")
-                            
-                            // 创建一个新的计时器任务
-                            let workItem = DispatchWorkItem { [weak self] in
-                                guard let self = self else { return }
-                                // 确保我们仍在当前视图中
-                                if !self.isPlaying {
+                        if self.allowAutoReplay {
+                            print("【调试】API音频播放完成，循环播放标志: \(self.allowAutoReplay)")
+                            if self.settingsManager.settings.enablePlaybackInterval {
+                                // 获取间隔时间
+                                let intervalSeconds = self.settingsManager.settings.playbackInterval
+                                print("API音频播放完成，启动间隔计时器: \(intervalSeconds)秒")
+                                
+                                // 创建一个新的计时器任务
+                                let workItem = DispatchWorkItem { [weak self] in
+                                    guard let self = self else { return }
+                                    // 确保我们仍在当前视图中且允许循环播放
+                                    if !self.isPlaying && self.allowAutoReplay {
+                                        self.play(text: text, voice: voice, speed: speed)
+                                    } else {
+                                        print("【调试】间隔计时器触发，但播放条件不满足，isPlaying: \(self.isPlaying), allowAutoReplay: \(self.allowAutoReplay)")
+                                    }
+                                }
+                                
+                                // 保存计时器任务的引用，以便稍后可以取消它
+                                self.intervalTimer = workItem
+                                
+                                // 安排计时器任务在指定的间隔时间后执行
+                                DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(intervalSeconds), execute: workItem)
+                            } else {
+                                // 如果未启用播放间隔，则直接循环播放
+                                print("API音频播放完成，未启用间隔，直接循环播放")
+                                if self.allowAutoReplay {
                                     self.play(text: text, voice: voice, speed: speed)
+                                } else {
+                                    print("【调试】准备直接循环播放，但循环播放已禁用")
                                 }
                             }
-                            
-                            // 保存计时器任务的引用，以便稍后可以取消它
-                            self.intervalTimer = workItem
-                            
-                            // 安排计时器任务在指定的间隔时间后执行
-                            DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(intervalSeconds), execute: workItem)
                         } else {
-                            // 如果未启用播放间隔，则直接循环播放
-                            print("API音频播放完成，未启用间隔，直接循环播放")
-                            self.play(text: text, voice: voice, speed: speed)
+                            print("【调试】API音频播放完成，但循环播放已禁用")
                         }
                     }
                 }
@@ -155,11 +175,21 @@ class ApiVoicePlaybackManager: ObservableObject {
     
     /// 停止播放
     func stop() {
+        print("【调试】ApiVoicePlaybackManager.stop() - 开始 - isPlaying: \(isPlaying), threadID: \(Thread.current.description)")
+        
+        // 设置标志位禁止循环播放
+        allowAutoReplay = false
+        print("【调试】ApiVoicePlaybackManager.stop() - 已禁止循环播放")
+        
         // 先取消间隔计时器，确保没有新的播放循环开始
+        print("【调试】ApiVoicePlaybackManager.stop() - 取消间隔计时器前 - isPlaying: \(isPlaying), intervalTimer存在: \(intervalTimer != nil)")
         cancelIntervalTimer()
+        print("【调试】ApiVoicePlaybackManager.stop() - 取消间隔计时器后")
         
         // 停止音频播放
         audioPlayerService.stop()
+        
+        print("【调试】ApiVoicePlaybackManager.stop() - 音频停止后 - isPlaying: \(isPlaying)")
         
         // 重置所有状态
         isPlaying = false
@@ -167,9 +197,12 @@ class ApiVoicePlaybackManager: ObservableObject {
         error = nil
         progress = 0.0
         
+        print("【调试】ApiVoicePlaybackManager.stop() - 状态重置后 - isPlaying: \(isPlaying)")
+        
         // 延迟一小段时间确保所有异步操作都被取消
         DispatchQueue.main.async {
             self.cancelIntervalTimer() // 再次确保计时器被取消
+            print("【调试】ApiVoicePlaybackManager.stop() - 异步再次取消计时器后")
         }
     }
     
