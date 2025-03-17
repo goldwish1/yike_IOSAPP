@@ -142,14 +142,47 @@ class SpeechManager: NSObject, ObservableObject, AVSpeechSynthesizerDelegate, @u
             print("合成器正在播放，停止当前播放")
             synthesizer.stopSpeaking(at: .immediate)
             
+            // 添加一个标志来防止重复播放
+            let currentText = utterance.speechString
+            let currentIdx = currentIndex
+            
             // 停止后等待一小段时间再开始新的播放
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
-                guard let self = self, let currentUtterance = self.utterance else { return }
+                guard let self = self else { return }
+                
+                // 检查是否在延迟期间状态已经改变
+                if self.currentIndex != currentIdx || self.utterance?.speechString != currentText {
+                    print("延迟期间状态已改变，跳过重新播放")
+                    return
+                }
+                
+                guard let currentUtterance = self.utterance else { 
+                    print("延迟期间utterance已被清除，跳过重新播放")
+                    return 
+                }
                 
                 // 创建一个新的 utterance 实例，而不是重用旧的
                 let newUtterance = AVSpeechUtterance(string: currentUtterance.speechString)
                 newUtterance.rate = self.playbackSpeed * AVSpeechUtteranceDefaultSpeechRate
                 newUtterance.voice = AVSpeechSynthesisVoice(language: "zh-CN")
+                
+                // 根据音色类型设置参数
+                let settings = SettingsManager.shared.settings
+                let voiceType = settings.playbackVoiceType
+                
+                switch voiceType {
+                case .standard:
+                    newUtterance.pitchMultiplier = 1.0
+                    newUtterance.volume = 0.9
+                case .gentle:
+                    newUtterance.pitchMultiplier = 1.2
+                    newUtterance.volume = 0.85
+                    newUtterance.rate = newUtterance.rate * 1.05
+                case .deep:
+                    newUtterance.pitchMultiplier = 0.75
+                    newUtterance.volume = 1.0
+                    newUtterance.rate = newUtterance.rate * 0.9
+                }
                 
                 // 更新引用
                 self.utterance = newUtterance
