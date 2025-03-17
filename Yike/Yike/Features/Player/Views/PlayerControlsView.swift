@@ -68,12 +68,12 @@ struct PlayerControlsView: View {
                 }) {
                     Image(systemName: "backward.fill")
                         .font(.system(size: 24))
-                        .foregroundColor(.primary)
+                        .foregroundColor(viewModel.enableItemNavigation && viewModel.currentItemIndex > 0 ? .primary : .gray)
                         .frame(width: 60, height: 60)
                         .background(Color(.systemGray6))
                         .clipShape(Circle())
                 }
-                .disabled(!viewModel.isPlaying)
+                .disabled(!viewModel.enableItemNavigation || viewModel.currentItemIndex <= 0)
                 
                 Button(action: {
                     viewModel.togglePlayPause()
@@ -91,12 +91,12 @@ struct PlayerControlsView: View {
                 }) {
                     Image(systemName: "forward.fill")
                         .font(.system(size: 24))
-                        .foregroundColor(.primary)
+                        .foregroundColor(viewModel.enableItemNavigation && viewModel.currentItemIndex < viewModel.memoryItems.count - 1 ? .primary : .gray)
                         .frame(width: 60, height: 60)
                         .background(Color(.systemGray6))
                         .clipShape(Circle())
                 }
-                .disabled(!viewModel.isPlaying)
+                .disabled(!viewModel.enableItemNavigation || viewModel.currentItemIndex >= viewModel.memoryItems.count - 1)
             }
         }
     }

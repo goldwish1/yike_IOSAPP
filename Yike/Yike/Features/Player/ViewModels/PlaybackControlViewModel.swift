@@ -192,22 +192,20 @@ class PlaybackControlViewModel: ObservableObject {
     
     /// 播放上一句
     func playPrevious() {
-        if useApiVoice {
-            if enableItemNavigation && currentItemIndex > 0 {
-                navigateToPreviousItem()
-            }
-        } else {
+        if enableItemNavigation && currentItemIndex > 0 {
+            navigateToPreviousItem()
+        } else if !useApiVoice {
+            // 如果没有启用项目间导航或已经是第一个项目，但使用本地语音，则播放上一句
             localVoiceManager.previous()
         }
     }
     
     /// 播放下一句
     func playNext() {
-        if useApiVoice {
-            if enableItemNavigation && currentItemIndex < memoryItems.count - 1 {
-                navigateToNextItem()
-            }
-        } else {
+        if enableItemNavigation && currentItemIndex < memoryItems.count - 1 {
+            navigateToNextItem()
+        } else if !useApiVoice {
+            // 如果没有启用项目间导航或已经是最后一个项目，但使用本地语音，则播放下一句
             localVoiceManager.next()
         }
     }
