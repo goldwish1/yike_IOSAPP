@@ -312,8 +312,25 @@ class PlaybackControlViewModel: ObservableObject {
     
     /// 清理资源
     func cleanup() {
+        // 停止所有播放
         stopPlayback()
+        
+        // 清理所有订阅
         cancellables.removeAll()
+        
+        // 重置错误状态
+        error = nil
+        
+        // 确保播放状态被重置
+        isPlaying = false
+        isLoading = false
+        progress = 0.0
+        
+        // 再次确保语音管理器的状态被清理
+        DispatchQueue.main.async {
+            self.apiVoiceManager.stop()
+            self.localVoiceManager.stop()
+        }
     }
     
     /// 更新记忆进度

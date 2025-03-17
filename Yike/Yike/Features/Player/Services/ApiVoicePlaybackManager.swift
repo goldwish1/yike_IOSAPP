@@ -155,10 +155,22 @@ class ApiVoicePlaybackManager: ObservableObject {
     
     /// 停止播放
     func stop() {
-        audioPlayerService.stop()
-        isPlaying = false
-        // 取消间隔计时器
+        // 先取消间隔计时器，确保没有新的播放循环开始
         cancelIntervalTimer()
+        
+        // 停止音频播放
+        audioPlayerService.stop()
+        
+        // 重置所有状态
+        isPlaying = false
+        isLoading = false
+        error = nil
+        progress = 0.0
+        
+        // 延迟一小段时间确保所有异步操作都被取消
+        DispatchQueue.main.async {
+            self.cancelIntervalTimer() // 再次确保计时器被取消
+        }
     }
     
     /// 切换播放/暂停状态
