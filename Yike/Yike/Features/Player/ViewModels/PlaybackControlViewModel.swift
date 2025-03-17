@@ -247,6 +247,21 @@ class PlaybackControlViewModel: ObservableObject {
         resetPlaybackState()
         
         print("导航到上一个记忆项目，当前索引：\(currentItemIndex)")
+        
+        // 自动开始播放新内容
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+            guard let self = self else { return }
+            if self.useApiVoice {
+                self.playWithApiVoice()
+            } else {
+                self.localVoiceManager.prepare(
+                    text: self.currentMemoryItem.content,
+                    speed: self.selectedSpeed,
+                    intervalSeconds: self.settingsManager.settings.playbackInterval
+                )
+                self.localVoiceManager.play()
+            }
+        }
     }
     
     /// 导航到下一个记忆项目
@@ -263,6 +278,21 @@ class PlaybackControlViewModel: ObservableObject {
         resetPlaybackState()
         
         print("导航到下一个记忆项目，当前索引：\(currentItemIndex)")
+        
+        // 自动开始播放新内容
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+            guard let self = self else { return }
+            if self.useApiVoice {
+                self.playWithApiVoice()
+            } else {
+                self.localVoiceManager.prepare(
+                    text: self.currentMemoryItem.content,
+                    speed: self.selectedSpeed,
+                    intervalSeconds: self.settingsManager.settings.playbackInterval
+                )
+                self.localVoiceManager.play()
+            }
+        }
     }
     
     /// 停止所有播放
