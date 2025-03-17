@@ -19,19 +19,30 @@ struct PlaySettingsView: View {
     var body: some View {
         Form {
             Section(header: Text("语音来源"), footer: Text("选择使用本地语音合成或在线API语音合成")) {
-                Toggle("使用在线高质量语音", isOn: $settings.useApiVoice)
-                    .accessibilityIdentifier("useApiVoiceSwitch")
-                    .onChange(of: settings.useApiVoice) { oldValue, newValue in
-                        // 切换语音来源时停止播放
-                        if speechManager.isPlaying {
-                            speechManager.stop()
+                HStack {
+                    Toggle("使用在线高质量语音", isOn: $settings.useApiVoice)
+                        .accessibilityIdentifier("useApiVoiceSwitch")
+                        .onChange(of: settings.useApiVoice) { oldValue, newValue in
+                            // 切换语音来源时停止播放
+                            if speechManager.isPlaying {
+                                speechManager.stop()
+                            }
+                            
+                            // 如果用户首次开启在线语音，且未显示过提示，则显示提示信息
+                            if newValue && !dataManager.hasShownApiVoiceAlert {
+                                showingApiVoiceAlert = true
+                            }
                         }
-                        
-                        // 如果用户首次开启在线语音，且未显示过提示，则显示提示信息
-                        if newValue && !dataManager.hasShownApiVoiceAlert {
-                            showingApiVoiceAlert = true
-                        }
-                    }
+                    
+                    Text("Beta")
+                        .font(.caption)
+                        .fontWeight(.bold)
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(Color.blue)
+                        .cornerRadius(4)
+                }
             }
             
             if settings.useApiVoice {
