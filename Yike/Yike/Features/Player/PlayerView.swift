@@ -122,6 +122,9 @@ struct PlayerView: View {
             viewModel.preparePlayback()
         }
         .onDisappear {
+            // 立即停止所有音频播放
+            viewModel.stopPlayback()
+            // 再进行完整清理
             viewModel.cleanup()
         }
         .onChange(of: shouldPopToRoot) { oldValue, newValue in
@@ -134,14 +137,39 @@ struct PlayerView: View {
                 title: Text("学习进度已更新"),
                 message: Text("你已完成一次学习，记忆进度已更新。"),
                 dismissButton: .default(Text("确定")) {
-                    // 先确保所有音频播放停止
-                    viewModel.stopPlayback()
-                    // 再进行完整清理
-                    viewModel.cleanup()
+                    print("【调试】确认按钮被点击：开始停止音频播放和清理资源")
                     
-                    // 短暂延迟确保异步操作完成后再关闭页面
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                        presentationMode.wrappedValue.dismiss()
+                    // 确保所有异步操作和音频播放完全停止
+                    // 首先强制禁用自动重播
+                    ApiVoicePlaybackManager.shared.stop()
+                    print("【调试】已调用ApiVoicePlaybackManager.shared.stop()")
+                    
+                    // 停止其他所有播放
+                    viewModel.stopPlayback()
+                    print("【调试】已调用viewModel.stopPlayback()")
+                    
+                    // 延长等待时间以确保停止命令完全生效
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        print("【调试】确认按钮异步操作：延迟0.5秒后执行")
+                        
+                        // 再次停止所有播放以确保没有新的播放开始
+                        ApiVoicePlaybackManager.shared.stop()
+                        print("【调试】再次调用ApiVoicePlaybackManager.shared.stop()")
+                        
+                        viewModel.stopPlayback()
+                        print("【调试】再次调用viewModel.stopPlayback()")
+                        
+                        // 清理所有资源
+                        print("【调试】开始清理所有资源")
+                        viewModel.cleanup()
+                        print("【调试】已完成清理所有资源")
+                        
+                        // 再等待一小段时间确保所有回调已执行完毕
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                            print("【调试】确认按钮最终异步操作：准备关闭页面")
+                            // 关闭页面
+                            presentationMode.wrappedValue.dismiss()
+                        }
                     }
                 }
             )
