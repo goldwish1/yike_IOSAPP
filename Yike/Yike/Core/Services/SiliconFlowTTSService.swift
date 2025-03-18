@@ -10,7 +10,7 @@ import CommonCrypto
     @objc static let shared = SiliconFlowTTSService()
     
     // API密钥
-    private let apiKey = "sk-lutyvbdzpvahcfjktdvjlsoheraogfbvsdigfwligyrnlolv"
+    private let apiKey: String
     private let baseURL = "https://api.siliconflow.cn/v1/audio/speech"
     
     // 音频缓存目录
@@ -18,9 +18,27 @@ import CommonCrypto
     
     // 允许子类重写初始化方法
     internal override init() {
+        // 从Secrets.plist读取API KEY
+        let apiKeyFromPlist = SiliconFlowTTSService.getAPIKeyFromPlist()
+        self.apiKey = apiKeyFromPlist ?? "sk-lutyvbdzpvahcfjktdvjlsoheraogfbvsdigfwligyrnlolv" // 如果读取失败，使用默认值作为后备
+        
         super.init()
         // 创建缓存目录
         createCacheDirectoryIfNeeded()
+    }
+    
+    /// 从Secrets.plist读取API KEY
+    private static func getAPIKeyFromPlist() -> String? {
+        guard let plistPath = Bundle.main.path(forResource: "Secrets", ofType: "plist"),
+              let plistDict = NSDictionary(contentsOfFile: plistPath),
+              let apiKeys = plistDict["APIKeys"] as? [String: Any],
+              let apiKey = apiKeys["SiliconFlowAPIKey"] as? String,
+              !apiKey.isEmpty,
+              apiKey != "YOUR_API_KEY_HERE" else {
+            print("【警告】无法从Secrets.plist读取有效的API KEY")
+            return nil
+        }
+        return apiKey
     }
     
     /// 生成语音
