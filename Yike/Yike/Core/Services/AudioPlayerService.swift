@@ -253,10 +253,20 @@ class AudioPlayerService: NSObject, AVAudioPlayerDelegate {
         nowPlayingInfo[MPMediaItemPropertyTitle] = title
         nowPlayingInfo[MPMediaItemPropertyArtist] = artist
         
-        // 添加专辑封面图片
-        if let image = UIImage(named: "AppIcon") {
+        // 添加专辑封面图片，使用我们准备的600×600高分辨率图片
+        if let image = UIImage(named: "Image") {
             let artwork = MPMediaItemArtwork(boundsSize: image.size) { _ in return image }
             nowPlayingInfo[MPMediaItemPropertyArtwork] = artwork
+            print("成功设置锁屏封面图片，尺寸：\(image.size.width)×\(image.size.height)")
+        } else {
+            print("警告：无法加载锁屏封面图片'Image'")
+            // 尝试使用应用图标作为备选
+            if let iconName = Bundle.main.infoDictionary?["CFBundleIconName"] as? String,
+               let image = UIImage(named: iconName) {
+                let artwork = MPMediaItemArtwork(boundsSize: image.size) { _ in return image }
+                nowPlayingInfo[MPMediaItemPropertyArtwork] = artwork
+                print("使用应用图标作为锁屏封面备选图片")
+            }
         }
         
         // 设置播放时间和持续时间
