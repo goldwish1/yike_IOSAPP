@@ -1,4 +1,5 @@
 import SwiftUI
+import StoreKit
 
 struct PointsCenterView: View {
     @EnvironmentObject var dataManager: DataManager
@@ -206,15 +207,19 @@ struct PointsCenterView: View {
 struct PointsRechargeView: View {
     @Environment(\.presentationMode) var presentationMode
     @EnvironmentObject var dataManager: DataManager
+    @ObservedObject private var iapManager = IAPManager.shared
     
     @State private var selectedPackage = 1
-    @State private var showingPurchaseAlert = false
+    @State private var showingAlert = false
+    @State private var alertTitle = ""
+    @State private var alertMessage = ""
     
-    let packages = [
-        (points: 100, price: 3),
-        (points: 300, price: 8),
-        (points: 600, price: 15),
-        (points: 1000, price: 20)
+    // 产品映射
+    private let packages = [
+        (points: 100, productID: "com.goldwish.yike.points.100"),
+        (points: 300, productID: "com.goldwish.yike.points.300"),
+        (points: 600, productID: "com.goldwish.yike.points.600"),
+        (points: 1000, productID: "com.goldwish.yike.points.1000")
     ]
     
     var body: some View {
@@ -230,70 +235,141 @@ struct PointsRechargeView: View {
                         .multilineTextAlignment(.center)
                         .padding(.horizontal)
                     
-                    // 套餐选择
-                    VStack(spacing: 16) {
-                        ForEach(0..<packages.count, id: \.self) { index in
+                    if iapManager.isLoading {
+                        ProgressView()
+                            .padding()
+                    } else if iapManager.products.isEmpty {
+                        VStack(spacing: 10) {
+                            Image(systemName: "exclamationmark.circle")
+                                .font(.system(size: 40))
+                                .foregroundColor(.gray)
+                            
+                            Text("无法加载商品信息")
+                                .font(.headline)
+                            
+                            Text("请检查网络连接后重试")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                            
                             Button(action: {
-                                selectedPackage = index
+                                Task {
+                                    await iapManager.fetchProducts()
+                                }
                             }) {
-                                HStack {
-                                    VStack(alignment: .leading) {
-                                        Text("\(packages[index].points)积分")
-                                            .font(.headline)
+                                Text("重新加载")
+                                    .padding(.horizontal, 20)
+                                    .padding(.vertical, 8)
+                                    .background(Color.blue)
+                                    .foregroundColor(.white)
+                                    .cornerRadius(8)
+                            }
+                            .padding(.top, 10)
+                        }
+                        .padding()
+                    } else {
+                        // 套餐选择
+                        VStack(spacing: 16) {
+                            ForEach(0..<packages.count, id: \.self) { index in
+                                let product = getProduct(for: packages[index].points)
+                                
+                                Button(action: {
+                                    selectedPackage = index
+                                }) {
+                                    HStack {
+                                        VStack(alignment: .leading) {
+                                            Text("\(packages[index].points)积分")
+                                                .font(.headline)
+                                            
+                                            if index == 2 {
+                                                Text("最受欢迎")
+                                                    .font(.caption)
+                                                    .foregroundColor(.orange)
+                                                    .padding(.horizontal, 8)
+                                                    .padding(.vertical, 2)
+                                                    .background(Color.orange.opacity(0.1))
+                                                    .cornerRadius(4)
+                                            }
+                                        }
                                         
-                                        if index == 2 {
-                                            Text("最受欢迎")
-                                                .font(.caption)
-                                                .foregroundColor(.orange)
-                                                .padding(.horizontal, 8)
-                                                .padding(.vertical, 2)
-                                                .background(Color.orange.opacity(0.1))
-                                                .cornerRadius(4)
+                                        Spacer()
+                                        
+                                        if let product = product {
+                                            Text(product.localizedPrice)
+                                                .font(.title3)
+                                                .fontWeight(.bold)
+                                        } else {
+                                            Text("价格加载中")
+                                                .font(.subheadline)
+                                                .foregroundColor(.secondary)
                                         }
                                     }
-                                    
-                                    Spacer()
-                                    
-                                    Text("¥\(packages[index].price)")
-                                        .font(.title3)
-                                        .fontWeight(.bold)
+                                    .padding()
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 12)
+                                            .fill(selectedPackage == index ? Color.blue.opacity(0.1) : Color(.systemGray6))
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: 12)
+                                                    .stroke(selectedPackage == index ? Color.blue : Color.clear, lineWidth: 2)
+                                            )
+                                    )
                                 }
+                                .buttonStyle(PlainButtonStyle())
+                            }
+                        }
+                        .padding(.horizontal)
+                        
+                        Spacer()
+                        
+                        // 购买按钮
+                        Button(action: {
+                            purchaseSelectedPackage()
+                        }) {
+                            if iapManager.purchaseState == .purchasing {
+                                HStack {
+                                    ProgressView()
+                                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                    Text("处理中...")
+                                        .padding(.leading, 8)
+                                }
+                                .font(.headline)
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
                                 .padding()
                                 .background(
                                     RoundedRectangle(cornerRadius: 12)
-                                        .fill(selectedPackage == index ? Color.blue.opacity(0.1) : Color(.systemGray6))
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 12)
-                                                .stroke(selectedPackage == index ? Color.blue : Color.clear, lineWidth: 2)
-                                        )
+                                        .fill(Color.blue.opacity(0.7))
                                 )
+                            } else {
+                                if let product = getProduct(for: packages[selectedPackage].points) {
+                                    Text("获取 \(product.localizedPrice)")
+                                        .font(.headline)
+                                        .foregroundColor(.white)
+                                        .frame(maxWidth: .infinity)
+                                        .padding()
+                                        .background(
+                                            RoundedRectangle(cornerRadius: 12)
+                                                .fill(Color.blue)
+                                        )
+                                } else {
+                                    Text("获取")
+                                        .font(.headline)
+                                        .foregroundColor(.white)
+                                        .frame(maxWidth: .infinity)
+                                        .padding()
+                                        .background(
+                                            RoundedRectangle(cornerRadius: 12)
+                                                .fill(Color.blue)
+                                        )
+                                }
                             }
-                            .buttonStyle(PlainButtonStyle())
                         }
+                        .disabled(iapManager.purchaseState == .purchasing)
+                        .padding(.horizontal)
+                        
+                        Text("点击\"获取\"，将通过 Apple 支付进行扣款")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
                     }
-                    .padding(.horizontal)
-                    
-                    Spacer()
-                    
-                    // 购买按钮
-                    Button(action: {
-                        showingPurchaseAlert = true
-                    }) {
-                        Text("购买 ¥\(packages[selectedPackage].price)")
-                            .font(.headline)
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .fill(Color.blue)
-                            )
-                    }
-                    .padding(.horizontal)
-                    
-                    Text("点击\"购买\"，将通过 Apple 支付进行扣款")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
                 }
                 .padding(.vertical)
             }
@@ -301,20 +377,65 @@ struct PointsRechargeView: View {
             .navigationBarItems(trailing: Button("关闭") {
                 presentationMode.wrappedValue.dismiss()
             })
-            .alert(isPresented: $showingPurchaseAlert) {
+            .alert(isPresented: $showingAlert) {
                 Alert(
-                    title: Text("购买成功"),
-                    message: Text("您已成功购买\(packages[selectedPackage].points)积分"),
+                    title: Text(alertTitle),
+                    message: Text(alertMessage),
                     dismissButton: .default(Text("确定")) {
-                        // 模拟购买成功，添加积分
-                        dataManager.addPoints(
-                            packages[selectedPackage].points,
-                            reason: "充值积分"
-                        )
-                        presentationMode.wrappedValue.dismiss()
+                        if iapManager.purchaseState == .succeeded {
+                            presentationMode.wrappedValue.dismiss()
+                        }
+                        // 重置IAP状态
+                        iapManager.resetPurchaseState()
                     }
                 )
             }
+            .onAppear {
+                // 确保产品信息已加载
+                if iapManager.products.isEmpty && !iapManager.isLoading {
+                    Task {
+                        await iapManager.fetchProducts()
+                    }
+                }
+            }
+            .onReceive(iapManager.$purchaseState) { state in
+                switch state {
+                case .succeeded:
+                    alertTitle = "购买成功"
+                    alertMessage = "您已成功购买积分"
+                    showingAlert = true
+                case .failed:
+                    if let error = iapManager.purchaseError {
+                        alertTitle = "购买失败"
+                        alertMessage = error
+                        showingAlert = true
+                    }
+                default:
+                    break
+                }
+            }
+        }
+    }
+    
+    // 查找特定积分对应的产品
+    private func getProduct(for points: Int) -> Product? {
+        return iapManager.getProduct(for: points)
+    }
+    
+    // 购买当前选择的套餐
+    private func purchaseSelectedPackage() {
+        let pointsInfo = packages[selectedPackage]
+        
+        if let product = getProduct(for: pointsInfo.points) {
+            // 使用StoreKit 2进行真实购买
+            Task {
+                await iapManager.purchase(product: product)
+            }
+        } else {
+            // 产品未加载或不可用
+            alertTitle = "无法购买"
+            alertMessage = "产品信息不可用，请重试"
+            showingAlert = true
         }
     }
 } 

@@ -1,0 +1,100 @@
+{
+  "identifier" : "1CDCF6F2",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+    {
+      "displayPrice" : "3",
+      "familyShareable" : false,
+      "internalID" : "1000",
+      "localizations" : [
+        {
+          "description" : "购买100积分",
+          "displayName" : "100积分",
+          "locale" : "zh_CN"
+        },
+        {
+          "description" : "Purchase 100 points",
+          "displayName" : "100 Points",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.goldwish.yike.points.100",
+      "referenceName" : "100积分",
+      "type" : "Consumable"
+    },
+    {
+      "displayPrice" : "8",
+      "familyShareable" : false,
+      "internalID" : "1001",
+      "localizations" : [
+        {
+          "description" : "购买300积分",
+          "displayName" : "300积分",
+          "locale" : "zh_CN"
+        },
+        {
+          "description" : "Purchase 300 points",
+          "displayName" : "300 Points",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.goldwish.yike.points.300",
+      "referenceName" : "300积分",
+      "type" : "Consumable"
+    },
+    {
+      "displayPrice" : "15",
+      "familyShareable" : false,
+      "internalID" : "1002",
+      "localizations" : [
+        {
+          "description" : "购买600积分",
+          "displayName" : "600积分",
+          "locale" : "zh_CN"
+        },
+        {
+          "description" : "Purchase 600 points",
+          "displayName" : "600 Points",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.goldwish.yike.points.600",
+      "referenceName" : "600积分",
+      "type" : "Consumable"
+    },
+    {
+      "displayPrice" : "20",
+      "familyShareable" : false,
+      "internalID" : "1003",
+      "localizations" : [
+        {
+          "description" : "购买1000积分",
+          "displayName" : "1000积分",
+          "locale" : "zh_CN"
+        },
+        {
+          "description" : "Purchase 1000 points",
+          "displayName" : "1000 Points",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.goldwish.yike.points.1000",
+      "referenceName" : "1000积分",
+      "type" : "Consumable"
+    }
+  ],
+  "settings" : {
+    "_applicationInternalID" : "com.goldwish.yike",
+    "_developerTeamID" : "ABCDEF1234",
+    "_lastCheckoutTimestamp" : 0
+  },
+  "subscriptionGroups" : [
+
+  ],
+  "version" : {
+    "major" : 2,
+    "minor" : 0
+  }
+} 
