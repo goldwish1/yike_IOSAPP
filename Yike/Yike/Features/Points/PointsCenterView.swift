@@ -208,6 +208,7 @@ struct PointsRechargeView: View {
     @Environment(\.presentationMode) var presentationMode
     @EnvironmentObject var dataManager: DataManager
     @ObservedObject private var iapManager = IAPManager.shared
+    @ObservedObject private var networkMonitor = NetworkMonitor.shared
     
     @State private var selectedPackage = 1
     @State private var showingAlert = false
@@ -318,6 +319,22 @@ struct PointsRechargeView: View {
                         }
                         .padding(.horizontal)
                         
+                        // 网络状态提示
+                        if !networkMonitor.isConnected {
+                            HStack {
+                                Image(systemName: "wifi.slash")
+                                    .foregroundColor(.red)
+                                Text("网络连接已断开，请恢复网络连接后再进行购买")
+                                    .font(.footnote)
+                                    .foregroundColor(.red)
+                            }
+                            .padding(.horizontal)
+                            .padding(.vertical, 8)
+                            .background(Color.red.opacity(0.1))
+                            .cornerRadius(8)
+                            .padding(.horizontal)
+                        }
+                        
                         Spacer()
                         
                         // 购买按钮
@@ -348,7 +365,7 @@ struct PointsRechargeView: View {
                                         .padding()
                                         .background(
                                             RoundedRectangle(cornerRadius: 12)
-                                                .fill(Color.blue)
+                                                .fill(networkMonitor.isConnected ? Color.blue : Color.gray)
                                         )
                                 } else {
                                     Text("获取")
@@ -358,12 +375,12 @@ struct PointsRechargeView: View {
                                         .padding()
                                         .background(
                                             RoundedRectangle(cornerRadius: 12)
-                                                .fill(Color.blue)
+                                                .fill(networkMonitor.isConnected ? Color.blue : Color.gray)
                                         )
                                 }
                             }
                         }
-                        .disabled(iapManager.purchaseState == .purchasing)
+                        .disabled(iapManager.purchaseState == .purchasing || !networkMonitor.isConnected)
                         .padding(.horizontal)
                         
                         Text("点击\"获取\"，将通过 Apple 支付进行扣款")

@@ -36,6 +36,7 @@
 		B875D4152D75ED57005A1A9E /* Yike.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Yike.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B875D42A2D75ED58005A1A9E /* YikeTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = YikeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B875D4342D75ED58005A1A9E /* YikeUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = YikeUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		B8D27DF32D8E1F7E001C02FD /* StoreKitConfiguration.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = StoreKitConfiguration.storekit; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -114,6 +115,7 @@
 		B875D40C2D75ED57005A1A9E = {
 			isa = PBXGroup;
 			children = (
+				B8D27DF32D8E1F7E001C02FD /* StoreKitConfiguration.storekit */,
 				B82C8BF32D823E4800B033ED /* Yike.xctestplan */,
 				B875D4172D75ED57005A1A9E /* Yike */,
 				B875D42D2D75ED58005A1A9E /* YikeTests */,

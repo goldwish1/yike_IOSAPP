@@ -93,6 +93,12 @@ class IAPManager: ObservableObject {
     // 获取产品信息
     @MainActor
     func fetchProducts() async {
+        // 检查网络连接
+        guard NetworkMonitor.shared.isConnected else {
+            print("【IAP】无网络连接，无法获取产品信息")
+            return
+        }
+        
         isLoading = true
         
         do {
@@ -121,6 +127,14 @@ class IAPManager: ObservableObject {
         // 重置状态
         purchaseError = nil
         purchaseState = .purchasing
+        
+        // 检查网络连接
+        guard NetworkMonitor.shared.isConnected else {
+            purchaseError = "网络连接已断开，请恢复网络连接后重试"
+            purchaseState = .failed
+            print("【IAP】购买失败: 无网络连接")
+            return
+        }
         
         // 检查是否可以进行支付
         guard AppStore.canMakePayments else {
@@ -178,6 +192,12 @@ class IAPManager: ObservableObject {
     // 恢复购买（消耗型IAP通常不需要恢复，但保留方法以备后用）
     @MainActor
     func restorePurchases() async {
+        // 检查网络连接
+        guard NetworkMonitor.shared.isConnected else {
+            print("【IAP】无网络连接，无法恢复购买")
+            return
+        }
+        
         do {
             try await AppStore.sync()
             print("【IAP】恢复购买完成")

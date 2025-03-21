@@ -4,6 +4,7 @@ import SwiftUI
 struct YikeApp: App {
     @StateObject private var dataManager = DataManager.shared
     @StateObject private var navigationRouter = NavigationRouter.shared
+    @StateObject private var networkMonitor = NetworkMonitor.shared
     
     init() {
         // 请求通知权限
@@ -23,6 +24,7 @@ struct YikeApp: App {
             ContentView()
                 .environmentObject(dataManager)
                 .environmentObject(navigationRouter)
+                .environmentObject(networkMonitor)
         }
     }
 } 
