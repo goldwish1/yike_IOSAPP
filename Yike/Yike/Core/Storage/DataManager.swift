@@ -265,16 +265,8 @@ import Combine
             date: Calendar.current.date(byAdding: .day, value: -30, to: now)!
         )
         
-        // 移除OCR识别的积分消耗记录，因为OCR识别功能是免费的
-        // 添加一条在线语音的积分消耗记录作为示例
-        let record2 = PointsRecord(
-            id: UUID(),
-            amount: -5,
-            reason: "使用在线语音",
-            date: Calendar.current.date(byAdding: .day, value: -2, to: now)!
-        )
-        
-        pointsRecords = [record1, record2]
+        // 只保留新用户奖励记录，不添加任何消费记录
+        pointsRecords = [record1]
         
         saveData()
     }
