@@ -30,6 +30,8 @@ Yike/
 │   │   │   │   ├── SiliconFlowTTSService.swift # 硅基流动语音合成服务
 │   │   │   │   ├── NavigationService.swift     # 导航服务
 │   │   │   │   ├── NavigationRouter.swift      # 导航路由管理器
+│   │   │   │   ├── NetworkMonitor.swift        # 网络状态监控服务
+│   │   │   │   ├── IAPManager.swift            # 内购管理服务
 │   │   │   │   └── OCRService.swift            # OCR文字识别服务
 │   │   │   └── Storage/      # 数据存储
 │   │   │       ├── DataManager.swift           # 数据管理器
@@ -106,6 +108,8 @@ Yike/
          - `SiliconFlowTTSService.swift`: 硅基流动语音合成服务，处理在线语音合成
          - `NavigationService.swift`: 导航服务，管理应用内页面导航和路由，支持iOS 16新特性
          - `NavigationRouter.swift`: 导航路由管理器，负责管理应用内导航状态和路由
+         - `NetworkMonitor.swift`: 网络状态监控服务，处理网络状态监控和网络连接管理
+         - `IAPManager.swift`: 内购管理服务，处理应用内购相关功能
          - `OCRService.swift`: OCR文字识别服务，处理图片文字识别
        - `Storage/`: 数据存储层
          - `DataManager.swift`: 数据管理器，处理核心数据的CRUD操作
