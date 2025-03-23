@@ -305,14 +305,36 @@ class PlaybackControlViewModel: ObservableObject {
     
     /// 停止所有播放
     func stopPlayback() {
-        print("【调试】PlaybackControlViewModel.stopPlayback 被调用")
-        print("【调试详细】PlaybackControlViewModel.stopPlayback: 当前状态 - isPlaying=\(isPlaying), isLoading=\(isLoading), 线程=\(Thread.isMainThread ? "主线程" : "后台线程"), 时间=\(Date())")
+        print("【最终方案】stopPlayback 被调用 - 线程: \(Thread.isMainThread ? "主线程" : "后台线程"), 时间: \(Date())")
         
-        // 简化逻辑，直接调用统一的清理方法
+        // 确保在主线程执行
+        if !Thread.isMainThread {
+            print("【最终方案】stopPlayback 在非主线程调用，立即切换到主线程")
+            DispatchQueue.main.sync { [weak self] in
+                self?.stopPlayback()
+            }
+            return
+        }
+        
+        // 1. 首先确保禁用自动重播 - 这是最关键的第一步
+        ApiVoicePlaybackManager.shared.disableAutoReplay()
+        
+        // 2. 快速同步重置状态 - 立即进行UI响应
+        print("【最终方案】stopPlayback: 同步重置状态")
+        let oldPlaying = isPlaying
+        let oldLoading = isLoading
+        isPlaying = false
+        isLoading = false
+        error = nil
+        
+        print("【最终方案】stopPlayback: 已重置UI状态 - isPlaying: \(oldPlaying) -> false, isLoading: \(oldLoading) -> false")
+        
+        // 3. 停止播放器 - 同步操作
+        print("【最终方案】stopPlayback: 停止本地和API播放器")
         localVoiceManager.stop()
         apiVoiceManager.stop()
         
-        print("【调试详细】PlaybackControlViewModel.stopPlayback: 完成 - 当前状态: isPlaying=\(isPlaying), isLoading=\(isLoading), 时间=\(Date())")
+        print("【最终方案】stopPlayback: 完成 - 时间: \(Date())")
     }
     
     /// 重置播放状态
@@ -334,67 +356,98 @@ class PlaybackControlViewModel: ObservableObject {
         print("【调试】PlaybackControlViewModel.cleanup 被调用")
         print("【调试详细】PlaybackControlViewModel.cleanup: 当前状态 - isPlaying=\(isPlaying), isLoading=\(isLoading), 线程=\(Thread.isMainThread ? "主线程" : "后台线程"), 时间=\(Date())")
         
-        // 使用统一的清理方法，避免代码重复
-        forceClearAllPlaybackResources()
+        // 确保在主线程执行状态更新
+        if !Thread.isMainThread {
+            DispatchQueue.main.async { [weak self] in
+                self?.cleanup()
+            }
+            return
+        }
         
-        // 清理订阅，这是forceClearAllPlaybackResources中没有的
+        // 先停止播放，这是同步操作
+        localVoiceManager.stop()
+        apiVoiceManager.stop()
+        
+        // 重置状态
+        isPlaying = false
+        isLoading = false
+        error = nil
+        progress = 0.0
+        
+        // 顺序清理订阅、本地语音资源和API语音资源
         print("【调试详细】PlaybackControlViewModel.cleanup: 清理所有订阅 - 之前, 订阅数=\(cancellables.count)")
         cancellables.removeAll()
         print("【调试详细】PlaybackControlViewModel.cleanup: 清理所有订阅 - 之后, 订阅数=\(cancellables.count)")
+        
+        // 简单干净的资源清理，不需要复杂的回调和超时
+        print("【调试详细】PlaybackControlViewModel.cleanup: 清理本地语音资源")
+        localVoiceManager.reset()
+        
+        print("【调试详细】PlaybackControlViewModel.cleanup: 清理API语音资源")
+        apiVoiceManager.stop()
+        
+        // 重置所有状态标志
+        setupBindings()
         
         print("【调试详细】PlaybackControlViewModel.cleanup: 方法执行完毕 - 时间=\(Date())")
     }
     
     /// 更新记忆进度
     func updateMemoryProgress() {
-        // 立即禁用自动重播，防止在处理过程中触发新的播放循环
-        print("【调试】updateMemoryProgress: 立即禁用自动重播")
-        apiVoiceManager.disableAutoReplay()
+        // 确保在主线程执行
+        if !Thread.isMainThread {
+            print("【调试】updateMemoryProgress在非主线程调用，转到主线程")
+            DispatchQueue.main.async { [weak self] in
+                self?.updateMemoryProgress()
+            }
+            return
+        }
         
-        // 先停止所有音频播放，避免弹窗显示时还在播放
-        print("【调试】updateMemoryProgress: 先停止音频播放再显示确认弹窗")
+        print("【调试】updateMemoryProgress: 开始处理 - \(Date())")
         
-        // 强制清理所有播放资源，确保彻底终止所有异步操作
-        print("【调试】updateMemoryProgress: 强制清理所有播放资源")
-        forceClearAllPlaybackResources { [weak self] in
-            guard let self = self else { return }
+        // 1. 首先禁用自动重播，这是最关键的第一步
+        print("【调试】updateMemoryProgress: 禁用自动重播")
+        ApiVoicePlaybackManager.shared.disableAutoReplay()
+        
+        // 2. 快速停止所有播放，这是同步的
+        print("【调试】updateMemoryProgress: 停止所有播放")
+        stopPlayback()
+        
+        // 3. 简化处理逻辑
+        print("【调试】updateMemoryProgress: 更新学习进度数据")
+        var updatedItem = self.currentMemoryItem
+        
+        if updatedItem.isNew {
+            updatedItem.reviewStage = 1
+            updatedItem.progress = 0.2
             
-            // 更新学习进度和复习阶段
-            var updatedItem = self.currentMemoryItem
+            if let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: Date()) {
+                updatedItem.nextReviewDate = tomorrow
+            }
+        } else {
+            updatedItem.progress = min(1.0, updatedItem.progress + 0.2)
+            updatedItem.reviewStage = min(5, updatedItem.reviewStage + 1)
             
-            if updatedItem.isNew {
-                // 首次学习，设置为第一阶段
-                updatedItem.reviewStage = 1
-                updatedItem.progress = 0.2
-                
-                // 设置下一次复习时间（明天）
-                if let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: Date()) {
-                    updatedItem.nextReviewDate = tomorrow
+            if updatedItem.reviewStage < 5, let interval = self.settingsManager.settings.reviewStrategy.intervals.dropFirst(updatedItem.reviewStage - 1).first {
+                if let nextDate = Calendar.current.date(byAdding: .day, value: interval, to: Date()) {
+                    updatedItem.nextReviewDate = nextDate
                 }
             } else {
-                // 已在复习中，更新进度
-                let progressIncrement = 0.2
-                updatedItem.progress = min(1.0, updatedItem.progress + progressIncrement)
-                updatedItem.reviewStage = min(5, updatedItem.reviewStage + 1)
-                
-                // 设置下一次复习时间
-                if updatedItem.reviewStage < 5, let interval = self.settingsManager.settings.reviewStrategy.intervals.dropFirst(updatedItem.reviewStage - 1).first {
-                    if let nextDate = Calendar.current.date(byAdding: .day, value: interval, to: Date()) {
-                        updatedItem.nextReviewDate = nextDate
-                    }
-                } else {
-                    // 已完成所有复习阶段
-                    updatedItem.nextReviewDate = nil
-                }
+                updatedItem.nextReviewDate = nil
             }
-            
-            updatedItem.lastReviewDate = Date()
-            self.dataManager.updateMemoryItem(updatedItem)
-            
-            print("【调试】updateMemoryProgress: 所有资源已清理完毕，更新完进度，显示确认弹窗")
-            // 显示确认弹窗
-            self.shouldShowCompletionAlert = true
         }
+        
+        updatedItem.lastReviewDate = Date()
+        
+        // 4. 保存数据变更
+        print("【调试】updateMemoryProgress: 保存数据更新")
+        dataManager.updateMemoryItem(updatedItem)
+        
+        // 5. 显示确认弹窗
+        print("【调试】updateMemoryProgress: 显示确认弹窗")
+        self.shouldShowCompletionAlert = true
+        
+        print("【调试】updateMemoryProgress: 完成处理 - \(Date())")
     }
     
     /// 强制清理所有播放资源

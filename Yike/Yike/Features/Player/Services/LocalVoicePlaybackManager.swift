@@ -117,6 +117,32 @@ class LocalVoicePlaybackManager: ObservableObject {
     func forceCleanup(completion: (() -> Void)? = nil) {
         print("【调试】LocalVoicePlaybackManager.forceCleanup 被调用 - 时间: \(Date())")
         
+        // 添加线程安全的完成标志
+        class AtomicFlag {
+            private let queue = DispatchQueue(label: "com.yike.atomicFlag")
+            private var _value: Bool = false
+            
+            var value: Bool {
+                get { queue.sync { _value } }
+                set { queue.sync { _value = newValue } }
+            }
+        }
+        
+        let callbackExecuted = AtomicFlag()
+        
+        // 设置超时保护，确保回调一定会被执行
+        let timeoutSeconds = 1.0
+        let timeoutWorkItem = DispatchWorkItem {
+            if !callbackExecuted.value {
+                callbackExecuted.value = true
+                print("【调试】LocalVoicePlaybackManager.forceCleanup 超时触发回调 - 时间: \(Date())")
+                completion?()
+            }
+        }
+        
+        // 安排超时处理
+        DispatchQueue.main.asyncAfter(deadline: .now() + timeoutSeconds, execute: timeoutWorkItem)
+        
         // 停止播放
         stop()
         
@@ -132,10 +158,18 @@ class LocalVoicePlaybackManager: ObservableObject {
         currentTime = "00:00"
         totalTime = "00:00"
         
-        // 使用异步操作确保所有状态更新和清理操作都已完成后再调用回调
-        DispatchQueue.main.async { [weak self] in
-            guard self != nil else { return }
-            print("【调试】LocalVoicePlaybackManager.forceCleanup 完成并执行回调 - 时间: \(Date())")
+        // 短延迟后尝试执行正常回调
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+            // 如果已经超时或对象已被释放，不执行回调
+            guard let _ = self, !callbackExecuted.value else { return }
+            
+            // 取消超时工作项
+            timeoutWorkItem.cancel()
+            
+            // 设置回调已执行标志
+            callbackExecuted.value = true
+            
+            print("【调试】LocalVoicePlaybackManager.forceCleanup 正常完成并执行回调 - 时间: \(Date())")
             completion?()
         }
         

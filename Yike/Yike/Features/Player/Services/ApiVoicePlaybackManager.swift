@@ -42,16 +42,45 @@ class ApiVoicePlaybackManager: ObservableObject {
     /// 禁用自动重播功能
     /// 用于在用户明确希望停止播放的场景（如点击"完成学习"按钮时）立即禁用
     func disableAutoReplay() {
-        print("【调试】ApiVoicePlaybackManager.disableAutoReplay 被调用 - 时间: \(Date())")
+        print("【最终方案】ApiVoicePlaybackManager.disableAutoReplay 被调用 - 时间: \(Date()), 线程: \(Thread.isMainThread ? "主线程" : "后台线程")")
         
-        // 立即禁用自动重播标志
-        if shouldAutoReplay {
-            print("【调试详细】ApiVoicePlaybackManager.disableAutoReplay: shouldAutoReplay: true -> false")
-            shouldAutoReplay = false
+        // 确保在主线程执行
+        if !Thread.isMainThread {
+            print("【最终方案】disableAutoReplay 在非主线程调用，立即切换到主线程")
+            DispatchQueue.main.sync { [weak self] in
+                self?.disableAutoReplay()
+            }
+            return
         }
         
-        // 取消间隔计时器，确保没有新的播放循环开始
+        // 使用同步操作，最可靠的方式执行：
+        
+        // 1. 立即禁用自动重播标志
+        let oldValue = shouldAutoReplay
+        shouldAutoReplay = false
+        print("【最终方案】shouldAutoReplay: \(oldValue) -> false")
+        
+        // 2. 立即取消所有计时器
         cancelIntervalTimer()
+        
+        // 3. 立即取消所有API请求
+        print("【最终方案】取消所有API请求")
+        SiliconFlowTTSService.shared.cancelCurrentRequest()
+        
+        // 4. 立即停止播放器
+        print("【最终方案】停止音频播放")
+        audioPlayerService.stop()
+        
+        // 5. 重置所有状态
+        let wasPlaying = isPlaying
+        let wasLoading = isLoading
+        isPlaying = false
+        isLoading = false
+        error = nil
+        progress = 0
+        print("【最终方案】重置状态: isPlaying: \(wasPlaying) -> false, isLoading: \(wasLoading) -> false")
+        
+        print("【最终方案】disableAutoReplay 完成 - 时间: \(Date())")
     }
     
     /// 播放API语音
@@ -284,6 +313,19 @@ class ApiVoicePlaybackManager: ObservableObject {
         // 使用原子变量跟踪清理状态，防止多次回调
         let cleanupCompleted = Atomic(false)
         
+        // 设置超时保护机制，确保回调一定会被执行
+        let timeoutSeconds = 1.0 // 快速超时
+        let timeoutWorkItem = DispatchWorkItem {
+            if !cleanupCompleted.value {
+                cleanupCompleted.value = true
+                print("【调试】ApiVoicePlaybackManager.forceCleanup 超时触发回调 - 时间: \(Date())")
+                completion?()
+            }
+        }
+        
+        // 安排超时处理
+        DispatchQueue.main.asyncAfter(deadline: .now() + timeoutSeconds, execute: timeoutWorkItem)
+        
         // 取消间隔计时器
         cancelIntervalTimer()
         
@@ -305,14 +347,18 @@ class ApiVoicePlaybackManager: ObservableObject {
         error = nil
         progress = 0.0
         
-        // 确保在主线程上延迟执行回调，给底层资源充分时间清理
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+        // 短延迟后尝试执行正常回调
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
+            // 如果已经超时或对象已被释放，不执行回调
             guard let _ = self, !cleanupCompleted.value else { return }
+            
+            // 取消超时工作项
+            timeoutWorkItem.cancel()
             
             // 设置清理完成标志
             cleanupCompleted.value = true
             
-            print("【调试】ApiVoicePlaybackManager.forceCleanup 完成并执行回调 - 时间: \(Date())")
+            print("【调试】ApiVoicePlaybackManager.forceCleanup 正常完成并执行回调 - 时间: \(Date())")
             completion?()
         }
         

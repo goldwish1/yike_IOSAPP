@@ -13,9 +13,13 @@ struct PlayerView: View {
     @StateObject private var viewModel: PlaybackControlViewModel
     @ObservedObject private var settingsManager = SettingsManager.shared
     @EnvironmentObject private var router: NavigationRouter
-    @State private var shouldPopToRoot = false
-    // 保留presentationMode用于其他功能
-    @Environment(\.presentationMode) var presentationMode
+    
+    // 使用系统提供的dismiss机制
+    @Environment(\.dismiss) private var dismiss
+    
+    // 添加标志来跟踪资源清理状态
+    @State private var isCleaningUp: Bool = false
+    @State private var showingConfirmation: Bool = false // 单纯跟踪确认弹窗的状态
     
     // 原有初始化方法（单个记忆项目，向后兼容）
     init(memoryItem: MemoryItem) {
@@ -109,9 +113,15 @@ struct PlayerView: View {
                 }
                 
                 Button(action: {
-                    // 立即禁用自动重播，防止在处理过程中开始新的播放循环
+                    print("【调试】完成学习按钮点击：准备显示确认对话框")
+                    
+                    // 立即禁用自动重播，这是最重要的第一步
                     ApiVoicePlaybackManager.shared.disableAutoReplay()
-                    // 然后再更新学习进度
+                    
+                    // 立即停止所有播放，同步操作
+                    viewModel.stopPlayback()
+                    
+                    // 简单将状态存储在showingConfirmation中，然后让updateMemoryProgress处理业务逻辑
                     viewModel.updateMemoryProgress()
                 }) {
                     Text("完成学习")
@@ -120,17 +130,30 @@ struct PlayerView: View {
             }
         )
         .onAppear {
+            // 重置清理状态
+            isCleaningUp = false
+            showingConfirmation = false
+            // 准备播放
             viewModel.preparePlayback()
         }
         .onDisappear {
-            // 立即停止所有音频播放
-            viewModel.stopPlayback()
-            // 再进行完整清理
-            viewModel.cleanup()
-        }
-        .onChange(of: shouldPopToRoot) { oldValue, newValue in
-            if newValue {
-                router.navigateBack()
+            if !isCleaningUp {
+                print("【调试】PlayerView.onDisappear: 开始清理资源")
+                isCleaningUp = true
+                
+                // 极简的onDisappear处理，只关心停止播放和禁用自动重播
+                ApiVoicePlaybackManager.shared.disableAutoReplay()
+                viewModel.stopPlayback()
+                
+                // 延迟彻底清理所有资源，但不管这个是否完成
+                DispatchQueue.global(qos: .background).async {
+                    print("【调试】PlayerView.onDisappear: 后台线程执行彻底资源清理")
+                    // 这里直接调用原子操作的清理方法，不需要回调或协调
+                    ApiVoicePlaybackManager.shared.forceCleanup(completion: nil)
+                    // 允许足够的时间完成清理
+                    Thread.sleep(forTimeInterval: 0.5)
+                    print("【调试】PlayerView.onDisappear: 后台线程资源清理完成")
+                }
             }
         }
         .alert(isPresented: $viewModel.shouldShowCompletionAlert) {
@@ -138,43 +161,21 @@ struct PlayerView: View {
                 title: Text("学习进度已更新"),
                 message: Text("你已完成一次学习，记忆进度已更新。"),
                 dismissButton: .default(Text("确定")) {
-                    print("【调试】确认按钮被点击：采用强制导航方式")
+                    print("【调试】确认按钮被点击：极简处理")
                     
-                    // 再次确保禁用自动重播
+                    // 关键：最短路径处理，无复杂逻辑
+                    // 1. 立即禁用自动重播 - 同步操作
                     ApiVoicePlaybackManager.shared.disableAutoReplay()
                     
-                    // 先确保所有播放都被停止
-                    viewModel.stopPlayback()
-                    
-                    // 重置弹窗状态
+                    // 2. 重置弹窗状态 - 同步操作
                     viewModel.shouldShowCompletionAlert = false
                     
-                    // 使用两种导航方式，确保在路由器方式失败时有后备
-                    DispatchQueue.main.async {
-                        // 首先尝试路由器导航
-                        if router.canNavigateBack() {
-                            print("【调试】确认按钮：使用router导航")
-                            router.navigateBack()
-                        } else {
-                            // 后备方案：使用presentationMode
-                            print("【调试】确认按钮：使用presentationMode导航")
-                            presentationMode.wrappedValue.dismiss()
-                        }
-                        
-                        // 使用shouldPopToRoot标志作为最后的后备方式
-                        if !router.isNavigating {
-                            print("【调试】确认按钮：使用shouldPopToRoot导航")
-                            shouldPopToRoot = true
-                        }
-                    }
+                    // 3. 设置清理标志，防止onDisappear重复清理
+                    isCleaningUp = true
                     
-                    // 在另一个线程进行资源清理，不阻塞UI
-                    DispatchQueue.global(qos: .background).async {
-                        // 强制停止API语音播放，防止任何可能的自动重播
-                        ApiVoicePlaybackManager.shared.stop()
-                        // 最后进行全面资源清理
-                        viewModel.forceClearAllPlaybackResources()
-                    }
+                    // 4. 立即返回
+                    print("【调试】确认按钮：立即调用dismiss()")
+                    dismiss()
                 }
             )
         }
