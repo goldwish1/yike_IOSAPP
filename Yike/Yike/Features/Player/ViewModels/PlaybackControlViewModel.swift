@@ -308,15 +308,9 @@ class PlaybackControlViewModel: ObservableObject {
         print("【调试】PlaybackControlViewModel.stopPlayback 被调用")
         print("【调试详细】PlaybackControlViewModel.stopPlayback: 当前状态 - isPlaying=\(isPlaying), isLoading=\(isLoading), 线程=\(Thread.isMainThread ? "主线程" : "后台线程"), 时间=\(Date())")
         
-        // 停止系统语音
-        print("【调试详细】PlaybackControlViewModel.stopPlayback: 即将停止本地语音 - 之前")
+        // 简化逻辑，直接调用统一的清理方法
         localVoiceManager.stop()
-        print("【调试详细】PlaybackControlViewModel.stopPlayback: 已停止本地语音 - 之后")
-        
-        // 停止API语音
-        print("【调试详细】PlaybackControlViewModel.stopPlayback: 即将停止API语音 - 之前")
         apiVoiceManager.stop()
-        print("【调试详细】PlaybackControlViewModel.stopPlayback: 已停止API语音 - 之后")
         
         print("【调试详细】PlaybackControlViewModel.stopPlayback: 完成 - 当前状态: isPlaying=\(isPlaying), isLoading=\(isLoading), 时间=\(Date())")
     }
@@ -340,49 +334,13 @@ class PlaybackControlViewModel: ObservableObject {
         print("【调试】PlaybackControlViewModel.cleanup 被调用")
         print("【调试详细】PlaybackControlViewModel.cleanup: 当前状态 - isPlaying=\(isPlaying), isLoading=\(isLoading), 线程=\(Thread.isMainThread ? "主线程" : "后台线程"), 时间=\(Date())")
         
-        // 停止所有播放
-        print("【调试详细】PlaybackControlViewModel.cleanup: 停止所有播放 - 之前")
-        stopPlayback()
-        print("【调试详细】PlaybackControlViewModel.cleanup: 停止所有播放 - 之后")
+        // 使用统一的清理方法，避免代码重复
+        forceClearAllPlaybackResources()
         
-        // 清理所有订阅
+        // 清理订阅，这是forceClearAllPlaybackResources中没有的
         print("【调试详细】PlaybackControlViewModel.cleanup: 清理所有订阅 - 之前, 订阅数=\(cancellables.count)")
         cancellables.removeAll()
         print("【调试详细】PlaybackControlViewModel.cleanup: 清理所有订阅 - 之后, 订阅数=\(cancellables.count)")
-        
-        // 重置错误状态
-        print("【调试详细】PlaybackControlViewModel.cleanup: 重置错误状态 - 之前, 当前错误=\(error ?? "无")")
-        let oldError = error
-        error = nil
-        print("【调试详细】PlaybackControlViewModel.cleanup: 重置错误状态 - 之后, 旧错误=\(oldError ?? "无")")
-        
-        // 确保播放状态被重置
-        let oldIsPlaying = isPlaying
-        let oldIsLoading = isLoading
-        isPlaying = false
-        isLoading = false
-        print("【调试详细】PlaybackControlViewModel.cleanup: 重置播放状态 - isPlaying: \(oldIsPlaying) -> false, isLoading: \(oldIsLoading) -> false")
-        
-        let oldProgress = progress
-        progress = 0.0
-        print("【调试详细】PlaybackControlViewModel.cleanup: 重置进度 - progress: \(oldProgress) -> 0.0")
-        
-        // 再次确保语音管理器的状态被清理
-        print("【调试详细】PlaybackControlViewModel.cleanup: 准备异步再次停止音频 - 时间=\(Date())")
-        DispatchQueue.main.async {
-            print("【调试详细】PlaybackControlViewModel.cleanup: 异步操作开始 - 线程=\(Thread.isMainThread ? "主线程" : "后台线程"), 时间=\(Date())")
-            print("【调试详细】PlaybackControlViewModel.cleanup: 异步操作中当前状态 - isPlaying=\(self.isPlaying), isLoading=\(self.isLoading)")
-            
-            print("【调试详细】PlaybackControlViewModel.cleanup: 异步再次停止API语音 - 之前")
-            self.apiVoiceManager.stop()
-            print("【调试详细】PlaybackControlViewModel.cleanup: 异步再次停止API语音 - 之后")
-            
-            print("【调试详细】PlaybackControlViewModel.cleanup: 异步再次停止本地语音 - 之前")
-            self.localVoiceManager.stop()
-            print("【调试详细】PlaybackControlViewModel.cleanup: 异步再次停止本地语音 - 之后")
-            
-            print("【调试详细】PlaybackControlViewModel.cleanup: 异步操作完成 - 时间=\(Date())")
-        }
         
         print("【调试详细】PlaybackControlViewModel.cleanup: 方法执行完毕 - 时间=\(Date())")
     }
@@ -391,69 +349,100 @@ class PlaybackControlViewModel: ObservableObject {
     func updateMemoryProgress() {
         // 先停止所有音频播放，避免弹窗显示时还在播放
         print("【调试】updateMemoryProgress: 先停止音频播放再显示确认弹窗")
-        stopPlayback()
         
         // 强制清理所有播放资源，确保彻底终止所有异步操作
         print("【调试】updateMemoryProgress: 强制清理所有播放资源")
-        forceClearAllPlaybackResources()
-        
-        // 更新学习进度和复习阶段
-        var updatedItem = currentMemoryItem
-        
-        if updatedItem.isNew {
-            // 首次学习，设置为第一阶段
-            updatedItem.reviewStage = 1
-            updatedItem.progress = 0.2
+        forceClearAllPlaybackResources { [weak self] in
+            guard let self = self else { return }
             
-            // 设置下一次复习时间（明天）
-            if let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: Date()) {
-                updatedItem.nextReviewDate = tomorrow
-            }
-        } else {
-            // 已在复习中，更新进度
-            let progressIncrement = 0.2
-            updatedItem.progress = min(1.0, updatedItem.progress + progressIncrement)
-            updatedItem.reviewStage = min(5, updatedItem.reviewStage + 1)
+            // 更新学习进度和复习阶段
+            var updatedItem = self.currentMemoryItem
             
-            // 设置下一次复习时间
-            if updatedItem.reviewStage < 5, let interval = SettingsManager.shared.settings.reviewStrategy.intervals.dropFirst(updatedItem.reviewStage - 1).first {
-                if let nextDate = Calendar.current.date(byAdding: .day, value: interval, to: Date()) {
-                    updatedItem.nextReviewDate = nextDate
+            if updatedItem.isNew {
+                // 首次学习，设置为第一阶段
+                updatedItem.reviewStage = 1
+                updatedItem.progress = 0.2
+                
+                // 设置下一次复习时间（明天）
+                if let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: Date()) {
+                    updatedItem.nextReviewDate = tomorrow
                 }
             } else {
-                // 已完成所有复习阶段
-                updatedItem.nextReviewDate = nil
+                // 已在复习中，更新进度
+                let progressIncrement = 0.2
+                updatedItem.progress = min(1.0, updatedItem.progress + progressIncrement)
+                updatedItem.reviewStage = min(5, updatedItem.reviewStage + 1)
+                
+                // 设置下一次复习时间
+                if updatedItem.reviewStage < 5, let interval = self.settingsManager.settings.reviewStrategy.intervals.dropFirst(updatedItem.reviewStage - 1).first {
+                    if let nextDate = Calendar.current.date(byAdding: .day, value: interval, to: Date()) {
+                        updatedItem.nextReviewDate = nextDate
+                    }
+                } else {
+                    // 已完成所有复习阶段
+                    updatedItem.nextReviewDate = nil
+                }
             }
-        }
-        
-        updatedItem.lastReviewDate = Date()
-        dataManager.updateMemoryItem(updatedItem)
-        
-        // 确保所有音频已停止后，再显示确认弹窗
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
-            guard let self = self else { return }
-            print("【调试】updateMemoryProgress: 确保音频已停止，显示确认弹窗")
+            
+            updatedItem.lastReviewDate = Date()
+            self.dataManager.updateMemoryItem(updatedItem)
+            
+            print("【调试】updateMemoryProgress: 所有资源已清理完毕，更新完进度，显示确认弹窗")
+            // 显示确认弹窗
             self.shouldShowCompletionAlert = true
         }
     }
     
     /// 强制清理所有播放资源
     /// 用于在关键时刻（如显示确认弹窗前和确认按钮点击时）确保所有资源被彻底清理
-    func forceClearAllPlaybackResources() {
+    func forceClearAllPlaybackResources(completion: (() -> Void)? = nil) {
         print("【调试】PlaybackControlViewModel.forceClearAllPlaybackResources 被调用")
         print("【调试详细】forceClearAllPlaybackResources: 当前状态 - isPlaying=\(isPlaying), isLoading=\(isLoading), 线程=\(Thread.isMainThread ? "主线程" : "后台线程")")
         
+        // 创建一个DispatchGroup来协调两个清理操作
+        let cleanupGroup = DispatchGroup()
+        
         // 强制停止并清理本地语音资源
-        localVoiceManager.forceCleanup()
+        cleanupGroup.enter()
+        localVoiceManager.forceCleanup {
+            print("【调试详细】forceClearAllPlaybackResources: 本地语音管理器清理完成")
+            cleanupGroup.leave()
+        }
         
         // 强制停止并清理API语音资源
-        apiVoiceManager.forceCleanup()
+        cleanupGroup.enter()
+        apiVoiceManager.forceCleanup {
+            print("【调试详细】forceClearAllPlaybackResources: API语音管理器清理完成")
+            cleanupGroup.leave()
+        }
         
         // 重置ViewModel状态
         isPlaying = false
         isLoading = false
         progress = 0.0
         error = nil
+        
+        // 使用异步操作确保所有清理都已完成
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            // 确保音频播放器状态被重置
+            if self.isPlaying || self.isLoading {
+                self.isPlaying = false
+                self.isLoading = false
+                print("【调试详细】forceClearAllPlaybackResources: 异步再次重置播放状态")
+            }
+            
+            // 确保不会有新的播放启动
+            self.localVoiceManager.stop()
+            self.apiVoiceManager.stop()
+        }
+        
+        // 当所有清理操作完成后调用回调
+        cleanupGroup.notify(queue: .main) {
+            print("【调试详细】forceClearAllPlaybackResources: 所有清理操作已完成")
+            completion?()
+        }
         
         print("【调试详细】forceClearAllPlaybackResources: 完成 - 当前状态: isPlaying=\(isPlaying), isLoading=\(isLoading)")
     }

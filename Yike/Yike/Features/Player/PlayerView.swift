@@ -138,17 +138,22 @@ struct PlayerView: View {
                     print("【调试】确认按钮被点击：确保所有资源被清理")
                     print("【调试详细】确认按钮：当前页面状态 - isPlaying=\(viewModel.isPlaying), isLoading=\(viewModel.isLoading)")
                     
-                    // 再次强制清理所有播放资源
-                    viewModel.forceClearAllPlaybackResources()
-                    print("【调试详细】确认按钮：已强制清理所有播放资源")
-                    
-                    // 确保弹窗状态被重置
-                    viewModel.shouldShowCompletionAlert = false
-                    print("【调试详细】确认按钮：已重置弹窗状态")
-                    
-                    // 使用NavigationRouter返回上一级，替代presentationMode.wrappedValue.dismiss()
-                    router.navigateBack()
-                    print("【调试详细】确认按钮：已调用router.navigateBack()关闭页面")
+                    // 再次强制清理所有播放资源，并在完成后导航
+                    viewModel.forceClearAllPlaybackResources {
+                        print("【调试详细】确认按钮：所有资源清理完成，准备导航")
+                        
+                        // 确保弹窗状态被重置
+                        viewModel.shouldShowCompletionAlert = false
+                        print("【调试详细】确认按钮：已重置弹窗状态")
+                        
+                        // 在主线程上执行导航操作
+                        DispatchQueue.main.async {
+                            print("【调试详细】确认按钮：执行导航 - 当前状态 isPlaying=\(viewModel.isPlaying), isLoading=\(viewModel.isLoading)")
+                            // 使用NavigationRouter返回上一级，替代presentationMode.wrappedValue.dismiss()
+                            router.navigateBack()
+                            print("【调试详细】确认按钮：已调用router.navigateBack()关闭页面")
+                        }
+                    }
                 }
             )
         }

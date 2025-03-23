@@ -114,7 +114,7 @@ class LocalVoicePlaybackManager: ObservableObject {
     
     /// 强制清理所有资源和状态
     /// 用于确保在关键时刻（如弹窗显示前和确认按钮点击时）所有播放相关资源被彻底清理
-    func forceCleanup() {
+    func forceCleanup(completion: (() -> Void)? = nil) {
         print("【调试】LocalVoicePlaybackManager.forceCleanup 被调用 - 时间: \(Date())")
         
         // 停止播放
@@ -131,6 +131,13 @@ class LocalVoicePlaybackManager: ObservableObject {
         progress = 0.0
         currentTime = "00:00"
         totalTime = "00:00"
+        
+        // 使用异步操作确保所有状态更新和清理操作都已完成后再调用回调
+        DispatchQueue.main.async { [weak self] in
+            guard self != nil else { return }
+            print("【调试】LocalVoicePlaybackManager.forceCleanup 完成并执行回调 - 时间: \(Date())")
+            completion?()
+        }
         
         print("【调试】LocalVoicePlaybackManager.forceCleanup 完成 - 时间: \(Date())")
     }
