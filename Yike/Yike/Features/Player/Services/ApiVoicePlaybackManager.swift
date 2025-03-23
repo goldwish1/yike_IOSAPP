@@ -39,6 +39,21 @@ class ApiVoicePlaybackManager: ObservableObject {
             .store(in: &cancellables)
     }
     
+    /// 禁用自动重播功能
+    /// 用于在用户明确希望停止播放的场景（如点击"完成学习"按钮时）立即禁用
+    func disableAutoReplay() {
+        print("【调试】ApiVoicePlaybackManager.disableAutoReplay 被调用 - 时间: \(Date())")
+        
+        // 立即禁用自动重播标志
+        if shouldAutoReplay {
+            print("【调试详细】ApiVoicePlaybackManager.disableAutoReplay: shouldAutoReplay: true -> false")
+            shouldAutoReplay = false
+        }
+        
+        // 取消间隔计时器，确保没有新的播放循环开始
+        cancelIntervalTimer()
+    }
+    
     /// 播放API语音
     /// - Parameters:
     ///   - text: 要播放的文本

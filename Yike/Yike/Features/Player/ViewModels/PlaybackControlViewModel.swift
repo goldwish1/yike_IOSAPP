@@ -347,6 +347,10 @@ class PlaybackControlViewModel: ObservableObject {
     
     /// 更新记忆进度
     func updateMemoryProgress() {
+        // 立即禁用自动重播，防止在处理过程中触发新的播放循环
+        print("【调试】updateMemoryProgress: 立即禁用自动重播")
+        apiVoiceManager.disableAutoReplay()
+        
         // 先停止所有音频播放，避免弹窗显示时还在播放
         print("【调试】updateMemoryProgress: 先停止音频播放再显示确认弹窗")
         

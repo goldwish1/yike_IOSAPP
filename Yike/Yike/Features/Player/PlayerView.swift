@@ -109,6 +109,9 @@ struct PlayerView: View {
                 }
                 
                 Button(action: {
+                    // 立即禁用自动重播，防止在处理过程中开始新的播放循环
+                    ApiVoicePlaybackManager.shared.disableAutoReplay()
+                    // 然后再更新学习进度
                     viewModel.updateMemoryProgress()
                 }) {
                     Text("完成学习")
@@ -136,6 +139,9 @@ struct PlayerView: View {
                 message: Text("你已完成一次学习，记忆进度已更新。"),
                 dismissButton: .default(Text("确定")) {
                     print("【调试】确认按钮被点击：采用强制导航方式")
+                    
+                    // 再次确保禁用自动重播
+                    ApiVoicePlaybackManager.shared.disableAutoReplay()
                     
                     // 先确保所有播放都被停止
                     viewModel.stopPlayback()
