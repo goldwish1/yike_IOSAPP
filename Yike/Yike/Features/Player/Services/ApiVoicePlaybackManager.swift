@@ -491,7 +491,7 @@ class ApiVoicePlaybackManager: ObservableObject {
         lastRequestInfo = nil
         
         // 9. 添加超时保护，确保资源最终会被释放
-        let timeoutWorkItem = DispatchWorkItem { [weak self] in
+        let timeoutWorkItem = DispatchWorkItem {
             print("【方案三】forceCleanup超时保护触发")
             AudioResourceGuardian.shared.markResourceIdle()
         }

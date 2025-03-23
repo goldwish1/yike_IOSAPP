@@ -3,7 +3,7 @@ import AVFoundation
 // import AlertToast  // 暂时注释掉这行
 
 // 导入自定义服务
-import class Yike.AudioResourceGuardian  // 导入AudioResourceGuardian
+// AudioResourceGuardian已在同一模块，无需导入
 
 struct PlayerView: View {
     // 单个记忆项目（向后兼容）

@@ -590,7 +590,7 @@ class PlaybackControlViewModel: ObservableObject {
         
         // 2. 尝试调用ApiVoicePlaybackManager的强制清理方法
         print("【方案三】开始调用ApiVoicePlaybackManager.forceCleanup - 时间: \(Date())")
-        ApiVoicePlaybackManager.shared.forceCleanup { [weak self] in
+        ApiVoicePlaybackManager.shared.forceCleanup {
             // 确保回调在主线程执行
             DispatchQueue.main.async {
                 print("【方案三】ApiVoicePlaybackManager.forceCleanup 完成回调执行 - 时间: \(Date())")

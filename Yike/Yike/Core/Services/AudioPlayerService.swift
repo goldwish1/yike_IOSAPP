@@ -101,7 +101,7 @@ class AudioPlayerService: NSObject, AVAudioPlayerDelegate {
             self.clearPlayerPool()
             
             // 更新UI状态
-            if let nowPlayingInfo = MPNowPlayingInfoCenter.default().nowPlayingInfo {
+            if MPNowPlayingInfoCenter.default().nowPlayingInfo != nil {
                 MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
             }
             self.stopUpdatingNowPlayingInfo()
@@ -116,7 +116,7 @@ class AudioPlayerService: NSObject, AVAudioPlayerDelegate {
         playerPoolLock.lock()
         defer { playerPoolLock.unlock() }
         
-        for (url, player) in audioPlayerPool {
+        for (_, player) in audioPlayerPool {
             // 尝试停止每个池中的播放器，忽略可能的错误
             player.stop()
         }
