@@ -46,6 +46,17 @@ class AudioPlayerService: NSObject, AVAudioPlayerDelegate {
     // 后台任务标识符
     private var backgroundTaskID: UIBackgroundTaskIdentifier = .invalid
     
+    // 音频资源访问锁，确保线程安全
+    private let resourceAccessLock = NSRecursiveLock()
+    
+    // 音频播放器对象池，减少创建和释放的频率
+    private var audioPlayerPool: [URL: AVAudioPlayer] = [:]
+    private let playerPoolLock = NSLock()
+    
+    // 最近使用的URL列表，用于LRU缓存策略
+    private var recentlyUsedURLs: [URL] = []
+    private let maxPoolSize = 5 // 池子最大容量
+    
     private override init() {
         super.init()
         setupAudioSession()
@@ -58,6 +69,63 @@ class AudioPlayerService: NSObject, AVAudioPlayerDelegate {
             name: UIApplication.willTerminateNotification,
             object: nil
         )
+        
+        // 注册资源强制释放通知
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleForceResourceRelease),
+            name: Notification.Name("AudioResourceGuardian.ForceReleaseResources"),
+            object: nil
+        )
+    }
+    
+    /// 处理强制资源释放通知
+    @objc private func handleForceResourceRelease() {
+        print("【死锁保护】AudioPlayerService收到强制资源释放通知")
+        
+        // 在主线程上安全地停止播放并释放资源
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            // 更新状态为非播放
+            self.isPlaying = false
+            
+            // 停止当前播放器
+            if let player = self.audioPlayer {
+                // 不获取锁，直接尝试停止，避免死锁
+                player.stop()
+                self.audioPlayer = nil
+            }
+            
+            // 清空播放器池
+            self.clearPlayerPool()
+            
+            // 更新UI状态
+            if let nowPlayingInfo = MPNowPlayingInfoCenter.default().nowPlayingInfo {
+                MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
+            }
+            self.stopUpdatingNowPlayingInfo()
+            self.endBackgroundTask()
+            
+            print("【死锁保护】AudioPlayerService已强制释放所有资源")
+        }
+    }
+    
+    /// 清空播放器池
+    private func clearPlayerPool() {
+        playerPoolLock.lock()
+        defer { playerPoolLock.unlock() }
+        
+        for (url, player) in audioPlayerPool {
+            // 尝试停止每个池中的播放器，忽略可能的错误
+            player.stop()
+        }
+        
+        // 清空池和最近使用列表
+        audioPlayerPool.removeAll()
+        recentlyUsedURLs.removeAll()
+        
+        print("【资源池】已清空音频播放器池")
     }
     
     deinit {
@@ -66,6 +134,48 @@ class AudioPlayerService: NSObject, AVAudioPlayerDelegate {
         
         // 停止播放并清理资源
         stop()
+    }
+    
+    /// 从池中获取或创建播放器
+    private func getPlayer(for url: URL) -> AVAudioPlayer? {
+        playerPoolLock.lock()
+        defer { playerPoolLock.unlock() }
+        
+        // 检查是否有可重用的播放器
+        if let existingPlayer = audioPlayerPool[url] {
+            print("【资源池】从池中获取现有播放器: \(url.lastPathComponent)")
+            
+            // 更新最近使用顺序
+            if let index = recentlyUsedURLs.firstIndex(of: url) {
+                recentlyUsedURLs.remove(at: index)
+            }
+            recentlyUsedURLs.append(url)
+            
+            return existingPlayer
+        }
+        
+        // 创建新播放器
+        do {
+            let player = try AVAudioPlayer(contentsOf: url)
+            player.delegate = self
+            
+            // 如果池已满，移除最不常用的
+            if audioPlayerPool.count >= maxPoolSize, let oldestURL = recentlyUsedURLs.first {
+                audioPlayerPool.removeValue(forKey: oldestURL)
+                recentlyUsedURLs.removeFirst()
+                print("【资源池】池已满，移除最不常用的播放器: \(oldestURL.lastPathComponent)")
+            }
+            
+            // 添加到池
+            audioPlayerPool[url] = player
+            recentlyUsedURLs.append(url)
+            print("【资源池】创建并添加新播放器到池: \(url.lastPathComponent)")
+            
+            return player
+        } catch {
+            print("【资源池】创建音频播放器失败: \(error)")
+            return nil
+        }
     }
     
     /// 设置音频会话
@@ -222,11 +332,25 @@ class AudioPlayerService: NSObject, AVAudioPlayerDelegate {
         // 开始后台任务
         beginBackgroundTask()
         
-        do {
-            audioPlayer = try AVAudioPlayer(contentsOf: url)
-            audioPlayer?.delegate = self
-            audioPlayer?.prepareToPlay()
-            audioPlayer?.play()
+        // 获取或创建播放器实例
+        guard let player = getPlayer(for: url) else {
+            print("获取音频播放器失败")
+            completion?()
+            endBackgroundTask()
+            return
+        }
+        
+        // 为当前播放设置
+        audioPlayer = player
+        player.currentTime = 0 // 从头开始播放
+        player.delegate = self // 确保委托设置正确
+        player.prepareToPlay()
+        
+        // 安全地访问播放方法
+        if resourceAccessLock.try() {
+            player.play()
+            resourceAccessLock.unlock()
+            
             isPlaying = true
             completionHandler = completion
             
@@ -234,8 +358,8 @@ class AudioPlayerService: NSObject, AVAudioPlayerDelegate {
             setupNowPlaying(title: "记得住", artist: "正在播放")
             
             print("开始播放音频: \(url.path)")
-        } catch {
-            print("播放音频失败: \(error.localizedDescription)")
+        } else {
+            print("【死锁保护】无法获取资源锁，跳过播放")
             completion?()
             endBackgroundTask()
         }
@@ -360,47 +484,142 @@ class AudioPlayerService: NSObject, AVAudioPlayerDelegate {
     }
     
     /// 停止播放
-    func stop() {
-        print("【调试】AudioPlayerService.stop 被调用")
-        print("【调试详细】AudioPlayerService.stop: 当前状态 - isPlaying=\(isPlaying), 线程=\(Thread.isMainThread ? "主线程" : "后台线程")")
+    /// - Parameter completion: 资源清理完成后的回调
+    func stop(completion: (() -> Void)? = nil) {
+        print("【终极方案】AudioPlayerService.stop 被调用 - 线程: \(Thread.isMainThread ? "主线程" : "后台线程"), 时间: \(Date())")
+        
+        // 创建一个信号量来跟踪资源释放完成状态
+        let resourceReleaseGroup = DispatchGroup()
+        resourceReleaseGroup.enter()
+        
+        // 添加超时保护，确保在5秒内一定会释放资源
+        let timeoutWorkItem = DispatchWorkItem {
+            print("【死锁保护】AudioPlayerService.stop 资源释放超时保护触发")
+            resourceReleaseGroup.leave() // 强制释放信号量
+        }
+        
+        // 设置超时计时器
+        DispatchQueue.global().asyncAfter(deadline: .now() + 5.0, execute: timeoutWorkItem)
         
         guard let player = audioPlayer else { 
             print("【调试】AudioPlayerService.stop: audioPlayer为nil，无需停止")
+            // 如果播放器为nil，仍然调用完成回调
+            timeoutWorkItem.cancel()
+            resourceReleaseGroup.leave()
+            DispatchQueue.main.async {
+                completion?()
+            }
             return 
         }
         
-        print("【调试详细】AudioPlayerService.stop: audioPlayer非nil，开始停止 - 时间: \(Date())")
-        player.stop()
-        print("【调试详细】AudioPlayerService.stop: 已调用player.stop() - 时间: \(Date())")
-        
-        let oldPlayer = audioPlayer
-        audioPlayer = nil
-        
+        // 1. 立即执行轻量级操作，更新状态
         let oldIsPlaying = isPlaying
         isPlaying = false
         print("【调试详细】AudioPlayerService.stop: 已设置 isPlaying: \(oldIsPlaying) -> false")
         
-        // 停止播放时不调用完成回调，因为这不是自然播放完成
+        // 2. 保存引用后释放，避免竞争条件
+        let playerToStop = player
+        audioPlayer = nil
+        
+        // 3. 清除完成回调（同步操作）
         let hadCompletionHandler = completionHandler != nil
-        print("【调试详细】AudioPlayerService.stop: 是否有完成回调: \(hadCompletionHandler), 准备设置为nil")
+        print("【调试详细】AudioPlayerService.stop: 是否有完成回调: \(hadCompletionHandler), 设置为nil")
         completionHandler = nil
         
-        // 清除锁屏/控制中心信息
-        print("【调试详细】AudioPlayerService.stop: 清除锁屏信息开始")
-        MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
-        print("【调试详细】AudioPlayerService.stop: 清除锁屏信息完成")
+        // 标记资源开始忙碌
+        AudioResourceGuardian.shared.markResourceBusy()
         
-        // 停止更新播放信息
-        print("【调试详细】AudioPlayerService.stop: 停止更新播放信息开始")
-        stopUpdatingNowPlayingInfo()
-        print("【调试详细】AudioPlayerService.stop: 停止更新播放信息完成")
+        // 4. 其余操作（可能耗时的）移到后台线程
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            guard let self = self else {
+                // 如果self已被释放，仍然调用完成回调并取消超时
+                timeoutWorkItem.cancel()
+                resourceReleaseGroup.leave()
+                AudioResourceGuardian.shared.markResourceIdle()
+                DispatchQueue.main.async {
+                    completion?()
+                }
+                return
+            }
+            print("【终极方案】AudioPlayerService.stop: 开始后台执行耗时操作 - 时间: \(Date())")
+            
+            // 停止播放器（可能耗时）
+            do {
+                // 使用有超时的执行方式，避免永久阻塞
+                let executionTimeout = DispatchWorkItem {
+                    print("【死锁保护】player.stop() 执行超时")
+                }
+                
+                DispatchQueue.global().asyncAfter(deadline: .now() + 2.0, execute: executionTimeout)
+                
+                // 使用安全停止方法
+                self.safelyStopPlayer(playerToStop)
+                executionTimeout.cancel() // 如果正常完成，取消超时
+                
+                print("【调试详细】AudioPlayerService.stop: 后台已调用player.stop() - 时间: \(Date())")
+            }
+            
+            // 清除锁屏/控制中心信息
+            DispatchQueue.main.async {
+                print("【调试详细】AudioPlayerService.stop: 清除锁屏信息开始")
+                MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
+                print("【调试详细】AudioPlayerService.stop: 清除锁屏信息完成")
+            }
+            
+            // 停止更新播放信息
+            DispatchQueue.main.async {
+                print("【调试详细】AudioPlayerService.stop: 停止更新播放信息开始")
+                self.stopUpdatingNowPlayingInfo()
+                print("【调试详细】AudioPlayerService.stop: 停止更新播放信息完成")
+            }
+            
+            // 结束后台任务
+            print("【调试详细】AudioPlayerService.stop: 结束后台任务开始")
+            self.endBackgroundTask()
+            print("【调试详细】AudioPlayerService.stop: 结束后台任务完成")
+            
+            // 操作完成后取消超时并通知完成
+            timeoutWorkItem.cancel()
+            resourceReleaseGroup.leave()
+            
+            // 标记资源释放完成
+            AudioResourceGuardian.shared.markResourceIdle()
+            
+            print("【终极方案】AudioPlayerService.stop: 后台操作全部完成 - 时间: \(Date())")
+            
+            // 在主线程上调用完成回调
+            DispatchQueue.main.async {
+                print("【终极方案】AudioPlayerService.stop: 调用完成回调 - 时间: \(Date())")
+                completion?()
+            }
+        }
         
-        // 结束后台任务
-        print("【调试详细】AudioPlayerService.stop: 结束后台任务开始")
-        endBackgroundTask()
-        print("【调试详细】AudioPlayerService.stop: 结束后台任务完成")
+        // 如果60ms内资源释放未完成，仍然返回方法，UI不等待
+        let _ = resourceReleaseGroup.wait(timeout: .now() + .milliseconds(60))
         
-        print("【调试详细】AudioPlayerService.stop: 停止播放音频完成 - 时间: \(Date())")
+        print("【终极方案】AudioPlayerService.stop: 同步操作完成，方法返回 - 时间: \(Date())")
+    }
+    
+    /// 安全停止播放器
+    private func safelyStopPlayer(_ player: AVAudioPlayer) {
+        // 创建超时保护
+        let stopTimeout = DispatchWorkItem {
+            print("【死锁保护】safelyStopPlayer 超时保护触发")
+        }
+        DispatchQueue.global().asyncAfter(deadline: .now() + 2.0, execute: stopTimeout)
+        
+        // 获取访问锁(带超时)
+        if resourceAccessLock.lock(before: Date(timeIntervalSinceNow: 1.0)) {
+            player.stop()
+            resourceAccessLock.unlock()
+            stopTimeout.cancel()
+            print("【调试详细】安全停止播放器成功")
+        } else {
+            print("【死锁保护】无法获取资源锁，使用强制方式停止播放器")
+            
+            // 如果无法获取锁，可能存在死锁，直接尝试停止
+            player.stop()
+        }
     }
     
     /// 设置音量

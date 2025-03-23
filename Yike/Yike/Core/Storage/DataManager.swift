@@ -37,11 +37,27 @@ import Combine
     // MARK: - Memory Items Methods
     
     func addMemoryItem(_ item: MemoryItem) {
+        // 确保在主线程更新
+        if !Thread.isMainThread {
+            DispatchQueue.main.async { [weak self] in
+                self?.addMemoryItem(item)
+            }
+            return
+        }
+        
         memoryItems.insert(item, at: 0) // 将新内容插入到数组开头
         saveData()
     }
     
     func updateMemoryItem(_ item: MemoryItem) {
+        // 确保在主线程更新
+        if !Thread.isMainThread {
+            DispatchQueue.main.async { [weak self] in
+                self?.updateMemoryItem(item)
+            }
+            return
+        }
+        
         if let index = memoryItems.firstIndex(where: { $0.id == item.id }) {
             memoryItems[index] = item
             saveData()
@@ -49,6 +65,14 @@ import Combine
     }
     
     func deleteMemoryItem(id: UUID) {
+        // 确保在主线程更新
+        if !Thread.isMainThread {
+            DispatchQueue.main.async { [weak self] in
+                self?.deleteMemoryItem(id: id)
+            }
+            return
+        }
+        
         memoryItems.removeAll(where: { $0.id == id })
         saveData()
     }
@@ -125,6 +149,14 @@ import Combine
     // MARK: - Points Management
     
     func addPoints(_ amount: Int, reason: String) {
+        // 确保在主线程更新
+        if !Thread.isMainThread {
+            DispatchQueue.main.async { [weak self] in
+                self?.addPoints(amount, reason: reason)
+            }
+            return
+        }
+        
         print("【积分日志】添加积分前: \(points)")
         points += amount
         let record = PointsRecord(id: UUID(), amount: amount, reason: reason, date: Date())
@@ -134,6 +166,24 @@ import Combine
     }
     
     func deductPoints(_ amount: Int, reason: String) -> Bool {
+        // 确保在主线程更新
+        if !Thread.isMainThread {
+            // 需要返回值，所以使用DispatchSemaphore同步等待结果
+            let semaphore = DispatchSemaphore(value: 0)
+            var result = false
+            
+            DispatchQueue.main.async { [weak self] in
+                if let self = self {
+                    result = self.deductPoints(amount, reason: reason)
+                }
+                semaphore.signal()
+            }
+            
+            // 等待主线程执行完毕
+            _ = semaphore.wait(timeout: .now() + 1.0)
+            return result
+        }
+        
         print("【积分日志】尝试扣除积分: \(amount)，当前积分: \(points)，原因: \(reason)")
         if points >= amount {
             points -= amount
@@ -149,6 +199,14 @@ import Combine
     
     // 标记用户已经看过在线语音提示信息
     func markApiVoiceAlertAsShown() {
+        // 确保在主线程更新
+        if !Thread.isMainThread {
+            DispatchQueue.main.async { [weak self] in
+                self?.markApiVoiceAlertAsShown()
+            }
+            return
+        }
+        
         hasShownApiVoiceAlert = true
         saveData()
     }
@@ -158,6 +216,14 @@ import Combine
     func saveData() {
         // 如果是测试模式，不进行持久化存储
         if !usePersistentStorage {
+            return
+        }
+        
+        // 确保在主线程更新
+        if !Thread.isMainThread {
+            DispatchQueue.main.async { [weak self] in
+                self?.saveData()
+            }
             return
         }
         
