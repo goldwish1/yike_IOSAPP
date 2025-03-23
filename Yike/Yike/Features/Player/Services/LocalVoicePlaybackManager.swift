@@ -111,4 +111,58 @@ class LocalVoicePlaybackManager: ObservableObject {
             play()
         }
     }
+    
+    /// 强制清理所有资源和状态
+    /// 用于确保在关键时刻（如弹窗显示前和确认按钮点击时）所有播放相关资源被彻底清理
+    func forceCleanup() {
+        print("【调试】LocalVoicePlaybackManager.forceCleanup 被调用 - 时间: \(Date())")
+        
+        // 停止播放
+        stop()
+        
+        // 移除所有订阅
+        cancellables.removeAll()
+        
+        // 创建新的订阅监听SpeechManager的状态变化
+        setupSubscriptions()
+        
+        // 强制更新所有状态
+        isPlaying = false
+        progress = 0.0
+        currentTime = "00:00"
+        totalTime = "00:00"
+        
+        print("【调试】LocalVoicePlaybackManager.forceCleanup 完成 - 时间: \(Date())")
+    }
+    
+    /// 重新设置订阅关系
+    private func setupSubscriptions() {
+        speechManager.$isPlaying
+            .receive(on: RunLoop.main)
+            .sink { [weak self] isPlaying in
+                self?.isPlaying = isPlaying
+            }
+            .store(in: &cancellables)
+        
+        speechManager.$progress
+            .receive(on: RunLoop.main)
+            .sink { [weak self] progress in
+                self?.progress = progress
+            }
+            .store(in: &cancellables)
+        
+        speechManager.$currentTime
+            .receive(on: RunLoop.main)
+            .sink { [weak self] time in
+                self?.currentTime = time
+            }
+            .store(in: &cancellables)
+        
+        speechManager.$totalTime
+            .receive(on: RunLoop.main)
+            .sink { [weak self] time in
+                self?.totalTime = time
+            }
+            .store(in: &cancellables)
+    }
 } 

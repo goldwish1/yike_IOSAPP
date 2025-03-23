@@ -217,19 +217,29 @@ class ApiVoicePlaybackManager: ObservableObject {
         cancelIntervalTimer()
         print("【调试详细】ApiVoicePlaybackManager.stop: 已取消间隔计时器 (hadTimer: \(hadTimer))")
         
+        // 取消正在进行的语音生成请求
+        print("【调试详细】ApiVoicePlaybackManager.stop: 即将取消正在进行的API请求 - 时间: \(Date())")
+        SiliconFlowTTSService.shared.cancelCurrentRequest()
+        print("【调试详细】ApiVoicePlaybackManager.stop: 已取消正在进行的API请求 - 时间: \(Date())")
+        
         // 停止音频播放
         print("【调试详细】ApiVoicePlaybackManager.stop: 即将调用audioPlayerService.stop() - 时间: \(Date())")
         audioPlayerService.stop()
         print("【调试详细】ApiVoicePlaybackManager.stop: 已调用audioPlayerService.stop() - 时间: \(Date())")
         
-        // 重置所有状态
-        let oldPlayingState = isPlaying
-        let oldLoadingState = isLoading
-        isPlaying = false
-        isLoading = false
-        error = nil
-        progress = 0.0
-        print("【调试详细】ApiVoicePlaybackManager.stop: 已重置所有状态 isPlaying: \(oldPlayingState) -> false, isLoading: \(oldLoadingState) -> false")
+        // 在主线程上安全地重置所有状态
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            print("【调试详细】ApiVoicePlaybackManager.stop: 主线程同步更新状态 - 时间: \(Date())")
+            
+            let oldPlayingState = self.isPlaying
+            let oldLoadingState = self.isLoading
+            self.isPlaying = false
+            self.isLoading = false
+            self.error = nil
+            self.progress = 0.0
+            print("【调试详细】ApiVoicePlaybackManager.stop: 已重置所有状态 isPlaying: \(oldPlayingState) -> false, isLoading: \(oldLoadingState) -> false")
+        }
         
         // 延迟一小段时间确保所有异步操作都被取消
         print("【调试详细】ApiVoicePlaybackManager.stop: 准备异步再次取消计时器 - 时间: \(Date())")
@@ -241,6 +251,52 @@ class ApiVoicePlaybackManager: ObservableObject {
         }
         
         print("【调试详细】ApiVoicePlaybackManager.stop: 方法执行完毕 - 时间: \(Date())")
+    }
+    
+    /// 强制清理所有资源和状态
+    /// 用于确保在关键时刻（如弹窗显示前和确认按钮点击时）所有播放相关资源被彻底清理
+    func forceCleanup() {
+        print("【调试】ApiVoicePlaybackManager.forceCleanup 被调用 - 时间: \(Date())")
+        
+        // 立即禁用自动重播
+        shouldAutoReplay = false
+        
+        // 取消间隔计时器
+        cancelIntervalTimer()
+        
+        // 取消API请求
+        SiliconFlowTTSService.shared.cancelCurrentRequest()
+        
+        // 停止音频播放
+        audioPlayerService.stop()
+        
+        // 移除所有订阅
+        cancellables.removeAll()
+        
+        // 创建新的订阅监听AudioPlayerService的状态变化
+        setupSubscriptions()
+        
+        // 强制更新所有状态
+        isPlaying = false
+        isLoading = false
+        error = nil
+        progress = 0.0
+        
+        print("【调试】ApiVoicePlaybackManager.forceCleanup 完成 - 时间: \(Date())")
+    }
+    
+    /// 重新设置订阅关系
+    private func setupSubscriptions() {
+        // 重新创建Timer订阅
+        Timer.publish(every: 0.1, on: .main, in: .common)
+            .autoconnect()
+            .sink { [weak self] _ in
+                guard let self = self else { return }
+                if self.audioPlayerService.duration > 0 {
+                    self.progress = self.audioPlayerService.currentTime / self.audioPlayerService.duration
+                }
+            }
+            .store(in: &cancellables)
     }
     
     /// 切换播放/暂停状态

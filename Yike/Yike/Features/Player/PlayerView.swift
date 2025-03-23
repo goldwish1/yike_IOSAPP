@@ -137,11 +137,20 @@ struct PlayerView: View {
                 title: Text("学习进度已更新"),
                 message: Text("你已完成一次学习，记忆进度已更新。"),
                 dismissButton: .default(Text("确定")) {
-                    print("【调试】确认按钮被点击：已在显示弹窗前停止播放")
+                    print("【调试】确认按钮被点击：确保所有资源被清理")
                     print("【调试详细】确认按钮：当前页面状态 - isPlaying=\(viewModel.isPlaying), isLoading=\(viewModel.isLoading)")
+                    
+                    // 再次强制清理所有播放资源
+                    viewModel.forceClearAllPlaybackResources()
+                    print("【调试详细】确认按钮：已强制清理所有播放资源")
+                    
+                    // 确保弹窗状态被重置
+                    viewModel.shouldShowCompletionAlert = false
+                    print("【调试详细】确认按钮：已重置弹窗状态")
                     
                     // 关闭页面
                     presentationMode.wrappedValue.dismiss()
+                    print("【调试详细】确认按钮：已调用dismiss()关闭页面")
                 }
             )
         }

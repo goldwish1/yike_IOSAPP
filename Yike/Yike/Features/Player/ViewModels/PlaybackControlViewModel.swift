@@ -385,6 +385,10 @@ class PlaybackControlViewModel: ObservableObject {
         print("【调试】updateMemoryProgress: 先停止音频播放再显示确认弹窗")
         stopPlayback()
         
+        // 强制清理所有播放资源，确保彻底终止所有异步操作
+        print("【调试】updateMemoryProgress: 强制清理所有播放资源")
+        forceClearAllPlaybackResources()
+        
         // 更新学习进度和复习阶段
         var updatedItem = currentMemoryItem
         
@@ -423,6 +427,27 @@ class PlaybackControlViewModel: ObservableObject {
             print("【调试】updateMemoryProgress: 确保音频已停止，显示确认弹窗")
             self.shouldShowCompletionAlert = true
         }
+    }
+    
+    /// 强制清理所有播放资源
+    /// 用于在关键时刻（如显示确认弹窗前和确认按钮点击时）确保所有资源被彻底清理
+    func forceClearAllPlaybackResources() {
+        print("【调试】PlaybackControlViewModel.forceClearAllPlaybackResources 被调用")
+        print("【调试详细】forceClearAllPlaybackResources: 当前状态 - isPlaying=\(isPlaying), isLoading=\(isLoading), 线程=\(Thread.isMainThread ? "主线程" : "后台线程")")
+        
+        // 强制停止并清理本地语音资源
+        localVoiceManager.forceCleanup()
+        
+        // 强制停止并清理API语音资源
+        apiVoiceManager.forceCleanup()
+        
+        // 重置ViewModel状态
+        isPlaying = false
+        isLoading = false
+        progress = 0.0
+        error = nil
+        
+        print("【调试详细】forceClearAllPlaybackResources: 完成 - 当前状态: isPlaying=\(isPlaying), isLoading=\(isLoading)")
     }
     
     /// 打开编辑页面

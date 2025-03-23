@@ -16,6 +16,9 @@ import CommonCrypto
     // 音频缓存目录
     private let cacheFolderName = "SiliconFlowTTSCache"
     
+    // 当前正在进行的请求
+    private var currentTask: URLSessionTask?
+    
     // 允许子类重写初始化方法
     internal override init() {
         // 从Secrets.plist读取API KEY
@@ -25,6 +28,17 @@ import CommonCrypto
         super.init()
         // 创建缓存目录
         createCacheDirectoryIfNeeded()
+    }
+    
+    /// 取消当前请求
+    func cancelCurrentRequest() {
+        if let task = currentTask {
+            print("【调试】SiliconFlowTTSService: 取消当前API请求 - 时间: \(Date())")
+            task.cancel()
+            currentTask = nil
+        } else {
+            print("【调试】SiliconFlowTTSService: 没有活动的API请求需要取消 - 时间: \(Date())")
+        }
     }
     
     /// 从Secrets.plist读取API KEY
@@ -52,6 +66,9 @@ import CommonCrypto
         let processedText = preprocessText(text, speed: speed)
         
         print("【缓存日志】开始生成语音，文本长度: \(text.count)，音色: \(voice)，速度: \(speed)")
+        
+        // 取消任何正在进行的请求
+        cancelCurrentRequest()
         
         // 检查缓存
         if let cachedAudioURL = getCachedAudioURL(for: processedText, voice: voice, speed: speed) {
@@ -90,9 +107,22 @@ import CommonCrypto
             return
         }
         
-        // 发送请求
+        // 创建并保存请求任务
+        var taskIdentifier: Int = 0
         let task = URLSession.shared.dataTask(with: request) { [weak self] (data, response, error) in
             guard let self = self else { return }
+            
+            // 清除当前任务引用
+            if self.currentTask?.taskIdentifier == taskIdentifier {
+                self.currentTask = nil
+            }
+            
+            // 如果请求被取消，直接返回
+            if let error = error as NSError?, error.code == NSURLErrorCancelled {
+                print("【调试】SiliconFlowTTSService: API请求已被取消 - 时间: \(Date())")
+                completion(nil, error)
+                return
+            }
             
             if let error = error {
                 completion(nil, error)
@@ -115,6 +145,12 @@ import CommonCrypto
             completion(audioURL, nil)
         }
         
+        // 存储当前请求任务
+        self.currentTask = task
+        taskIdentifier = task.taskIdentifier
+        print("【调试】SiliconFlowTTSService: 启动新的API请求 taskID=\(task.taskIdentifier) - 时间: \(Date())")
+        
+        // 开始任务
         task.resume()
     }
     
