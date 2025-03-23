@@ -14,6 +14,7 @@ enum AppRoute: Hashable {
     case reminderSettings
     case pointsCenter
     case pointsHistory
+    case pointsRecharge
     case about
     case userAgreementView
     case privacyPolicyView
@@ -47,12 +48,14 @@ enum AppRoute: Hashable {
             hasher.combine(9)
         case .pointsHistory:
             hasher.combine(10)
-        case .about:
+        case .pointsRecharge:
             hasher.combine(11)
-        case .userAgreementView:
+        case .about:
             hasher.combine(12)
-        case .privacyPolicyView:
+        case .userAgreementView:
             hasher.combine(13)
+        case .privacyPolicyView:
+            hasher.combine(14)
         }
     }
     
@@ -67,6 +70,7 @@ enum AppRoute: Hashable {
              (.reminderSettings, .reminderSettings),
              (.pointsCenter, .pointsCenter),
              (.pointsHistory, .pointsHistory),
+             (.pointsRecharge, .pointsRecharge),
              (.about, .about),
              (.userAgreementView, .userAgreementView),
              (.privacyPolicyView, .privacyPolicyView):
@@ -95,68 +99,27 @@ class NavigationRouter: ObservableObject {
         didSet {
             // 当标签切换时，自动清空导航路径
             if oldValue != selectedTab {
-                if #available(iOS 16.0, *) {
-                    path = NavigationPath()
-                }
+                path = NavigationPath()
             }
         }
     }
-    
-    // 各种导航状态
-    @Published var navigateToInput = false
-    @Published var navigateToPreview = false
-    @Published var navigateToEdit = false
-    @Published var shouldPopToRoot = false
-    
-    // 临时存储导航参数
-    var previewText: String = ""
-    var editingMemoryItem: MemoryItem? = nil
     
     private init() {}
     
     /// 导航到指定路由
     func navigate(to route: AppRoute) {
-        if #available(iOS 16.0, *) {
-            path.append(route)
-        } else {
-            // iOS 16以下版本使用传统导航方式
-            switch route {
-            case .home:
-                selectedTab = .home
-            case .study:
-                selectedTab = .study
-            case .settings:
-                selectedTab = .settings
-            case .input:
-                navigateToInput = true
-            case .preview(let text, _):
-                previewText = text
-                navigateToPreview = true
-            case .previewEdit(let memoryItem, _):
-                editingMemoryItem = memoryItem
-                navigateToEdit = true
-            default:
-                // 其他路由在各视图中处理
-                break
-            }
-        }
+        path.append(route)
     }
     
     /// 返回上一级
     func navigateBack() {
-        if #available(iOS 16.0, *) {
-            if !path.isEmpty {
-                path.removeLast()
-            }
+        if !path.isEmpty {
+            path.removeLast()
         }
     }
     
     /// 返回根视图
     func navigateToRoot() {
-        if #available(iOS 16.0, *) {
-            path = NavigationPath()
-        } else {
-            shouldPopToRoot = true
-        }
+        path = NavigationPath()
     }
 } 

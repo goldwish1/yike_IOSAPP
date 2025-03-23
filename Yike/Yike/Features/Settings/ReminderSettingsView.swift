@@ -114,6 +114,7 @@ struct LegacyFlowLayout: View {
 struct ReminderSettingsView: View {
     @ObservedObject private var settingsManager = SettingsManager.shared
     @State private var settings: UserSettings
+    @EnvironmentObject private var router: NavigationRouter
     @Environment(\.presentationMode) var presentationMode
     
     init() {
@@ -178,7 +179,7 @@ struct ReminderSettingsView: View {
         .navigationTitle("提醒设置")
         .navigationBarItems(trailing: Button("保存") {
             settingsManager.updateSettings(settings)
-            presentationMode.wrappedValue.dismiss()
+            router.navigateBack()
         })
     }
 }

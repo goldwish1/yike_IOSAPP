@@ -2,6 +2,8 @@ import SwiftUI
 
 struct PreviewEditView: View {
     @EnvironmentObject var dataManager: DataManager
+    @EnvironmentObject var router: NavigationRouter
+    // 保留presentationMode用于其他地方可能的使用
     @Environment(\.presentationMode) var presentationMode
     
     @State private var title: String
@@ -79,7 +81,8 @@ struct PreviewEditView: View {
                 message: Text(isEditMode ? "内容已更新" : "内容已保存"),
                 dismissButton: .default(Text("确定")) {
                     shouldPopToRoot = true
-                    presentationMode.wrappedValue.dismiss()
+                    // 使用NavigationRouter返回根视图
+                    router.navigateToRoot()
                 }
             )
         }

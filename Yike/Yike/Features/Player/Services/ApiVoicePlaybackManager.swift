@@ -55,8 +55,11 @@ class ApiVoicePlaybackManager: ObservableObject {
         shouldAutoReplay = true
         print("【调试】ApiVoicePlaybackManager.play: 设置 shouldAutoReplay=true")
         
-        isLoading = true
-        error = nil
+        // 设置加载状态为true，确保UI显示加载中
+        DispatchQueue.main.async {
+            self.isLoading = true
+            self.error = nil
+        }
         
         print("【积分日志】开始播放API语音，当前积分: \(dataManager.points)")
         
@@ -66,8 +69,10 @@ class ApiVoicePlaybackManager: ObservableObject {
         
         // 如果未缓存，检查积分是否足够
         if !isCached && dataManager.points < 5 {
-            isLoading = false
-            error = "积分不足，无法使用在线语音。点击此处前往积分中心充值。"
+            DispatchQueue.main.async {
+                self.isLoading = false
+                self.error = "积分不足，无法使用在线语音。点击此处前往积分中心充值。"
+            }
             print("【积分日志】积分不足，无法使用在线语音")
             return
         }
@@ -323,6 +328,11 @@ class ApiVoicePlaybackManager: ObservableObject {
                 resume()
             } else {
                 print("【调试】ApiVoicePlaybackManager.togglePlayPause: 没有现有音频，执行新的播放")
+                // 设置加载状态
+                DispatchQueue.main.async {
+                    self.isLoading = true
+                    print("【调试】ApiVoicePlaybackManager.togglePlayPause: 设置isLoading=true")
+                }
                 play(text: text, voice: voice, speed: speed)
             }
         }

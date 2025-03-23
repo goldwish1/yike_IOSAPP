@@ -4,7 +4,6 @@ struct SettingsView: View {
     @ObservedObject private var settingsManager = SettingsManager.shared
     @EnvironmentObject private var router: NavigationRouter
     @State private var settings: UserSettings
-    @State private var showingAboutSheet = false
     @EnvironmentObject var dataManager: DataManager
     
     init() {
@@ -14,9 +13,6 @@ struct SettingsView: View {
     var body: some View {
         contentView
             .navigationTitle("设置")
-            .sheet(isPresented: $showingAboutSheet) {
-                AboutView()
-            }
     }
     
     private var contentView: some View {
@@ -58,11 +54,12 @@ struct SettingsView: View {
             
             // 关于我们
             Section(header: Text("其他")) {
-                Button(action: {
-                    showingAboutSheet = true
-                }) {
-                    SettingRow(icon: "info.circle.fill", iconColor: .gray, title: "关于")
-                }
+                settingRow(
+                    icon: "info.circle.fill",
+                    iconColor: .gray,
+                    title: "关于",
+                    destination: .about
+                )
             }
         }
         .listStyle(InsetGroupedListStyle())
@@ -107,6 +104,14 @@ struct SettingsView: View {
                 }
             case .pointsCenter:
                 NavigationLink(destination: PointsCenterView()) {
+                    HStack {
+                        SettingRow(icon: icon, iconColor: iconColor, title: title)
+                        Spacer()
+                        trailing()
+                    }
+                }
+            case .about:
+                NavigationLink(destination: AboutView()) {
                     HStack {
                         SettingRow(icon: icon, iconColor: iconColor, title: title)
                         Spacer()

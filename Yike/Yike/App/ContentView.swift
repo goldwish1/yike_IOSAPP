@@ -10,70 +10,40 @@ struct ContentView: View {
     var body: some View {
         TabView(selection: $router.selectedTab) {
             // 首页标签
-            if #available(iOS 16.0, *) {
-                NavigationStack(path: $router.path) {
-                    HomeView()
-                        .navigationDestination(for: AppRoute.self) { route in
-                            destinationView(for: route)
-                        }
-                }
-                .tabItem {
-                    Label("首页", systemImage: "house")
-                }
-                .tag(Tab.home)
-            } else {
-                NavigationView {
-                    HomeView()
-                }
-                .tabItem {
-                    Label("首页", systemImage: "house")
-                }
-                .tag(Tab.home)
+            NavigationStack(path: $router.path) {
+                HomeView()
+                    .navigationDestination(for: AppRoute.self) { route in
+                        destinationView(for: route)
+                    }
             }
+            .tabItem {
+                Label("首页", systemImage: "house")
+            }
+            .tag(Tab.home)
             
             // 学习标签
-            if #available(iOS 16.0, *) {
-                NavigationStack(path: $router.path) {
-                    StudyView()
-                        .navigationDestination(for: AppRoute.self) { route in
-                            destinationView(for: route)
-                        }
-                }
-                .tabItem {
-                    Label("学习", systemImage: "book")
-                }
-                .tag(Tab.study)
-            } else {
-                NavigationView {
-                    StudyView()
-                }
-                .tabItem {
-                    Label("学习", systemImage: "book")
-                }
-                .tag(Tab.study)
+            NavigationStack(path: $router.path) {
+                StudyView()
+                    .navigationDestination(for: AppRoute.self) { route in
+                        destinationView(for: route)
+                    }
             }
+            .tabItem {
+                Label("学习", systemImage: "book")
+            }
+            .tag(Tab.study)
             
             // 设置标签
-            if #available(iOS 16.0, *) {
-                NavigationStack(path: $router.path) {
-                    SettingsView()
-                        .navigationDestination(for: AppRoute.self) { route in
-                            destinationView(for: route)
-                        }
-                }
-                .tabItem {
-                    Label("设置", systemImage: "gear")
-                }
-                .tag(Tab.settings)
-            } else {
-                NavigationView {
-                    SettingsView()
-                }
-                .tabItem {
-                    Label("设置", systemImage: "gear")
-                }
-                .tag(Tab.settings)
+            NavigationStack(path: $router.path) {
+                SettingsView()
+                    .navigationDestination(for: AppRoute.self) { route in
+                        destinationView(for: route)
+                    }
             }
+            .tabItem {
+                Label("设置", systemImage: "gear")
+            }
+            .tag(Tab.settings)
         }
         .environmentObject(router)
     }
@@ -103,6 +73,8 @@ struct ContentView: View {
             PointsCenterView()
         case .pointsHistory:
             PointsHistoryView()
+        case .pointsRecharge:
+            PointsRechargeView()
         case .about:
             AboutView()
         case .userAgreementView:

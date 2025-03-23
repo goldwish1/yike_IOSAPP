@@ -14,6 +14,7 @@ struct PlayerView: View {
     @ObservedObject private var settingsManager = SettingsManager.shared
     @EnvironmentObject private var router: NavigationRouter
     @State private var shouldPopToRoot = false
+    // 保留presentationMode用于其他功能
     @Environment(\.presentationMode) var presentationMode
     
     // 原有初始化方法（单个记忆项目，向后兼容）
@@ -115,9 +116,6 @@ struct PlayerView: View {
                 }
             }
         )
-        .navigationDestination(isPresented: $viewModel.shouldNavigateToEdit) {
-            PreviewEditView(memoryItem: viewModel.currentMemoryItem, shouldPopToRoot: $shouldPopToRoot)
-        }
         .onAppear {
             viewModel.preparePlayback()
         }
@@ -129,7 +127,7 @@ struct PlayerView: View {
         }
         .onChange(of: shouldPopToRoot) { oldValue, newValue in
             if newValue {
-                presentationMode.wrappedValue.dismiss()
+                router.navigateBack()
             }
         }
         .alert(isPresented: $viewModel.shouldShowCompletionAlert) {
@@ -148,9 +146,9 @@ struct PlayerView: View {
                     viewModel.shouldShowCompletionAlert = false
                     print("【调试详细】确认按钮：已重置弹窗状态")
                     
-                    // 关闭页面
-                    presentationMode.wrappedValue.dismiss()
-                    print("【调试详细】确认按钮：已调用dismiss()关闭页面")
+                    // 使用NavigationRouter返回上一级，替代presentationMode.wrappedValue.dismiss()
+                    router.navigateBack()
+                    print("【调试详细】确认按钮：已调用router.navigateBack()关闭页面")
                 }
             )
         }

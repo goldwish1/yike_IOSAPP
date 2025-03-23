@@ -594,6 +594,33 @@
      - [x] 测试用户体验流程
      - [x] 确保符合苹果最佳实践
 
+13. [x] 导航架构优化
+   - [x] 问题分析与规划
+     - [x] 分析混合导航架构存在的问题
+     - [x] 确定iOS 16+为最低支持版本
+     - [x] 制定统一导航架构计划
+     - [x] 评估跨页面通信机制
+   - [x] 系统要求更新
+     - [x] 更新Info.plist中最低系统版本
+     - [x] 修改PRD.md和README.md中的系统要求
+     - [x] 更新代码中的版本兼容性检查
+   - [x] 导航代码重构
+     - [x] 统一使用NavigationStack
+     - [x] 移除条件导航代码（if #available判断）
+     - [x] 更新ContentView.swift中的导航实现
+     - [x] 优化NavigationRouter服务类
+     - [x] 移除不必要的导航状态属性
+   - [x] 视图导航更新
+     - [x] 更新InputSelectionView导航逻辑
+     - [x] 修改PlayerView导航方式
+     - [x] 更新PlaybackControlViewModel中的导航方法
+     - [x] 增强PreviewEditView的导航返回行为
+   - [x] 测试与调试
+     - [x] 修复Binding创建问题
+     - [x] 解决在线语音播放缓冲显示问题
+     - [x] 测试完整导航流程
+     - [x] 处理iOS系统警告信息
+
 ### 下一版本计划
 1. [ ] 用户系统
    - [ ] 账号注册登录

@@ -20,7 +20,6 @@ class PlaybackControlViewModel: ObservableObject {
     
     // 记忆项目
     @Published var currentItemIndex: Int
-    @Published var shouldNavigateToEdit: Bool = false
     @Published var shouldShowCompletionAlert: Bool = false
     
     // 服务
@@ -28,6 +27,7 @@ class PlaybackControlViewModel: ObservableObject {
     private let apiVoiceManager = ApiVoicePlaybackManager.shared
     private let settingsManager = SettingsManager.shared
     private let dataManager = DataManager.shared
+    private let router = NavigationRouter.shared
     
     // 数据
     let memoryItems: [MemoryItem]
@@ -123,11 +123,19 @@ class PlaybackControlViewModel: ObservableObject {
             }
             .store(in: &cancellables)
         
+        // 确保API加载状态始终正确同步，无论API模式是否激活
         apiVoiceManager.$isLoading
             .receive(on: RunLoop.main)
             .sink { [weak self] isLoading in
-                guard let self = self, self.useApiVoice else { return }
-                self.isLoading = isLoading
+                guard let self = self else { return }
+                if self.useApiVoice {
+                    self.isLoading = isLoading
+                    if isLoading {
+                        print("【调试详细】PlaybackControlViewModel: apiVoiceManager.isLoading -> true，已更新ViewModel状态")
+                    } else {
+                        print("【调试详细】PlaybackControlViewModel: apiVoiceManager.isLoading -> false，已更新ViewModel状态")
+                    }
+                }
             }
             .store(in: &cancellables)
         
@@ -452,6 +460,6 @@ class PlaybackControlViewModel: ObservableObject {
     
     /// 打开编辑页面
     func openEditPage() {
-        shouldNavigateToEdit = true
+        router.navigate(to: .previewEdit(memoryItem: currentMemoryItem, shouldPopToRoot: Binding.constant(false)))
     }
 } 
