@@ -135,24 +135,39 @@ struct PlayerView: View {
                 title: Text("学习进度已更新"),
                 message: Text("你已完成一次学习，记忆进度已更新。"),
                 dismissButton: .default(Text("确定")) {
-                    print("【调试】确认按钮被点击：确保所有资源被清理")
-                    print("【调试详细】确认按钮：当前页面状态 - isPlaying=\(viewModel.isPlaying), isLoading=\(viewModel.isLoading)")
+                    print("【调试】确认按钮被点击：采用强制导航方式")
                     
-                    // 再次强制清理所有播放资源，并在完成后导航
-                    viewModel.forceClearAllPlaybackResources {
-                        print("【调试详细】确认按钮：所有资源清理完成，准备导航")
-                        
-                        // 确保弹窗状态被重置
-                        viewModel.shouldShowCompletionAlert = false
-                        print("【调试详细】确认按钮：已重置弹窗状态")
-                        
-                        // 在主线程上执行导航操作
-                        DispatchQueue.main.async {
-                            print("【调试详细】确认按钮：执行导航 - 当前状态 isPlaying=\(viewModel.isPlaying), isLoading=\(viewModel.isLoading)")
-                            // 使用NavigationRouter返回上一级，替代presentationMode.wrappedValue.dismiss()
+                    // 先确保所有播放都被停止
+                    viewModel.stopPlayback()
+                    
+                    // 重置弹窗状态
+                    viewModel.shouldShowCompletionAlert = false
+                    
+                    // 使用两种导航方式，确保在路由器方式失败时有后备
+                    DispatchQueue.main.async {
+                        // 首先尝试路由器导航
+                        if router.canNavigateBack() {
+                            print("【调试】确认按钮：使用router导航")
                             router.navigateBack()
-                            print("【调试详细】确认按钮：已调用router.navigateBack()关闭页面")
+                        } else {
+                            // 后备方案：使用presentationMode
+                            print("【调试】确认按钮：使用presentationMode导航")
+                            presentationMode.wrappedValue.dismiss()
                         }
+                        
+                        // 使用shouldPopToRoot标志作为最后的后备方式
+                        if !router.isNavigating {
+                            print("【调试】确认按钮：使用shouldPopToRoot导航")
+                            shouldPopToRoot = true
+                        }
+                    }
+                    
+                    // 在另一个线程进行资源清理，不阻塞UI
+                    DispatchQueue.global(qos: .background).async {
+                        // 强制停止API语音播放，防止任何可能的自动重播
+                        ApiVoicePlaybackManager.shared.stop()
+                        // 最后进行全面资源清理
+                        viewModel.forceClearAllPlaybackResources()
                     }
                 }
             )

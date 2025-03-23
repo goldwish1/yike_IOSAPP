@@ -399,6 +399,26 @@ class PlaybackControlViewModel: ObservableObject {
         print("【调试】PlaybackControlViewModel.forceClearAllPlaybackResources 被调用")
         print("【调试详细】forceClearAllPlaybackResources: 当前状态 - isPlaying=\(isPlaying), isLoading=\(isLoading), 线程=\(Thread.isMainThread ? "主线程" : "后台线程")")
         
+        // 预先重置状态标志，防止新的播放启动
+        isPlaying = false
+        isLoading = false
+        error = nil
+        progress = 0.0
+        
+        // 添加超时保护，确保回调一定会被执行
+        let timeoutSeconds = 1.0
+        var callbackExecuted = false
+        
+        // 创建超时计时器，在规定时间内如果清理操作未完成，也执行回调
+        let timeoutTimer = DispatchWorkItem {
+            if !callbackExecuted {
+                callbackExecuted = true
+                print("【调试详细】forceClearAllPlaybackResources: 清理操作超时，强制执行回调")
+                completion?()
+            }
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + timeoutSeconds, execute: timeoutTimer)
+        
         // 创建一个DispatchGroup来协调两个清理操作
         let cleanupGroup = DispatchGroup()
         
@@ -415,12 +435,6 @@ class PlaybackControlViewModel: ObservableObject {
             print("【调试详细】forceClearAllPlaybackResources: API语音管理器清理完成")
             cleanupGroup.leave()
         }
-        
-        // 重置ViewModel状态
-        isPlaying = false
-        isLoading = false
-        progress = 0.0
-        error = nil
         
         // 使用异步操作确保所有清理都已完成
         DispatchQueue.main.async { [weak self] in
@@ -441,7 +455,15 @@ class PlaybackControlViewModel: ObservableObject {
         // 当所有清理操作完成后调用回调
         cleanupGroup.notify(queue: .main) {
             print("【调试详细】forceClearAllPlaybackResources: 所有清理操作已完成")
-            completion?()
+            
+            // 取消超时计时器
+            timeoutTimer.cancel()
+            
+            // 确保回调只执行一次
+            if !callbackExecuted {
+                callbackExecuted = true
+                completion?()
+            }
         }
         
         print("【调试详细】forceClearAllPlaybackResources: 完成 - 当前状态: isPlaying=\(isPlaying), isLoading=\(isLoading)")

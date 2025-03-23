@@ -263,8 +263,11 @@ class ApiVoicePlaybackManager: ObservableObject {
     func forceCleanup(completion: (() -> Void)? = nil) {
         print("【调试】ApiVoicePlaybackManager.forceCleanup 被调用 - 时间: \(Date())")
         
-        // 立即禁用自动重播
+        // 立即设置重要标志阻止任何新的播放
         shouldAutoReplay = false
+        
+        // 使用原子变量跟踪清理状态，防止多次回调
+        let cleanupCompleted = Atomic(false)
         
         // 取消间隔计时器
         cancelIntervalTimer()
@@ -287,14 +290,37 @@ class ApiVoicePlaybackManager: ObservableObject {
         error = nil
         progress = 0.0
         
-        // 使用异步操作确保所有状态更新和清理操作都已完成后再调用回调
-        DispatchQueue.main.async { [weak self] in
-            guard self != nil else { return }
+        // 确保在主线程上延迟执行回调，给底层资源充分时间清理
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+            guard let _ = self, !cleanupCompleted.value else { return }
+            
+            // 设置清理完成标志
+            cleanupCompleted.value = true
+            
             print("【调试】ApiVoicePlaybackManager.forceCleanup 完成并执行回调 - 时间: \(Date())")
             completion?()
         }
         
         print("【调试】ApiVoicePlaybackManager.forceCleanup 完成 - 时间: \(Date())")
+    }
+    
+    /// 原子变量辅助类，用于线程安全地跟踪状态
+    private class Atomic<T> {
+        private let queue = DispatchQueue(label: "com.yike.atomic")
+        private var _value: T
+        
+        init(_ value: T) {
+            self._value = value
+        }
+        
+        var value: T {
+            get {
+                return queue.sync { _value }
+            }
+            set {
+                queue.sync { _value = newValue }
+            }
+        }
     }
     
     /// 重新设置订阅关系

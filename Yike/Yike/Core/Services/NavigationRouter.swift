@@ -104,22 +104,48 @@ class NavigationRouter: ObservableObject {
         }
     }
     
+    // 导航状态标志
+    @Published var isNavigating: Bool = false
+    
     private init() {}
+    
+    /// 检查是否可以返回上一级
+    func canNavigateBack() -> Bool {
+        return !path.isEmpty
+    }
     
     /// 导航到指定路由
     func navigate(to route: AppRoute) {
+        isNavigating = true
         path.append(route)
+        
+        // 延迟重置导航状态
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+            self?.isNavigating = false
+        }
     }
     
     /// 返回上一级
     func navigateBack() {
         if !path.isEmpty {
+            isNavigating = true
             path.removeLast()
+            
+            // 延迟重置导航状态
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+                self?.isNavigating = false
+            }
         }
     }
     
     /// 返回根视图
     func navigateToRoot() {
+        isNavigating = true
         path = NavigationPath()
+        
+        // 延迟重置导航状态
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+            self?.isNavigating = false
+        }
     }
 } 
