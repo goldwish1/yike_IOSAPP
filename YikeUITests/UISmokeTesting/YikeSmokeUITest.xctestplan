@@ -1,0 +1,72 @@
+{
+  "configurations" : [
+    {
+      "id" : "9F6F254C-3A17-465A-BCBB-7E4F1C39C3B1",
+      "name" : "UI冒烟测试配置",
+      "options" : {
+        "environmentVariableEntries" : [
+          {
+            "key" : "IS_RUNNING_SMOKE_TESTS",
+            "value" : "YES"
+          },
+          {
+            "key" : "TEST_USER_POINTS",
+            "value" : "100"
+          },
+          {
+            "key" : "DISABLE_ANIMATIONS",
+            "value" : "YES"
+          },
+          {
+            "key" : "UI_TEST_MODE",
+            "value" : "YES"
+          }
+        ],
+        "targetForVariableExpansion" : {
+          "containerPath" : "container:Yike.xcodeproj",
+          "identifier" : "17BA4F342B7B8B1A00A93F5C",
+          "name" : "YikeUITests"
+        }
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "codeCoverage" : {
+      "targets" : [
+        {
+          "containerPath" : "container:Yike.xcodeproj",
+          "identifier" : "17BA4F142B7B8B1900A93F5C",
+          "name" : "Yike"
+        }
+      ]
+    },
+    "commandLineArgumentEntries" : [
+      {
+        "argument" : "-UITesting"
+      },
+      {
+        "argument" : "-DisableAnimations"
+      }
+    ],
+    "language" : "zh-Hans",
+    "region" : "CN",
+    "testExecutionOrdering" : "random",
+    "testTimeoutsEnabled" : true
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:Yike.xcodeproj",
+        "identifier" : "17BA4F342B7B8B1A00A93F5C",
+        "name" : "YikeUITests"
+      },
+      "selectedTests" : [
+        "BasicUISmokeTests\/test_AppLaunch_MainPageLoads_Successfully",
+        "BasicUISmokeTests\/test_CreateNewContent_ManualInput_SavesSuccessfully",
+        "BasicUISmokeTests\/test_ContentDeletion_DeletesSuccessfully",
+        "BasicUISmokeTests\/test_TabBarNavigation_SwitchesTabs_Successfully"
+      ]
+    }
+  ],
+  "version" : 1
+} 
