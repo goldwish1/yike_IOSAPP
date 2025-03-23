@@ -362,29 +362,45 @@ class AudioPlayerService: NSObject, AVAudioPlayerDelegate {
     /// 停止播放
     func stop() {
         print("【调试】AudioPlayerService.stop 被调用")
+        print("【调试详细】AudioPlayerService.stop: 当前状态 - isPlaying=\(isPlaying), 线程=\(Thread.isMainThread ? "主线程" : "后台线程")")
+        
         guard let player = audioPlayer else { 
             print("【调试】AudioPlayerService.stop: audioPlayer为nil，无需停止")
             return 
         }
+        
+        print("【调试详细】AudioPlayerService.stop: audioPlayer非nil，开始停止 - 时间: \(Date())")
         player.stop()
-        print("【调试】AudioPlayerService.stop: 已调用player.stop()")
+        print("【调试详细】AudioPlayerService.stop: 已调用player.stop() - 时间: \(Date())")
+        
+        let oldPlayer = audioPlayer
         audioPlayer = nil
+        
+        let oldIsPlaying = isPlaying
         isPlaying = false
+        print("【调试详细】AudioPlayerService.stop: 已设置 isPlaying: \(oldIsPlaying) -> false")
+        
         // 停止播放时不调用完成回调，因为这不是自然播放完成
         let hadCompletionHandler = completionHandler != nil
-        print("【调试】AudioPlayerService.stop: 是否有完成回调: \(hadCompletionHandler)")
+        print("【调试详细】AudioPlayerService.stop: 是否有完成回调: \(hadCompletionHandler), 准备设置为nil")
         completionHandler = nil
         
         // 清除锁屏/控制中心信息
+        print("【调试详细】AudioPlayerService.stop: 清除锁屏信息开始")
         MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
+        print("【调试详细】AudioPlayerService.stop: 清除锁屏信息完成")
         
         // 停止更新播放信息
+        print("【调试详细】AudioPlayerService.stop: 停止更新播放信息开始")
         stopUpdatingNowPlayingInfo()
+        print("【调试详细】AudioPlayerService.stop: 停止更新播放信息完成")
         
         // 结束后台任务
+        print("【调试详细】AudioPlayerService.stop: 结束后台任务开始")
         endBackgroundTask()
+        print("【调试详细】AudioPlayerService.stop: 结束后台任务完成")
         
-        print("【调试】AudioPlayerService.stop: 停止播放音频完成")
+        print("【调试详细】AudioPlayerService.stop: 停止播放音频完成 - 时间: \(Date())")
     }
     
     /// 设置音量
@@ -421,40 +437,55 @@ class AudioPlayerService: NSObject, AVAudioPlayerDelegate {
     /// 音频播放完成时的回调方法
     func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
         print("【调试】AudioPlayerService.audioPlayerDidFinishPlaying: 开始处理")
+        print("【调试详细】audioPlayerDidFinishPlaying: 线程=\(Thread.isMainThread ? "主线程" : "后台线程"), 成功=\(flag), 时间=\(Date())")
+        
         // 检查播放器是否还是当前的播放器
-        if player !== audioPlayer {
-            print("【调试】AudioPlayerService.audioPlayerDidFinishPlaying: 播放器已更换，可能新的播放已经开始")
+        let isCurrentPlayer = player === audioPlayer
+        print("【调试详细】audioPlayerDidFinishPlaying: 是否是当前播放器: \(isCurrentPlayer)")
+        
+        if !isCurrentPlayer {
+            print("【调试详细】audioPlayerDidFinishPlaying: 播放器已更换，可能新的播放已经开始，忽略此回调")
             return
         }
         
         // 更新播放状态
+        let oldIsPlaying = isPlaying
         isPlaying = false
-        print("【调试】AudioPlayerService.audioPlayerDidFinishPlaying: 音频播放完成，设置isPlaying=false")
+        print("【调试详细】audioPlayerDidFinishPlaying: 音频播放完成，设置isPlaying: \(oldIsPlaying) -> false")
         
         // 清除锁屏/控制中心信息
+        print("【调试详细】audioPlayerDidFinishPlaying: 清除锁屏信息开始")
         MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
+        print("【调试详细】audioPlayerDidFinishPlaying: 清除锁屏信息完成")
         
         // 停止更新播放信息
+        print("【调试详细】audioPlayerDidFinishPlaying: 停止更新播放信息开始")
         stopUpdatingNowPlayingInfo()
+        print("【调试详细】audioPlayerDidFinishPlaying: 停止更新播放信息完成")
         
         // 结束后台任务
+        print("【调试详细】audioPlayerDidFinishPlaying: 结束后台任务开始")
         endBackgroundTask()
+        print("【调试详细】audioPlayerDidFinishPlaying: 结束后台任务完成")
         
         // 保存回调的引用以便清空后也能调用
         let completion = completionHandler
+        print("【调试详细】audioPlayerDidFinishPlaying: 保存完成回调引用: \(completion != nil ? "有回调" : "无回调")")
         
         // 清空回调引用
         completionHandler = nil
+        print("【调试详细】audioPlayerDidFinishPlaying: 已清空回调引用")
         
         // 执行完成回调
         if let completion = completion {
-            print("【调试】AudioPlayerService.audioPlayerDidFinishPlaying: 执行完成回调")
+            print("【调试详细】audioPlayerDidFinishPlaying: 准备执行完成回调 - 时间: \(Date())")
             completion()
+            print("【调试详细】audioPlayerDidFinishPlaying: 完成回调执行完毕 - 时间: \(Date())")
         } else {
-            print("【调试】AudioPlayerService.audioPlayerDidFinishPlaying: 没有完成回调")
+            print("【调试详细】audioPlayerDidFinishPlaying: 没有完成回调，跳过")
         }
         
-        print("【调试】AudioPlayerService.audioPlayerDidFinishPlaying: 处理完成")
+        print("【调试详细】audioPlayerDidFinishPlaying: 处理完成 - 时间: \(Date())")
     }
     
     /// 音频解码错误的回调方法

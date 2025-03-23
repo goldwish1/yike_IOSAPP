@@ -298,59 +298,93 @@ class PlaybackControlViewModel: ObservableObject {
     /// 停止所有播放
     func stopPlayback() {
         print("【调试】PlaybackControlViewModel.stopPlayback 被调用")
+        print("【调试详细】PlaybackControlViewModel.stopPlayback: 当前状态 - isPlaying=\(isPlaying), isLoading=\(isLoading), 线程=\(Thread.isMainThread ? "主线程" : "后台线程"), 时间=\(Date())")
         
         // 停止系统语音
-        print("【调试】PlaybackControlViewModel.stopPlayback: 即将停止本地语音")
+        print("【调试详细】PlaybackControlViewModel.stopPlayback: 即将停止本地语音 - 之前")
         localVoiceManager.stop()
+        print("【调试详细】PlaybackControlViewModel.stopPlayback: 已停止本地语音 - 之后")
         
         // 停止API语音
-        print("【调试】PlaybackControlViewModel.stopPlayback: 即将停止API语音")
+        print("【调试详细】PlaybackControlViewModel.stopPlayback: 即将停止API语音 - 之前")
         apiVoiceManager.stop()
+        print("【调试详细】PlaybackControlViewModel.stopPlayback: 已停止API语音 - 之后")
         
-        print("【调试】PlaybackControlViewModel.stopPlayback: 完成")
+        print("【调试详细】PlaybackControlViewModel.stopPlayback: 完成 - 当前状态: isPlaying=\(isPlaying), isLoading=\(isLoading), 时间=\(Date())")
     }
     
     /// 重置播放状态
     func resetPlaybackState() {
         print("【调试】PlaybackControlViewModel.resetPlaybackState 被调用")
+        print("【调试详细】PlaybackControlViewModel.resetPlaybackState: 当前状态 - isPlaying=\(isPlaying), isLoading=\(isLoading), 时间=\(Date())")
+        
         localVoiceManager.reset()
+        
+        let oldError = error
         error = nil
+        print("【调试详细】PlaybackControlViewModel.resetPlaybackState: 已重置错误状态: \(oldError ?? "无") -> nil")
+        
+        print("【调试详细】PlaybackControlViewModel.resetPlaybackState: 完成 - 当前状态: isPlaying=\(isPlaying), isLoading=\(isLoading), 时间=\(Date())")
     }
     
     /// 清理资源
     func cleanup() {
         print("【调试】PlaybackControlViewModel.cleanup 被调用")
+        print("【调试详细】PlaybackControlViewModel.cleanup: 当前状态 - isPlaying=\(isPlaying), isLoading=\(isLoading), 线程=\(Thread.isMainThread ? "主线程" : "后台线程"), 时间=\(Date())")
         
         // 停止所有播放
-        print("【调试】PlaybackControlViewModel.cleanup: 即将停止所有播放")
+        print("【调试详细】PlaybackControlViewModel.cleanup: 停止所有播放 - 之前")
         stopPlayback()
+        print("【调试详细】PlaybackControlViewModel.cleanup: 停止所有播放 - 之后")
         
         // 清理所有订阅
-        print("【调试】PlaybackControlViewModel.cleanup: 即将清理所有订阅")
+        print("【调试详细】PlaybackControlViewModel.cleanup: 清理所有订阅 - 之前, 订阅数=\(cancellables.count)")
         cancellables.removeAll()
+        print("【调试详细】PlaybackControlViewModel.cleanup: 清理所有订阅 - 之后, 订阅数=\(cancellables.count)")
         
         // 重置错误状态
-        print("【调试】PlaybackControlViewModel.cleanup: 即将重置状态")
+        print("【调试详细】PlaybackControlViewModel.cleanup: 重置错误状态 - 之前, 当前错误=\(error ?? "无")")
+        let oldError = error
         error = nil
+        print("【调试详细】PlaybackControlViewModel.cleanup: 重置错误状态 - 之后, 旧错误=\(oldError ?? "无")")
         
         // 确保播放状态被重置
+        let oldIsPlaying = isPlaying
+        let oldIsLoading = isLoading
         isPlaying = false
         isLoading = false
+        print("【调试详细】PlaybackControlViewModel.cleanup: 重置播放状态 - isPlaying: \(oldIsPlaying) -> false, isLoading: \(oldIsLoading) -> false")
+        
+        let oldProgress = progress
         progress = 0.0
+        print("【调试详细】PlaybackControlViewModel.cleanup: 重置进度 - progress: \(oldProgress) -> 0.0")
         
         // 再次确保语音管理器的状态被清理
+        print("【调试详细】PlaybackControlViewModel.cleanup: 准备异步再次停止音频 - 时间=\(Date())")
         DispatchQueue.main.async {
-            print("【调试】PlaybackControlViewModel.cleanup: 异步再次停止音频")
+            print("【调试详细】PlaybackControlViewModel.cleanup: 异步操作开始 - 线程=\(Thread.isMainThread ? "主线程" : "后台线程"), 时间=\(Date())")
+            print("【调试详细】PlaybackControlViewModel.cleanup: 异步操作中当前状态 - isPlaying=\(self.isPlaying), isLoading=\(self.isLoading)")
+            
+            print("【调试详细】PlaybackControlViewModel.cleanup: 异步再次停止API语音 - 之前")
             self.apiVoiceManager.stop()
+            print("【调试详细】PlaybackControlViewModel.cleanup: 异步再次停止API语音 - 之后")
+            
+            print("【调试详细】PlaybackControlViewModel.cleanup: 异步再次停止本地语音 - 之前")
             self.localVoiceManager.stop()
-            print("【调试】PlaybackControlViewModel.cleanup: 异步停止完成")
+            print("【调试详细】PlaybackControlViewModel.cleanup: 异步再次停止本地语音 - 之后")
+            
+            print("【调试详细】PlaybackControlViewModel.cleanup: 异步操作完成 - 时间=\(Date())")
         }
         
-        print("【调试】PlaybackControlViewModel.cleanup: 完成")
+        print("【调试详细】PlaybackControlViewModel.cleanup: 方法执行完毕 - 时间=\(Date())")
     }
     
     /// 更新记忆进度
     func updateMemoryProgress() {
+        // 先停止所有音频播放，避免弹窗显示时还在播放
+        print("【调试】updateMemoryProgress: 先停止音频播放再显示确认弹窗")
+        stopPlayback()
+        
         // 更新学习进度和复习阶段
         var updatedItem = currentMemoryItem
         
@@ -382,7 +416,13 @@ class PlaybackControlViewModel: ObservableObject {
         
         updatedItem.lastReviewDate = Date()
         dataManager.updateMemoryItem(updatedItem)
-        shouldShowCompletionAlert = true
+        
+        // 确保所有音频已停止后，再显示确认弹窗
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+            guard let self = self else { return }
+            print("【调试】updateMemoryProgress: 确保音频已停止，显示确认弹窗")
+            self.shouldShowCompletionAlert = true
+        }
     }
     
     /// 打开编辑页面

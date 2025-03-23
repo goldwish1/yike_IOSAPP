@@ -205,34 +205,42 @@ class ApiVoicePlaybackManager: ObservableObject {
     /// 停止播放
     func stop() {
         print("【调试】ApiVoicePlaybackManager.stop 被调用")
+        print("【调试详细】ApiVoicePlaybackManager.stop: 当前状态 - isPlaying=\(isPlaying), isLoading=\(isLoading), 线程=\(Thread.isMainThread ? "主线程" : "后台线程")")
         
         // 禁用自动重播
+        let previousAutoReplay = shouldAutoReplay
         shouldAutoReplay = false
-        print("【调试】ApiVoicePlaybackManager.stop: 禁用自动重播 shouldAutoReplay=false")
+        print("【调试详细】ApiVoicePlaybackManager.stop: 禁用自动重播 shouldAutoReplay: \(previousAutoReplay) -> false")
         
         // 先取消间隔计时器，确保没有新的播放循环开始
+        let hadTimer = intervalTimer != nil
         cancelIntervalTimer()
-        print("【调试】ApiVoicePlaybackManager.stop: 已取消间隔计时器")
+        print("【调试详细】ApiVoicePlaybackManager.stop: 已取消间隔计时器 (hadTimer: \(hadTimer))")
         
         // 停止音频播放
-        print("【调试】ApiVoicePlaybackManager.stop: 即将调用audioPlayerService.stop()")
+        print("【调试详细】ApiVoicePlaybackManager.stop: 即将调用audioPlayerService.stop() - 时间: \(Date())")
         audioPlayerService.stop()
-        print("【调试】ApiVoicePlaybackManager.stop: 已调用audioPlayerService.stop()")
+        print("【调试详细】ApiVoicePlaybackManager.stop: 已调用audioPlayerService.stop() - 时间: \(Date())")
         
         // 重置所有状态
+        let oldPlayingState = isPlaying
+        let oldLoadingState = isLoading
         isPlaying = false
         isLoading = false
         error = nil
         progress = 0.0
-        print("【调试】ApiVoicePlaybackManager.stop: 已重置所有状态")
+        print("【调试详细】ApiVoicePlaybackManager.stop: 已重置所有状态 isPlaying: \(oldPlayingState) -> false, isLoading: \(oldLoadingState) -> false")
         
         // 延迟一小段时间确保所有异步操作都被取消
+        print("【调试详细】ApiVoicePlaybackManager.stop: 准备异步再次取消计时器 - 时间: \(Date())")
         DispatchQueue.main.async {
-            print("【调试】ApiVoicePlaybackManager.stop: 异步再次取消计时器")
+            print("【调试详细】ApiVoicePlaybackManager.stop: 异步操作开始 - 线程=\(Thread.isMainThread ? "主线程" : "后台线程"), 时间: \(Date())")
+            print("【调试详细】ApiVoicePlaybackManager.stop: 异步操作中当前状态 - isPlaying=\(self.isPlaying), isLoading=\(self.isLoading)")
             self.cancelIntervalTimer() // 再次确保计时器被取消
+            print("【调试详细】ApiVoicePlaybackManager.stop: 异步操作完成 - 时间: \(Date())")
         }
         
-        print("【调试】ApiVoicePlaybackManager.stop: 完成")
+        print("【调试详细】ApiVoicePlaybackManager.stop: 方法执行完毕 - 时间: \(Date())")
     }
     
     /// 切换播放/暂停状态
@@ -267,9 +275,12 @@ class ApiVoicePlaybackManager: ObservableObject {
     /// 取消间隔计时器
     private func cancelIntervalTimer() {
         if intervalTimer != nil {
-            print("【调试】ApiVoicePlaybackManager.cancelIntervalTimer: 取消API音频间隔计时器")
+            print("【调试详细】ApiVoicePlaybackManager.cancelIntervalTimer: 取消计时器开始 - 时间: \(Date())")
             intervalTimer?.cancel()
             intervalTimer = nil
+            print("【调试详细】ApiVoicePlaybackManager.cancelIntervalTimer: 取消计时器完成 - 时间: \(Date())")
+        } else {
+            print("【调试详细】ApiVoicePlaybackManager.cancelIntervalTimer: 计时器已为nil，无需取消 - 时间: \(Date())")
         }
     }
     
