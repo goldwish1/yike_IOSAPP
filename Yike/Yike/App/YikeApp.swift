@@ -15,11 +15,6 @@ struct YikeApp: App {
         // 设置全局触摸事件捕获
         UIApplication.setupGlobalTouchEventCapture()
         
-        // 初始化视图生命周期管理器
-        _ = ViewLifecycleManager.shared
-        // 初始化全局资源监视器
-        _ = GlobalResourceMonitor.shared
-        
         // 请求通知权限
         NotificationManager.shared.requestAuthorization { granted in
             if granted {

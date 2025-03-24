@@ -14,9 +14,6 @@ struct PlayerView: View {
     let initialIndex: Int
     let enableItemNavigation: Bool
     
-    // 页面唯一标识 - 用于生命周期管理
-    private let pageId = UUID().uuidString
-    
     @StateObject private var viewModel: PlaybackControlViewModel
     @ObservedObject private var settingsManager = SettingsManager.shared
     @EnvironmentObject private var router: NavigationRouter
@@ -30,11 +27,6 @@ struct PlayerView: View {
     @State private var dismissInProgress: Bool = false
     // 添加UI响应状态标记
     @State private var isUIResponsive: Bool = true
-    
-    // 添加生命周期管理器引用
-    @ObservedObject private var lifecycleManager = ViewLifecycleManager.shared
-    // 添加资源监视器引用
-    @ObservedObject private var resourceMonitor = GlobalResourceMonitor.shared
     
     // 原有初始化方法（单个记忆项目，向后兼容）
     init(memoryItem: MemoryItem) {
@@ -128,8 +120,40 @@ struct PlayerView: View {
                 }
                 
                 Button(action: {
-                    // 使用新的生命周期管理执行保护操作
-                    handleCompleteLearning()
+                    // 使用事件保护器执行保护操作
+                    EventGuardian.shared.performProtectedAction {
+                        // 防止按钮反复点击
+                        guard isUIResponsive else {
+                            print("【UI保护】完成学习按钮点击被忽略 - UI尚未响应")
+                            return
+                        }
+                        
+                        // 设置UI为不响应状态，防止重复操作
+                        isUIResponsive = false
+                        
+                        print("【终极方案】完成学习按钮点击 - 线程: \(Thread.isMainThread ? "主线程" : "后台线程"), 时间: \(Date())")
+                        
+                        // 立即禁用自动重播（轻量级操作）
+                        ApiVoicePlaybackManager.shared.disableAutoReplay()
+                        
+                        // 确保在主线程上执行所有UI相关操作
+                        DispatchQueue.main.async {
+                            // 立即更新UI状态，确保按钮变为禁用状态
+                            if viewModel.isPlaying {
+                                viewModel.isPlaying = false
+                            }
+                            
+                            // 更新进度并显示弹窗
+                            viewModel.updateMemoryProgress()
+                            
+                            // 延迟恢复UI响应性
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                isUIResponsive = true
+                            }
+                        }
+                        
+                        print("【终极方案】完成学习按钮点击处理完成 - 时间: \(Date())")
+                    }
                 }) {
                     Text("完成学习")
                         .foregroundColor(isUIResponsive ? .blue : .gray)
@@ -140,29 +164,20 @@ struct PlayerView: View {
             }
         )
         .onAppear {
-            print("【生命周期管理】PlayerView.onAppear - 页面ID: \(pageId)")
+            print("【终极方案】PlayerView.onAppear")
             // 重置生命周期标志
             hasProcessedCleanup = false
             dismissInProgress = false
             isUIResponsive = true
-            
-            // 注册页面到资源监视器
-            resourceMonitor.registerPage(pageId)
-            
             // 准备播放
             viewModel.preparePlayback()
         }
         .onDisappear {
-            print("【生命周期管理】PlayerView.onDisappear - 页面ID: \(pageId), 线程: \(Thread.isMainThread ? "主线程" : "后台线程"), 时间: \(Date())")
-            
+            print("【终极方案】PlayerView.onDisappear - 线程: \(Thread.isMainThread ? "主线程" : "后台线程"), 时间: \(Date())")
             if !hasProcessedCleanup {
                 // 设置标志防止重复清理
                 hasProcessedCleanup = true
-                
-                // 注销页面
-                resourceMonitor.unregisterPage(pageId)
-                
-                print("【生命周期管理】PlayerView.onDisappear - 执行资源清理")
+                print("【终极方案】PlayerView.onDisappear - 执行资源清理")
                 
                 // 立即在主线程上更新UI状态
                 if viewModel.isPlaying {
@@ -172,13 +187,37 @@ struct PlayerView: View {
                 // 立即禁用自动重播（轻量级操作）
                 ApiVoicePlaybackManager.shared.disableAutoReplay()
                 
-                // 异步执行资源清理
+                // 创建信号量并添加超时保护
+                let cleanupGroup = DispatchGroup()
+                
+                // 在后台线程异步执行可能耗时的资源清理操作
+                cleanupGroup.enter()
                 DispatchQueue.global(qos: .userInitiated).async {
-                    // 强制清理所有资源
-                    ApiVoicePlaybackManager.shared.forceCleanup {
-                        print("【生命周期管理】PlayerView.onDisappear - 资源清理完成")
+                    print("【终极方案】PlayerView.onDisappear - 后台执行资源清理 - 时间: \(Date())")
+                    
+                    // 停止播放器，并在完成后释放信号量
+                    ApiVoicePlaybackManager.shared.stop {
+                        print("【终极方案】PlayerView.onDisappear - API语音资源清理完成 - 时间: \(Date())")
+                        cleanupGroup.leave()
                     }
                 }
+                
+                // 设置超时，确保即使资源清理卡住也能继续
+                let timeoutSeconds = 3.0
+                DispatchQueue.global().asyncAfter(deadline: .now() + timeoutSeconds) {
+                    if cleanupGroup.wait(timeout: .now()) != .success {
+                        print("【终极方案】PlayerView.onDisappear - 资源清理超时，强制继续 - 时间: \(Date())")
+                        cleanupGroup.leave() // 强制释放信号量
+                    }
+                }
+                
+                // 可选：等待资源清理完成（如果需要在视图消失前确保资源已清理）
+                // 注意：这里不会阻塞UI线程，因为onDisappear已经在视图消失后异步执行
+                cleanupGroup.notify(queue: .main) {
+                    print("【终极方案】PlayerView.onDisappear - 所有资源清理操作已完成 - 时间: \(Date())")
+                }
+                
+                print("【终极方案】PlayerView.onDisappear - 主线程处理完成 - 时间: \(Date())")
             }
         }
         .alert(isPresented: EventGuardian.shared.protectedAlertBinding($viewModel.shouldShowCompletionAlert)) {
@@ -186,121 +225,48 @@ struct PlayerView: View {
                 title: Text("学习进度已更新"),
                 message: Text("你已完成一次学习，记忆进度已更新。"),
                 dismissButton: .default(Text("确定")) {
-                    // 使用新的生命周期管理机制处理确认按钮点击
-                    handleAlertConfirmation()
-                }
-            )
-        }
-        // 添加生命周期管理
-        .withManagedLifecycle(id: pageId)
-    }
-    
-    /// 处理完成学习按钮点击
-    private func handleCompleteLearning() {
-        // 防止按钮反复点击
-        guard isUIResponsive else {
-            print("【生命周期管理】完成学习按钮点击被忽略 - UI尚未响应")
-            return
-        }
-        
-        // 设置UI为不响应状态，防止重复操作
-        isUIResponsive = false
-        
-        print("【生命周期管理】完成学习按钮点击 - 线程: \(Thread.isMainThread ? "主线程" : "后台线程"), 时间: \(Date())")
-        
-        // 1. UI操作 - 同步执行，立即响应
-        // 立即禁用自动重播（轻量级操作）
-        ApiVoicePlaybackManager.shared.disableAutoReplay()
-        
-        // 立即更新UI状态，确保按钮变为禁用状态
-        if viewModel.isPlaying {
-            viewModel.isPlaying = false
-        }
-        
-        // 2. 更新进度并显示弹窗
-        viewModel.updateMemoryProgress()
-        
-        // 3. 并行处理资源释放 - 不阻塞UI
-        lifecycleManager.beginResourceRelease(pageId: pageId)
-        
-        // 异步执行资源清理，不阻塞UI线程
-        DispatchQueue.global(qos: .userInitiated).async {
-            // 强制清理所有资源
-            ApiVoicePlaybackManager.shared.forceCleanup {
-                // 资源清理完成后通知生命周期管理器
-                print("【生命周期管理】资源清理完成")
-                
-                // 如果显示了确认对话框，让用户确认后再dismiss
-                if viewModel.shouldShowCompletionAlert {
-                    print("【生命周期管理】等待用户确认对话框")
-                } else {
-                    // 如果没有显示确认对话框，主动完成dismiss流程
-                    DispatchQueue.main.async {
-                        lifecycleManager.resourceReleaseCompleted(pageId: pageId) {
-                            dismiss()
+                    print("【终极方案】确认按钮点击 - 当前线程: \(Thread.isMainThread ? "主线程" : "后台线程"), 时间: \(Date())")
+                    
+                    // 使用事件保护器执行保护操作
+                    EventGuardian.shared.performProtectedAction {
+                        // 防止重复操作
+                        guard !dismissInProgress else {
+                            print("【终极方案】确认按钮点击 - dismiss已经在进行中，忽略此次操作")
+                            return
+                        }
+                        
+                        // 设置标志，防止重复点击和重复清理
+                        dismissInProgress = true
+                        hasProcessedCleanup = true
+                        
+                        // 1. 立即禁用自动重播 - 同步操作
+                        print("【终极方案】disableAutoReplay 被调用")
+                        ApiVoicePlaybackManager.shared.disableAutoReplay()
+                        print("【终极方案】disableAutoReplay 完成 - 已禁用自动重播")
+                        
+                        // 2. 立即重置播放状态
+                        viewModel.resetPlaybackState()
+                        print("【终极方案】确认按钮点击 - UI状态已重置")
+                        
+                        // 3. 停止API语音播放，并提供完成回调
+                        print("【终极方案】ApiVoicePlaybackManager.stop 被调用 - 线程: \(Thread.isMainThread ? "主线程" : "后台线程"), 时间: \(Date())")
+                        ApiVoicePlaybackManager.shared.stop {
+                            print("【终极方案】确认按钮点击 - 资源清理完成，准备dismiss")
+                            
+                            // 4. 在主线程上执行dismiss操作
+                            DispatchQueue.main.async {
+                                // 执行dismiss
+                                self.dismiss()
+                                
+                                // 5. 重置状态
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                    self.dismissInProgress = false
+                                }
+                            }
                         }
                     }
                 }
-            }
-        }
-        
-        // 设置超时保护，确保最终资源会被释放
-        DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
-            // 重置UI响应状态，允许用户再次点击
-            isUIResponsive = true
-        }
-    }
-    
-    /// 处理确认按钮点击
-    private func handleAlertConfirmation() {
-        print("【生命周期管理】确认按钮点击 - 当前线程: \(Thread.isMainThread ? "主线程" : "后台线程"), 时间: \(Date())")
-        
-        // 防止重复操作
-        guard !dismissInProgress else {
-            print("【生命周期管理】确认按钮点击 - dismiss已经在进行中，忽略此次操作")
-            return
-        }
-        
-        // 设置标志，防止重复点击和重复清理
-        dismissInProgress = true
-        hasProcessedCleanup = true
-        
-        // 开始退出流程
-        lifecycleManager.beginDismiss(pageId: pageId) {
-            // 在主线程上执行dismiss
-            DispatchQueue.main.async {
-                print("【生命周期管理】执行dismiss")
-                dismiss()
-                
-                // 重置状态
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                    dismissInProgress = false
-                    hasProcessedCleanup = true
-                }
-            }
-        }
-        
-        // 强制清理资源 - 并行执行，不阻塞UI
-        DispatchQueue.global(qos: .userInitiated).async {
-            // 立即禁用自动重播 - 同步操作
-            ApiVoicePlaybackManager.shared.disableAutoReplay()
-            
-            // 重置播放状态
-            DispatchQueue.main.async {
-                viewModel.resetPlaybackState()
-            }
-            
-            // 强制清理资源
-            ApiVoicePlaybackManager.shared.forceCleanup {
-                // 资源清理完成，通知生命周期管理器
-                DispatchQueue.main.async {
-                    lifecycleManager.resourceReleaseCompleted(pageId: pageId) {
-                        // 资源释放完成回调内不需要执行额外操作
-                        // dismiss已经在beginDismiss中处理
-                        print("【生命周期管理】资源释放完成回调执行")
-                    }
-                }
-            }
+            )
         }
     }
 }
