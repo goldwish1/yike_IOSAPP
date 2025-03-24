@@ -1,6 +1,7 @@
 import Foundation
 import AVFoundation
 import MediaPlayer
+import Combine
 
 /// 音频播放器服务
 /// 
@@ -30,7 +31,7 @@ import MediaPlayer
 ///    - audioPlayerDidFinishPlaying(_:successfully:) - 处理播放完成
 ///    - audioPlayerDecodeErrorDidOccur(_:error:) - 处理播放错误
 ///
-class AudioPlayerService: NSObject, AVAudioPlayerDelegate {
+class AudioPlayerService: NSObject, AVAudioPlayerDelegate, ObservableObject {
     // 单例模式
     static let shared = AudioPlayerService()
     
@@ -361,19 +362,17 @@ class AudioPlayerService: NSObject, AVAudioPlayerDelegate {
     
     /// 停止播放
     func stop() {
-        print("【调试】AudioPlayerService.stop 被调用")
-        print("【调试详细】AudioPlayerService.stop: 当前状态 - isPlaying=\(isPlaying), 线程=\(Thread.isMainThread ? "主线程" : "后台线程")")
+        print("【调试详细】AudioPlayerService.stop: 被调用 - 时间: \(Date())")
         
-        guard let player = audioPlayer else { 
-            print("【调试】AudioPlayerService.stop: audioPlayer为nil，无需停止")
-            return 
+        guard let player = audioPlayer else {
+            print("【调试详细】AudioPlayerService.stop: audioPlayer为nil，无需停止 - 时间: \(Date())")
+            return
         }
         
         print("【调试详细】AudioPlayerService.stop: audioPlayer非nil，开始停止 - 时间: \(Date())")
         player.stop()
         print("【调试详细】AudioPlayerService.stop: 已调用player.stop() - 时间: \(Date())")
         
-        let oldPlayer = audioPlayer
         audioPlayer = nil
         
         let oldIsPlaying = isPlaying

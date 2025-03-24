@@ -107,15 +107,12 @@ import CommonCrypto
             return
         }
         
-        // 创建并保存请求任务
-        var taskIdentifier: Int = 0
+        // 创建请求任务
         let task = URLSession.shared.dataTask(with: request) { [weak self] (data, response, error) in
             guard let self = self else { return }
             
             // 清除当前任务引用
-            if self.currentTask?.taskIdentifier == taskIdentifier {
-                self.currentTask = nil
-            }
+            self.currentTask = nil
             
             // 如果请求被取消，直接返回
             if let error = error as NSError?, error.code == NSURLErrorCancelled {
@@ -147,7 +144,6 @@ import CommonCrypto
         
         // 存储当前请求任务
         self.currentTask = task
-        taskIdentifier = task.taskIdentifier
         print("【调试】SiliconFlowTTSService: 启动新的API请求 taskID=\(task.taskIdentifier) - 时间: \(Date())")
         
         // 开始任务
