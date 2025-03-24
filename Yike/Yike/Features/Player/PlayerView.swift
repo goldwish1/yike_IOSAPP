@@ -21,6 +21,9 @@ struct PlayerView: View {
     @State private var isCleaningUp: Bool = false
     @State private var showingConfirmation: Bool = false // 单纯跟踪确认弹窗的状态
     
+    // 添加遮罩状态
+    @State private var showingCompletionOverlay: Bool = false
+    
     // 原有初始化方法（单个记忆项目，向后兼容）
     init(memoryItem: MemoryItem) {
         self.memoryItem = memoryItem
@@ -50,54 +53,90 @@ struct PlayerView: View {
     }
     
     var body: some View {
-        VStack(spacing: 24) {
-            // 标题
-            Text(viewModel.currentMemoryItem.title)
-                .font(.title)
-                .fontWeight(.bold)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal)
-            
-            // 内容
-            ScrollView {
-                Text(viewModel.currentMemoryItem.content)
-                    .font(.body)
-                    .lineSpacing(8)
-                    .padding()
-            }
-            .frame(maxHeight: 200)
-            .background(Color(.systemGray6))
-            .cornerRadius(12)
-            
-            // 波形动画
-            WaveformAnimationView(isPlaying: viewModel.isPlaying)
-            
-            // 进度条
-            PlaybackProgressView(viewModel: viewModel)
-            
-            // 控制按钮
-            PlayerControlsView(viewModel: viewModel, useApiVoice: settingsManager.settings.useApiVoice)
-            
-            if let error = viewModel.error {
-                Button(action: {
-                    if error.contains("积分不足") {
-                        // 导航到积分中心
-                        router.navigate(to: .pointsCenter)
-                    }
-                }) {
-                    Text(error)
-                        .foregroundColor(.red)
-                        .font(.footnote)
-                        .padding(.horizontal)
-                        .frame(maxWidth: .infinity, alignment: .center)
+        ZStack {  // 添加ZStack以支持遮罩层
+            VStack(spacing: 24) {
+                // 标题
+                Text(viewModel.currentMemoryItem.title)
+                    .font(.title)
+                    .fontWeight(.bold)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal)
+                
+                // 内容
+                ScrollView {
+                    Text(viewModel.currentMemoryItem.content)
+                        .font(.body)
+                        .lineSpacing(8)
+                        .padding()
                 }
-                .buttonStyle(PlainButtonStyle())
+                .frame(maxHeight: 200)
+                .background(Color(.systemGray6))
+                .cornerRadius(12)
+                
+                // 波形动画
+                WaveformAnimationView(isPlaying: viewModel.isPlaying)
+                
+                // 进度条
+                PlaybackProgressView(viewModel: viewModel)
+                
+                // 控制按钮
+                PlayerControlsView(viewModel: viewModel, useApiVoice: settingsManager.settings.useApiVoice)
+                
+                if let error = viewModel.error {
+                    Button(action: {
+                        if error.contains("积分不足") {
+                            // 导航到积分中心
+                            router.navigate(to: .pointsCenter)
+                        }
+                    }) {
+                        Text(error)
+                            .foregroundColor(.red)
+                            .font(.footnote)
+                            .padding(.horizontal)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                }
+                
+                // 播放速度选择
+                SpeedSelectionView(viewModel: viewModel)
+                
+                // 优化完成按钮的样式
+                Button(action: {
+                    print("【调试】完成学习按钮点击：准备显示完成动画")
+                    
+                    // 立即禁用自动重播
+                    ApiVoicePlaybackManager.shared.disableAutoReplay()
+                    
+                    // 立即停止所有播放
+                    viewModel.stopPlayback()
+                    
+                    // 更新记忆进度
+                    viewModel.updateMemoryProgress()
+                    
+                    // 显示完成动画
+                    showingCompletionOverlay = true
+                }) {
+                    Text("完成学习")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 50)
+                        .background(Color.accentColor)
+                        .cornerRadius(12)
+                        .padding(.horizontal, 24)
+                        .shadow(color: Color.accentColor.opacity(0.3), radius: 8, x: 0, y: 4)
+                }
             }
+            .padding(.bottom, 24)
             
-            // 播放速度选择
-            SpeedSelectionView(viewModel: viewModel)
+            // 添加完成遮罩
+            CompletionOverlayView(isVisible: showingCompletionOverlay) {
+                // 动画完成后的回调
+                print("【调试】完成动画结束，准备关闭页面")
+                dismiss()
+            }
         }
-        .padding(.bottom, 24)
         .navigationBarTitle("", displayMode: .inline)
         .navigationBarItems(
             trailing: HStack {
@@ -110,22 +149,6 @@ struct PlayerView: View {
                         .padding(8)
                         .background(Color(.systemGray6))
                         .clipShape(Circle())
-                }
-                
-                Button(action: {
-                    print("【调试】完成学习按钮点击：准备显示确认对话框")
-                    
-                    // 立即禁用自动重播，这是最重要的第一步
-                    ApiVoicePlaybackManager.shared.disableAutoReplay()
-                    
-                    // 立即停止所有播放，同步操作
-                    viewModel.stopPlayback()
-                    
-                    // 简单将状态存储在showingConfirmation中，然后让updateMemoryProgress处理业务逻辑
-                    viewModel.updateMemoryProgress()
-                }) {
-                    Text("完成学习")
-                        .foregroundColor(.blue)
                 }
             }
         )
@@ -155,29 +178,6 @@ struct PlayerView: View {
                     print("【调试】PlayerView.onDisappear: 后台线程资源清理完成")
                 }
             }
-        }
-        .alert(isPresented: $viewModel.shouldShowCompletionAlert) {
-            Alert(
-                title: Text("学习进度已更新"),
-                message: Text("你已完成一次学习，记忆进度已更新。"),
-                dismissButton: .default(Text("确定")) {
-                    print("【调试】确认按钮被点击：极简处理")
-                    
-                    // 关键：最短路径处理，无复杂逻辑
-                    // 1. 立即禁用自动重播 - 同步操作
-                    ApiVoicePlaybackManager.shared.disableAutoReplay()
-                    
-                    // 2. 重置弹窗状态 - 同步操作
-                    viewModel.shouldShowCompletionAlert = false
-                    
-                    // 3. 设置清理标志，防止onDisappear重复清理
-                    isCleaningUp = true
-                    
-                    // 4. 立即返回
-                    print("【调试】确认按钮：立即调用dismiss()")
-                    dismiss()
-                }
-            )
         }
     }
 }
