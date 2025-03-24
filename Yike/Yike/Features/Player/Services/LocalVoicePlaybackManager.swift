@@ -112,45 +112,98 @@ class LocalVoicePlaybackManager: ObservableObject {
         }
     }
     
-    /// 强制清理所有资源
-    /// - Parameter completion: 完成回调
-    func forceCleanup(completion: (() -> Void)?) {
-        print("【方案三】LocalVoicePlaybackManager.forceCleanup 被调用 - 线程: \(Thread.isMainThread ? "主线程" : "后台线程"), 时间: \(Date())")
+    /// 强制清理所有资源和状态
+    /// 用于确保在关键时刻（如弹窗显示前和确认按钮点击时）所有播放相关资源被彻底清理
+    func forceCleanup(completion: (() -> Void)? = nil) {
+        print("【调试】LocalVoicePlaybackManager.forceCleanup 被调用 - 时间: \(Date())")
         
-        // 确保在主线程执行
-        if !Thread.isMainThread {
-            print("【方案三】forceCleanup在非主线程调用，转到主线程")
-            DispatchQueue.main.async { [weak self] in
-                self?.forceCleanup(completion: completion)
+        // 添加线程安全的完成标志
+        class AtomicFlag {
+            private let queue = DispatchQueue(label: "com.yike.atomicFlag")
+            private var _value: Bool = false
+            
+            var value: Bool {
+                get { queue.sync { _value } }
+                set { queue.sync { _value = newValue } }
             }
-            return
         }
         
-        // 1. 立即停止播放
-        print("【方案三】停止播放")
+        let callbackExecuted = AtomicFlag()
+        
+        // 设置超时保护，确保回调一定会被执行
+        let timeoutSeconds = 1.0
+        let timeoutWorkItem = DispatchWorkItem {
+            if !callbackExecuted.value {
+                callbackExecuted.value = true
+                print("【调试】LocalVoicePlaybackManager.forceCleanup 超时触发回调 - 时间: \(Date())")
+                completion?()
+            }
+        }
+        
+        // 安排超时处理
+        DispatchQueue.main.asyncAfter(deadline: .now() + timeoutSeconds, execute: timeoutWorkItem)
+        
+        // 停止播放
         stop()
         
-        // 2. 移除所有订阅
-        print("【方案三】移除所有订阅")
+        // 移除所有订阅
         cancellables.removeAll()
         
-        // 3. 重置所有状态
-        print("【方案三】重置所有状态")
-        isPlaying = false
-        progress = 0
+        // 创建新的订阅监听SpeechManager的状态变化
+        setupSubscriptions()
         
-        // 4. 延迟执行回调，但仍在主线程上
-        if let completion = completion {
-            print("【方案三】安排回调执行 - 延迟0.3秒")
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                print("【方案三】执行回调 - 时间: \(Date())")
-                completion()
-                print("【方案三】回调执行完成")
-            }
-        } else {
-            print("【方案三】没有提供回调")
+        // 强制更新所有状态
+        isPlaying = false
+        progress = 0.0
+        currentTime = "00:00"
+        totalTime = "00:00"
+        
+        // 短延迟后尝试执行正常回调
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+            // 如果已经超时或对象已被释放，不执行回调
+            guard let _ = self, !callbackExecuted.value else { return }
+            
+            // 取消超时工作项
+            timeoutWorkItem.cancel()
+            
+            // 设置回调已执行标志
+            callbackExecuted.value = true
+            
+            print("【调试】LocalVoicePlaybackManager.forceCleanup 正常完成并执行回调 - 时间: \(Date())")
+            completion?()
         }
         
-        print("【方案三】forceCleanup方法执行完毕 - 时间: \(Date())")
+        print("【调试】LocalVoicePlaybackManager.forceCleanup 完成 - 时间: \(Date())")
+    }
+    
+    /// 重新设置订阅关系
+    private func setupSubscriptions() {
+        speechManager.$isPlaying
+            .receive(on: RunLoop.main)
+            .sink { [weak self] isPlaying in
+                self?.isPlaying = isPlaying
+            }
+            .store(in: &cancellables)
+        
+        speechManager.$progress
+            .receive(on: RunLoop.main)
+            .sink { [weak self] progress in
+                self?.progress = progress
+            }
+            .store(in: &cancellables)
+        
+        speechManager.$currentTime
+            .receive(on: RunLoop.main)
+            .sink { [weak self] time in
+                self?.currentTime = time
+            }
+            .store(in: &cancellables)
+        
+        speechManager.$totalTime
+            .receive(on: RunLoop.main)
+            .sink { [weak self] time in
+                self?.totalTime = time
+            }
+            .store(in: &cancellables)
     }
 } 

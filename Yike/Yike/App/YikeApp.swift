@@ -7,14 +7,6 @@ struct YikeApp: App {
     @StateObject private var networkMonitor = NetworkMonitor.shared
     
     init() {
-        // 初始化事件保护系统
-        // 事件保护器 - 确保事件传递不被中断
-        _ = EventGuardian.shared
-        // 事件监控服务 - 监测和解决可能的事件传递中断问题  
-        _ = EventMonitoringService.shared
-        // 设置全局触摸事件捕获
-        UIApplication.setupGlobalTouchEventCapture()
-        
         // 请求通知权限
         NotificationManager.shared.requestAuthorization { granted in
             if granted {
