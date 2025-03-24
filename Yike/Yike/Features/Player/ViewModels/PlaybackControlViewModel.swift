@@ -172,12 +172,14 @@ class PlaybackControlViewModel: ObservableObject {
             // 使用API语音，预加载音频
             playWithApiVoice()
         } else {
-            // 使用本地音色
+            // 使用本地音色，准备并开始播放
             localVoiceManager.prepare(
                 text: currentMemoryItem.content,
                 speed: selectedSpeed,
                 intervalSeconds: settingsManager.settings.playbackInterval
             )
+            // 准备完成后自动开始播放
+            localVoiceManager.play()
         }
     }
     
