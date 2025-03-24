@@ -10,9 +10,8 @@ extension UIApplication {
             // 移除先前可能存在的捕获视图
             removeExistingCaptureView()
             
-            // 获取应用的主窗口（iOS 15适配）
-            let window = getKeyWindow()
-            if let window = window {
+            // 获取应用的主窗口
+            if let window = UIApplication.shared.windows.first {
                 // 创建隐形的事件捕获视图
                 let eventCaptureView = TouchEventCaptureView(frame: window.bounds)
                 eventCaptureView.tag = 999999
@@ -31,26 +30,13 @@ extension UIApplication {
     
     /// 移除已存在的捕获视图
     private static func removeExistingCaptureView() {
-        // 获取应用的主窗口（iOS 15适配）
-        if let window = getKeyWindow() {
+        // 获取应用的主窗口
+        if let window = UIApplication.shared.windows.first {
             // 查找并移除已存在的捕获视图
             if let existingView = window.viewWithTag(999999) {
                 existingView.removeFromSuperview()
                 print("【事件保护】已移除旧的触摸事件捕获视图")
             }
-        }
-    }
-    
-    /// 获取主窗口（兼容iOS 15+和旧版iOS）
-    private static func getKeyWindow() -> UIWindow? {
-        // iOS 15及以上版本使用UIWindowScene.windows
-        if #available(iOS 15.0, *) {
-            let scenes = UIApplication.shared.connectedScenes
-            let windowScene = scenes.first as? UIWindowScene
-            return windowScene?.windows.first(where: { $0.isKeyWindow })
-        } else {
-            // iOS 15以下版本使用旧方法
-            return UIApplication.shared.windows.first(where: { $0.isKeyWindow })
         }
     }
 }
