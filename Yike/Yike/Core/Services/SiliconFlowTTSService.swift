@@ -112,7 +112,9 @@ import CommonCrypto
             guard let self = self else { return }
             
             // 清除当前任务引用
-            self.currentTask = nil
+            DispatchQueue.main.async {
+                self.currentTask = nil
+            }
             
             // 如果请求被取消，直接返回
             if let error = error as NSError?, error.code == NSURLErrorCancelled {
