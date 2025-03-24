@@ -1,9 +1,12 @@
 import SwiftUI
 import AVFoundation
+<<<<<<< HEAD
 // import AlertToast  // 暂时注释掉这行
 
 // 导入自定义服务
 // AudioResourceGuardian已在同一模块，无需导入
+=======
+>>>>>>> parent of f4f318b (大大大重构，优化完成确认按钮问题)
 
 struct PlayerView: View {
     // 单个记忆项目（向后兼容）
@@ -24,12 +27,9 @@ struct PlayerView: View {
     // 使用系统提供的dismiss机制
     @Environment(\.dismiss) private var dismiss
     
-    // 生命周期管理标志
-    @State private var hasProcessedCleanup: Bool = false
-    // 添加信号量标记，避免重复执行dismiss操作
-    @State private var dismissInProgress: Bool = false
-    // 添加UI响应状态标记
-    @State private var isUIResponsive: Bool = true
+    // 添加标志来跟踪资源清理状态
+    @State private var isCleaningUp: Bool = false
+    @State private var showingConfirmation: Bool = false // 单纯跟踪确认弹窗的状态
     
     // 添加生命周期管理器引用
     @ObservedObject private var lifecycleManager = ViewLifecycleManager.shared
@@ -128,18 +128,29 @@ struct PlayerView: View {
                 }
                 
                 Button(action: {
+<<<<<<< HEAD
                     // 使用新的生命周期管理执行保护操作
                     handleCompleteLearning()
+=======
+                    print("【调试】完成学习按钮点击：准备显示确认对话框")
+                    
+                    // 立即禁用自动重播，这是最重要的第一步
+                    ApiVoicePlaybackManager.shared.disableAutoReplay()
+                    
+                    // 立即停止所有播放，同步操作
+                    viewModel.stopPlayback()
+                    
+                    // 简单将状态存储在showingConfirmation中，然后让updateMemoryProgress处理业务逻辑
+                    viewModel.updateMemoryProgress()
+>>>>>>> parent of f4f318b (大大大重构，优化完成确认按钮问题)
                 }) {
                     Text("完成学习")
-                        .foregroundColor(isUIResponsive ? .blue : .gray)
-                        .opacity(isUIResponsive ? 1.0 : 0.6)
+                        .foregroundColor(.blue)
                 }
-                .disabled(!isUIResponsive)
-                .withEventFilter() // 添加事件过滤保护
             }
         )
         .onAppear {
+<<<<<<< HEAD
             print("【生命周期管理】PlayerView.onAppear - 页面ID: \(pageId)")
             // 重置生命周期标志
             hasProcessedCleanup = false
@@ -149,10 +160,16 @@ struct PlayerView: View {
             // 注册页面到资源监视器
             resourceMonitor.registerPage(pageId)
             
+=======
+            // 重置清理状态
+            isCleaningUp = false
+            showingConfirmation = false
+>>>>>>> parent of f4f318b (大大大重构，优化完成确认按钮问题)
             // 准备播放
             viewModel.preparePlayback()
         }
         .onDisappear {
+<<<<<<< HEAD
             print("【生命周期管理】PlayerView.onDisappear - 页面ID: \(pageId), 线程: \(Thread.isMainThread ? "主线程" : "后台线程"), 时间: \(Date())")
             
             if !hasProcessedCleanup {
@@ -163,31 +180,61 @@ struct PlayerView: View {
                 resourceMonitor.unregisterPage(pageId)
                 
                 print("【生命周期管理】PlayerView.onDisappear - 执行资源清理")
+=======
+            if !isCleaningUp {
+                print("【调试】PlayerView.onDisappear: 开始清理资源")
+                isCleaningUp = true
+>>>>>>> parent of f4f318b (大大大重构，优化完成确认按钮问题)
                 
-                // 立即在主线程上更新UI状态
-                if viewModel.isPlaying {
-                    viewModel.isPlaying = false
-                }
-                
-                // 立即禁用自动重播（轻量级操作）
+                // 极简的onDisappear处理，只关心停止播放和禁用自动重播
                 ApiVoicePlaybackManager.shared.disableAutoReplay()
+                viewModel.stopPlayback()
                 
+<<<<<<< HEAD
                 // 异步执行资源清理
                 DispatchQueue.global(qos: .userInitiated).async {
                     // 强制清理所有资源
                     ApiVoicePlaybackManager.shared.forceCleanup {
                         print("【生命周期管理】PlayerView.onDisappear - 资源清理完成")
                     }
+=======
+                // 延迟彻底清理所有资源，但不管这个是否完成
+                DispatchQueue.global(qos: .background).async {
+                    print("【调试】PlayerView.onDisappear: 后台线程执行彻底资源清理")
+                    // 这里直接调用原子操作的清理方法，不需要回调或协调
+                    ApiVoicePlaybackManager.shared.forceCleanup(completion: nil)
+                    // 允许足够的时间完成清理
+                    Thread.sleep(forTimeInterval: 0.5)
+                    print("【调试】PlayerView.onDisappear: 后台线程资源清理完成")
+>>>>>>> parent of f4f318b (大大大重构，优化完成确认按钮问题)
                 }
             }
         }
-        .alert(isPresented: EventGuardian.shared.protectedAlertBinding($viewModel.shouldShowCompletionAlert)) {
+        .alert(isPresented: $viewModel.shouldShowCompletionAlert) {
             Alert(
                 title: Text("学习进度已更新"),
                 message: Text("你已完成一次学习，记忆进度已更新。"),
                 dismissButton: .default(Text("确定")) {
+<<<<<<< HEAD
                     // 使用新的生命周期管理机制处理确认按钮点击
                     handleAlertConfirmation()
+=======
+                    print("【调试】确认按钮被点击：极简处理")
+                    
+                    // 关键：最短路径处理，无复杂逻辑
+                    // 1. 立即禁用自动重播 - 同步操作
+                    ApiVoicePlaybackManager.shared.disableAutoReplay()
+                    
+                    // 2. 重置弹窗状态 - 同步操作
+                    viewModel.shouldShowCompletionAlert = false
+                    
+                    // 3. 设置清理标志，防止onDisappear重复清理
+                    isCleaningUp = true
+                    
+                    // 4. 立即返回
+                    print("【调试】确认按钮：立即调用dismiss()")
+                    dismiss()
+>>>>>>> parent of f4f318b (大大大重构，优化完成确认按钮问题)
                 }
             )
         }

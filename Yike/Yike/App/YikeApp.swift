@@ -7,6 +7,7 @@ struct YikeApp: App {
     @StateObject private var networkMonitor = NetworkMonitor.shared
     
     init() {
+<<<<<<< HEAD
         // 初始化事件保护系统
         // 事件保护器 - 确保事件传递不被中断
         _ = EventGuardian.shared
@@ -20,6 +21,8 @@ struct YikeApp: App {
         // 初始化全局资源监视器
         _ = GlobalResourceMonitor.shared
         
+=======
+>>>>>>> parent of f4f318b (大大大重构，优化完成确认按钮问题)
         // 请求通知权限
         NotificationManager.shared.requestAuthorization { granted in
             if granted {
