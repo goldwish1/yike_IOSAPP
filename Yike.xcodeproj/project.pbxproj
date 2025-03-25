@@ -529,6 +529,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = "记得住";
 				INFOPLIST_KEY_LSApplicationCategoryType = "";
 				INFOPLIST_KEY_NSCameraUsageDescription = "记得住需要使用相机来拍摄学习内容，便于您进行OCR文字识别";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "需要使用麦克风来进行语音播放功能";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -565,6 +566,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = "记得住";
 				INFOPLIST_KEY_LSApplicationCategoryType = "";
 				INFOPLIST_KEY_NSCameraUsageDescription = "记得住需要使用相机来拍摄学习内容，便于您进行OCR文字识别";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "需要使用麦克风来进行语音播放功能";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

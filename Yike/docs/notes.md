@@ -56,3 +56,6 @@ cd "/Users/fengyuanzhou/Desktop/IOS APP/Yike/Yike" && xcodebuild -project Yike.x
 现在我们碰到了一个严重的问题。当我们使用在线语音时，点击音频播放，然后快速点击完成学习，然后点击确定，有高概率发生界面会一直卡在图示的确定页面，点击确定按钮无反应，有时候需要等到播放完后才会最终确定，有时候一直无反应且音频仍在播放。但是我们使用本地语音时，从来没有这种情况发生。
 
 请仔细审查代码，增加必要的日志打印，我们已经很多次修复失败这个问题了
+
+
+当前使用系统语音时，播放状态下点击播放按钮，仍然无法暂停。请仔细审查几个关联文件的代码，一步步思考帮我准确定位问题原因 。 @LocalVoicePlaybackManager.swift @AudioPlayerService.swift @SpeechManager.swift @ApiVoicePlaybackManager.swift 

@@ -4,5 +4,10 @@
 <dict>
 	<key>NSUserNotificationsUsageDescription</key>
 	<string>我们需要发送通知来提醒您按时复习学习内容</string>
+
+	<key>UIBackgroundModes</key>
+<array>
+    <string>audio</string>
+</array>
 </dict>
 </plist>
