@@ -8,13 +8,13 @@ struct PrivacyPolicyView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                Text("记得住隐私政策")
+                Text("忆刻隐私政策")
                     .font(.largeTitle)
                     .fontWeight(.bold)
                     .padding(.bottom, 8)
                 
                 Group {
-                    Text("本隐私政策描述了记得住应用（以下简称\"我们\"或\"本应用\"）如何收集、使用、存储和共享您的个人信息。我们非常重视您的隐私保护，并致力于维护您对我们的信任。请您仔细阅读本隐私政策，以便了解我们的隐私保护实践。")
+                    Text("本隐私政策描述了忆刻应用（以下简称\"我们\"或\"本应用\"）如何收集、使用、存储和共享您的个人信息。我们非常重视您的隐私保护，并致力于维护您对我们的信任。请您仔细阅读本隐私政策，以便了解我们的隐私保护实践。")
                         .padding(.bottom, 8)
                     
                     Text("一、我们收集的信息")

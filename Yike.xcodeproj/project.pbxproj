@@ -526,9 +526,9 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Yike/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "记得住";
+				INFOPLIST_KEY_CFBundleDisplayName = "忆刻";
 				INFOPLIST_KEY_LSApplicationCategoryType = "";
-				INFOPLIST_KEY_NSCameraUsageDescription = "记得住需要使用相机来拍摄学习内容，便于您进行OCR文字识别";
+				INFOPLIST_KEY_NSCameraUsageDescription = "忆刻需要使用相机来拍摄学习内容，便于您进行OCR文字识别";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "需要使用麦克风来进行语音播放功能";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -563,9 +563,9 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Yike/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "记得住";
+				INFOPLIST_KEY_CFBundleDisplayName = "忆刻";
 				INFOPLIST_KEY_LSApplicationCategoryType = "";
-				INFOPLIST_KEY_NSCameraUsageDescription = "记得住需要使用相机来拍摄学习内容，便于您进行OCR文字识别";
+				INFOPLIST_KEY_NSCameraUsageDescription = "忆刻需要使用相机来拍摄学习内容，便于您进行OCR文字识别";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "需要使用麦克风来进行语音播放功能";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -595,7 +595,7 @@
 				DEVELOPMENT_TEAM = L894TN6N22;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = YikeTests/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "记得住";
+				INFOPLIST_KEY_CFBundleDisplayName = "忆刻";
 				INFOPLIST_KEY_LSApplicationCategoryType = "";
 				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
 				MARKETING_VERSION = 1.0;
@@ -617,7 +617,7 @@
 				DEVELOPMENT_TEAM = L894TN6N22;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = YikeTests/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "记得住";
+				INFOPLIST_KEY_CFBundleDisplayName = "忆刻";
 				INFOPLIST_KEY_LSApplicationCategoryType = "";
 				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
 				MARKETING_VERSION = 1.0;
