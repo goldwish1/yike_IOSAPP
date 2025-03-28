@@ -3,7 +3,7 @@ import XCTest
 
 /// 忆刻应用的基础测试类
 /// 提供所有测试用例的共享设置和基础功能
-class YikeSmokeBaseTests: XCTestCase {
+class YikeBaseTests: XCTestCase {
     
     // MARK: - 测试数据
     
@@ -83,15 +83,10 @@ class YikeSmokeBaseTests: XCTestCase {
     /// 模拟网络状态更改
     /// - Parameter connected: 是否连接
     func simulateNetworkState(connected: Bool) {
-        #if DEBUG
-        // 仅在测试环境中修改NetworkMonitor状态
-        if ProcessInfo.processInfo.arguments.contains("--UITesting") {
-            NotificationCenter.default.post(
-                name: Notification.Name(connected ? "UITestNetworkConnected" : "UITestNetworkDisconnected"),
-                object: nil
-            )
-        }
-        #endif
+        NotificationCenter.default.post(
+            name: Notification.Name(connected ? "UITestNetworkConnected" : "UITestNetworkDisconnected"),
+            object: nil
+        )
     }
     
     // MARK: - 异步测试支持
