@@ -223,6 +223,175 @@
 3. 按钮颜色变灰
 4. 网络恢复后UI自动更新
 
+## 6. 测试工具类测试
+
+### TC-6.1: TestDataGenerator测试
+
+**优先级**: 中  
+**测试类型**: 单元测试
+
+**测试步骤**:
+1. 测试标题生成
+   ```swift
+   func test_generateTitle_validLength() {
+       let title = TestDataGenerator.generateTitle(length: 10)
+       XCTAssertEqual(title.count, 10)
+   }
+   ```
+
+2. 测试内容生成
+   ```swift
+   func test_generateContent_validLength() {
+       let content = TestDataGenerator.generateContent(length: 50)
+       XCTAssertEqual(content.count, 50)
+   }
+   ```
+
+3. 测试积分生成
+   ```swift
+   func test_generatePoints_inRange() {
+       let points = TestDataGenerator.generatePoints(in: 100...200)
+       XCTAssertTrue((100...200).contains(points))
+   }
+   ```
+
+4. 测试时间戳生成
+   ```swift
+   func test_generateTimestamp_validRange() {
+       let date = TestDataGenerator.generateTimestamp(daysRange: -7...7)
+       let now = Date()
+       XCTAssertTrue(abs(date.timeIntervalSince(now)) <= 7 * 24 * 60 * 60)
+   }
+   ```
+
+**预期结果**:
+1. 生成的标题长度符合要求
+2. 生成的内容长度符合要求
+3. 生成的积分在指定范围内
+4. 生成的时间戳在指定范围内
+
+### TC-6.2: MockServices测试
+
+**优先级**: 中  
+**测试类型**: 单元测试
+
+**测试步骤**:
+1. 测试网络服务Mock
+   ```swift
+   func test_mockNetworkService_request() {
+       let service = MockNetworkService()
+       let testData = "test".data(using: .utf8)!
+       
+       service.mockResponse(for: "test_endpoint", data: testData)
+       let result = service.request("test_endpoint")
+       
+       XCTAssertEqual(try? result?.get(), testData)
+       XCTAssertTrue(service.verifyCall("request_test_endpoint"))
+   }
+   ```
+
+2. 测试存储服务Mock
+   ```swift
+   func test_mockStorageService_storeAndRetrieve() {
+       let service = MockStorageService()
+       let testValue = "test_value"
+       
+       service.store(testValue, for: "test_key")
+       let retrieved = service.retrieve("test_key") as? String
+       
+       XCTAssertEqual(retrieved, testValue)
+       XCTAssertTrue(service.verifyCall("store_test_key"))
+       XCTAssertTrue(service.verifyCall("retrieve_test_key"))
+   }
+   ```
+
+3. 测试音频服务Mock
+   ```swift
+   func test_mockAudioService_playAndPause() {
+       let service = MockAudioService()
+       let testData = Data([1, 2, 3])
+       
+       service.play(testData)
+       XCTAssertTrue(service.isPlaying)
+       XCTAssertEqual(service.currentAudio, testData)
+       
+       service.pause()
+       XCTAssertFalse(service.isPlaying)
+   }
+   ```
+
+**预期结果**:
+1. Mock网络服务正确处理请求和响应
+2. Mock存储服务正确存储和检索数据
+3. Mock音频服务正确模拟播放状态
+4. 所有服务正确记录方法调用
+
+### TC-6.3: AsyncTestHelper测试
+
+**优先级**: 中  
+**测试类型**: 单元测试
+
+**测试步骤**:
+1. 测试单个异步操作等待
+   ```swift
+   func test_wait_singleOperation() {
+       AsyncTestHelper.wait(description: "Test wait") { expectation in
+           DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+               expectation.fulfill()
+           }
+       }
+   }
+   ```
+
+2. 测试多个异步操作等待
+   ```swift
+   func test_waitAll_multipleOperations() {
+       AsyncTestHelper.waitAll(
+           descriptions: ["Op1", "Op2"],
+           operations: [
+               { exp in exp.fulfill() },
+               { exp in exp.fulfill() }
+           ]
+       )
+   }
+   ```
+
+3. 测试条件等待
+   ```swift
+   func test_waitUntil_condition() {
+       var flag = false
+       DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+           flag = true
+       }
+       
+       let result = AsyncTestHelper.waitUntil { flag }
+       XCTAssertTrue(result)
+   }
+   ```
+
+4. 测试成功期望
+   ```swift
+   func test_expectSuccess() {
+       AsyncTestHelper.expectSuccess { completion in
+           DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+               completion(.success("test"))
+           }
+       }
+   }
+   ```
+
+**预期结果**:
+1. 单个异步操作等待成功
+2. 多个异步操作等待成功
+3. 条件等待正确工作
+4. 成功期望正确验证
+
+### 测试用例维护
+
+- 每次修改工具类时更新相应的测试用例
+- 定期检查测试覆盖率
+- 确保测试用例与工具类功能同步更新
+
 ## 附录：测试用例维护
 
 ### 测试数据要求
@@ -250,6 +419,7 @@ app.launchEnvironment["DISABLE_ANIMATIONS"] = "YES"
 - 播放功能 (TC-3.1, TC-3.2, TC-3.3)
 - 积分系统 (TC-4.1, TC-4.2, TC-4.3)
 - 网络监测 (TC-5.1, TC-5.2, TC-5.3)
+- 测试工具类 (TC-6.1, TC-6.2, TC-6.3)
 
 ### 测试维护计划
 
