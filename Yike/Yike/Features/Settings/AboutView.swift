@@ -10,6 +10,7 @@ struct AboutView: View {
     
     // 定义链接URL
     private let contactEmail = "shicfp@126.com"
+    private let supportURL = "https://www.aicodehelper.top/docs/best-practices/support/"
     
     var body: some View {
         VStack(spacing: 30) {
@@ -62,6 +63,12 @@ struct AboutView: View {
                 LinkButton(title: "隐私政策", action: {
                     router.navigate(to: .privacyPolicyView)
                 })
+                LinkButton(title: "技术支持", action: {
+                    if let url = URL(string: supportURL) {
+                        urlToShow = url
+                        showingWebView = true
+                    }
+                })
                 LinkButton(title: "联系我们", action: {
                     showingMailView = true
                 })
@@ -71,6 +78,11 @@ struct AboutView: View {
         }
         .padding(.top, 40)
         .navigationTitle("关于")
+        .sheet(isPresented: $showingWebView) {
+            if let url = urlToShow {
+                SafariView(url: url)
+            }
+        }
         .alert(isPresented: $showingMailView) {
             Alert(
                 title: Text("联系我们"),
