@@ -464,7 +464,7 @@ class LocalVoicePlaybackManager: ObservableObject {
         var nowPlayingInfo = [String: Any]()
         
         // 添加更多媒体信息
-        nowPlayingInfo[MPMediaItemPropertyTitle] = "忆刻语音朗读"
+        nowPlayingInfo[MPMediaItemPropertyTitle] = "忆趣语音朗读"
         nowPlayingInfo[MPMediaItemPropertyArtist] = isPlaying ? "正在播放" : "已暂停"
         
         // 更明确的播放状态

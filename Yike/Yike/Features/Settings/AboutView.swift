@@ -24,7 +24,7 @@ struct AboutView: View {
             
             // 应用名称和版本
             VStack(spacing: 5) {
-                Text("忆刻")
+                Text("忆趣")
                     .font(.largeTitle)
                     .fontWeight(.bold)
                 

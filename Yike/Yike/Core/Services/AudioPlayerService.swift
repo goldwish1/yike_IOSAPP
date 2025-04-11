@@ -232,7 +232,7 @@ class AudioPlayerService: NSObject, AVAudioPlayerDelegate, ObservableObject {
             completionHandler = completion
             
             // 设置锁屏/控制中心信息
-            setupNowPlaying(title: "忆刻", artist: "正在播放")
+            setupNowPlaying(title: "忆趣", artist: "正在播放")
             
             print("开始播放音频: \(url.path)")
         } catch {
