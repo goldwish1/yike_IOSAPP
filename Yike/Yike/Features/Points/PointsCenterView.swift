@@ -216,10 +216,10 @@ struct PointsRechargeView: View {
     
     // 产品映射
     private let packages = [
-        (points: 100, productID: "com.goldwish.yike.points.100"),
-        (points: 300, productID: "com.goldwish.yike.points.300"),
-        (points: 600, productID: "com.goldwish.yike.points.600"),
-        (points: 1000, productID: "com.goldwish.yike.points.1000")
+        (points: 100, productID: "com.apicloud.yike.points.100"),
+        (points: 300, productID: "com.apicloud.yike.points.300"),
+        (points: 600, productID: "com.apicloud.yike.points.600"),
+        (points: 1000, productID: "com.apicloud.yike.points.1000")
     ]
     
     var body: some View {
