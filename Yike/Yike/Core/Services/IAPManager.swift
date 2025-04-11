@@ -15,18 +15,18 @@ class IAPManager: ObservableObject {
     
     // 产品ID定义
     private let productIDs = [
-        "com.goldwish.yike.points.100",
-        "com.goldwish.yike.points.300",
-        "com.goldwish.yike.points.600",
-        "com.goldwish.yike.points.1000"
+        "com.apicloud.yike.points.100",
+        "com.apicloud.yike.points.300",
+        "com.apicloud.yike.points.600",
+        "com.apicloud.yike.points.1000"
     ]
     
     // 产品ID与积分值的映射
     let productPointsMapping: [String: Int] = [
-        "com.goldwish.yike.points.100": 100,
-        "com.goldwish.yike.points.300": 300,
-        "com.goldwish.yike.points.600": 600,
-        "com.goldwish.yike.points.1000": 1000
+        "com.apicloud.yike.points.100": 100,
+        "com.apicloud.yike.points.300": 300,
+        "com.apicloud.yike.points.600": 600,
+        "com.apicloud.yike.points.1000": 1000
     ]
     
     // 购买状态枚举

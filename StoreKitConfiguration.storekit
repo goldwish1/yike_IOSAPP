@@ -20,7 +20,7 @@
           "locale" : "en_US"
         }
       ],
-      "productID" : "com.goldwish.yike.points.100",
+      "productID" : "com.apicloud.yike.points.100",
       "referenceName" : "100积分",
       "type" : "Consumable"
     },
@@ -40,7 +40,7 @@
           "locale" : "en_US"
         }
       ],
-      "productID" : "com.goldwish.yike.points.300",
+      "productID" : "com.apicloud.yike.points.300",
       "referenceName" : "300积分",
       "type" : "Consumable"
     },
@@ -60,7 +60,7 @@
           "locale" : "en_US"
         }
       ],
-      "productID" : "com.goldwish.yike.points.600",
+      "productID" : "com.apicloud.yike.points.600",
       "referenceName" : "600积分",
       "type" : "Consumable"
     },
@@ -80,13 +80,13 @@
           "locale" : "en_US"
         }
       ],
-      "productID" : "com.goldwish.yike.points.1000",
+      "productID" : "com.apicloud.yike.points.1000",
       "referenceName" : "1000积分",
       "type" : "Consumable"
     }
   ],
   "settings" : {
-    "_applicationInternalID" : "com.goldwish.yike",
+    "_applicationInternalID" : "com.apicloud.yike",
     "_developerTeamID" : "ABCDEF1234",
     "_lastCheckoutTimestamp" : 0
   },
