@@ -64,7 +64,7 @@ class NotificationManager {
         
         // 创建通知内容
         let content = UNMutableNotificationContent()
-        content.title = "忆刻"
+        content.title = "忆趣"
         content.body = "是时候复习您的学习内容了"
         content.categoryIdentifier = "reminder"
         
