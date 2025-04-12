@@ -63,6 +63,7 @@ fastlane/test_output
 
 # API Keys and Secrets
 Yike/Secrets.plist
+Yike/Yike/Secrets.plist
 
 # Mac OS X
 .DS_Store
