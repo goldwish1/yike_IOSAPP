@@ -10,12 +10,12 @@
       "internalID" : "1000",
       "localizations" : [
         {
-          "description" : "购买100积分",
+          "description" : "购买100积分用于使用在线语音功能",
           "displayName" : "100积分",
           "locale" : "zh_CN"
         },
         {
-          "description" : "Purchase 100 points",
+          "description" : "Purchase 100 points for online voice features",
           "displayName" : "100 Points",
           "locale" : "en_US"
         }
@@ -30,12 +30,12 @@
       "internalID" : "1001",
       "localizations" : [
         {
-          "description" : "购买300积分",
+          "description" : "购买300积分用于使用在线语音功能",
           "displayName" : "300积分",
           "locale" : "zh_CN"
         },
         {
-          "description" : "Purchase 300 points",
+          "description" : "Purchase 300 points for online voice features",
           "displayName" : "300 Points",
           "locale" : "en_US"
         }
@@ -50,12 +50,12 @@
       "internalID" : "1002",
       "localizations" : [
         {
-          "description" : "购买600积分",
+          "description" : "购买600积分用于使用在线语音功能",
           "displayName" : "600积分",
           "locale" : "zh_CN"
         },
         {
-          "description" : "Purchase 600 points",
+          "description" : "Purchase 600 points for online voice features",
           "displayName" : "600 Points",
           "locale" : "en_US"
         }
@@ -70,12 +70,12 @@
       "internalID" : "1003",
       "localizations" : [
         {
-          "description" : "购买1000积分",
+          "description" : "购买1000积分用于使用在线功能",
           "displayName" : "1000积分",
           "locale" : "zh_CN"
         },
         {
-          "description" : "Purchase 1000 points",
+          "description" : "Purchase 1000 points for online features",
           "displayName" : "1000 Points",
           "locale" : "en_US"
         }
