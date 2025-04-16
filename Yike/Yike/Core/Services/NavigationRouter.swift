@@ -18,6 +18,7 @@ enum AppRoute: Hashable {
     case about
     case userAgreementView
     case privacyPolicyView
+    case technicalSupportView
     
     // 实现Hashable协议
     func hash(into hasher: inout Hasher) {
@@ -56,6 +57,8 @@ enum AppRoute: Hashable {
             hasher.combine(13)
         case .privacyPolicyView:
             hasher.combine(14)
+        case .technicalSupportView:
+            hasher.combine(15)
         }
     }
     
@@ -73,7 +76,8 @@ enum AppRoute: Hashable {
              (.pointsRecharge, .pointsRecharge),
              (.about, .about),
              (.userAgreementView, .userAgreementView),
-             (.privacyPolicyView, .privacyPolicyView):
+             (.privacyPolicyView, .privacyPolicyView),
+             (.technicalSupportView, .technicalSupportView):
             return true
         case (.player(let items1, let index1), .player(let items2, let index2)):
             return items1.map({ $0.id }) == items2.map({ $0.id }) && index1 == index2

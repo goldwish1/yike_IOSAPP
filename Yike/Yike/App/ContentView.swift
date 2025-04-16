@@ -81,6 +81,8 @@ struct ContentView: View {
             UserAgreementView()
         case .privacyPolicyView:
             PrivacyPolicyView()
+        case .technicalSupportView:
+            TechnicalSupportView()
         }
     }
 }

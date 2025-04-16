@@ -64,10 +64,7 @@ struct AboutView: View {
                     router.navigate(to: .privacyPolicyView)
                 })
                 LinkButton(title: "技术支持", action: {
-                    if let url = URL(string: supportURL) {
-                        urlToShow = url
-                        showingWebView = true
-                    }
+                    router.navigate(to: .technicalSupportView)
                 })
                 LinkButton(title: "联系我们", action: {
                     showingMailView = true
