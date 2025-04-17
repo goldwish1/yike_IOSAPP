@@ -58,7 +58,7 @@ struct InputSelectionView: View {
                         .background(Color(.systemGray6))
                         .cornerRadius(12)
                         .frame(minHeight: 200)
-                        .onChange(of: manualText) { oldValue, newValue in
+                        .onChange(of: manualText) { newValue in
                             wordCount = newValue.count
                         }
                     
@@ -73,7 +73,7 @@ struct InputSelectionView: View {
                         .background(Color(.systemGray6))
                         .cornerRadius(12)
                         .frame(minHeight: 200)
-                        .onChange(of: recognizedText) { oldValue, newValue in
+                        .onChange(of: recognizedText) { newValue in
                             wordCount = newValue.count
                         }
                     
@@ -119,8 +119,8 @@ struct InputSelectionView: View {
             )
             .environmentObject(dataManager)
         }
-        .onChange(of: shouldPopToRoot) { oldValue, newValue in
-            print("shouldPopToRoot 变化: \(oldValue) -> \(newValue)")
+        .onChange(of: shouldPopToRoot) { newValue in
+            print("shouldPopToRoot 变化: \(newValue)")
             if newValue {
                 router.navigateBack()
             }

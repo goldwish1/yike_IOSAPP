@@ -22,7 +22,7 @@ struct PlaySettingsView: View {
                 HStack {
                     Toggle("使用在线高质量语音", isOn: $settings.useApiVoice)
                         .accessibilityIdentifier("useApiVoiceSwitch")
-                        .onChange(of: settings.useApiVoice) { oldValue, newValue in
+                        .onChange(of: settings.useApiVoice) { newValue in
                             // 切换语音来源时停止播放
                             if speechManager.isPlaying {
                                 speechManager.stop()
@@ -55,7 +55,7 @@ struct PlaySettingsView: View {
                     }
                     .pickerStyle(SegmentedPickerStyle())
                     .disabled(isTestingApiVoice)
-                    .onChange(of: selectedCategory) { oldValue, newValue in
+                    .onChange(of: selectedCategory) { newValue in
                         // 当分类改变时，选择该分类下的第一个音色
                         if let firstVoice = UserSettings.ApiVoiceType.allCases.first(where: { $0.category == newValue }) {
                             settings.apiVoiceType = firstVoice
@@ -189,7 +189,7 @@ struct PlaySettingsView: View {
             }
         }
         .navigationTitle("播放设置")
-        .onChange(of: settings) { oldValue, newValue in
+        .onChange(of: settings) { newValue in
             settingsManager.updateSettings(newValue)
         }
         .onDisappear {
