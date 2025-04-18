@@ -80,7 +80,7 @@ struct UserSettings: Codable, Equatable {
     // 播放设置
     var playbackVoiceType: VoiceType = .standard  // 新的音色类型，替代原来的性别和音色
     var playbackSpeed: Double = 1.0
-    var playbackInterval: Int = 5 // 秒
+    var playbackInterval: Int = 1 // 秒
     var enablePlaybackInterval: Bool = true
     var useApiVoice: Bool = false // 是否使用API音色
     var apiVoiceType: ApiVoiceType = .alex // API音色类型

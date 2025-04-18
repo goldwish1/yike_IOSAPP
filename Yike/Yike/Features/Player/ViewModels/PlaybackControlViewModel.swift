@@ -142,8 +142,12 @@ class PlaybackControlViewModel: ObservableObject {
         apiVoiceManager.$error
             .receive(on: RunLoop.main)
             .sink { [weak self] error in
-                guard let self = self, self.useApiVoice else { return }
-                self.error = error
+                guard let self = self else { return }
+                if self.useApiVoice && (self.isLoading || self.isPlaying) {
+                    self.error = error
+                } else {
+                    self.error = nil
+                }
             }
             .store(in: &cancellables)
         
