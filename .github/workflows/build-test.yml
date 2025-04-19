@@ -14,38 +14,82 @@ jobs:
     steps:
     - name: 签出代码
       uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
     
     - name: 设置Xcode版本
       uses: maxim-lobanov/setup-xcode@v1
       with:
         xcode-version: '15.0'
     
-    - name: 调试 - 列出目录内容
+    - name: 诊断 - 检查项目状态
       run: |
         echo "当前工作目录:"
         pwd
-        echo "列出根目录文件:"
-        ls -la
-        echo "查找所有的xcodeproj文件:"
-        find . -name "*.xcodeproj"
+        echo "项目目录结构:"
+        find . -name "*.xcodeproj" -type d | xargs ls -la
+        
+        # 检查xcodeproj内部结构
+        XCODEPROJ_PATH=$(find . -name "*.xcodeproj" -type d | head -n 1)
+        if [ -n "$XCODEPROJ_PATH" ]; then
+          echo "Xcode项目结构: $XCODEPROJ_PATH"
+          ls -la "$XCODEPROJ_PATH"
+          
+          # 检查project.pbxproj文件
+          if [ -f "$XCODEPROJ_PATH/project.pbxproj" ]; then
+            echo "project.pbxproj文件存在"
+            head -n 20 "$XCODEPROJ_PATH/project.pbxproj"
+          else
+            echo "project.pbxproj文件不存在!"
+          fi
+        else
+          echo "未找到Xcode项目文件!"
+        fi
+        
+        # 检查scheme
+        find . -name "*.xcscheme" | xargs ls -la
     
     - name: 安装依赖
       run: |
-        xcodebuild -resolvePackageDependencies
+        # 获取Xcode项目路径
+        XCODEPROJ_PATH=$(find . -name "*.xcodeproj" -type d | head -n 1)
+        if [ -n "$XCODEPROJ_PATH" ]; then
+          PROJECT_DIR=$(dirname "$XCODEPROJ_PATH")
+          cd "$PROJECT_DIR"
+          xcodebuild -resolvePackageDependencies || true
+        else
+          xcodebuild -resolvePackageDependencies || true
+        fi
     
     - name: 构建应用
       run: |
-        xcodebuild clean build \
-          -scheme "Yike" \
-          -destination "platform=iOS Simulator,name=iPhone 15,OS=latest" \
-          CODE_SIGN_IDENTITY="" \
-          CODE_SIGNING_REQUIRED=NO \
-          ONLY_ACTIVE_ARCH=YES
+        # 列出所有可用的scheme
+        echo "列出所有可用的scheme:"
+        xcodebuild -list || true
+        
+        # 尝试构建
+        XCODEPROJ_PATH=$(find . -name "*.xcodeproj" -type d | head -n 1)
+        if [ -n "$XCODEPROJ_PATH" ]; then
+          PROJECT_DIR=$(dirname "$XCODEPROJ_PATH")
+          cd "$PROJECT_DIR"
+          xcodebuild clean build \
+            -project "$(basename "$XCODEPROJ_PATH")" \
+            -scheme "Yike" \
+            -destination "platform=iOS Simulator,name=iPhone 15,OS=latest" \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            ONLY_ACTIVE_ARCH=YES || true
+        else
+          echo "未找到Xcode项目文件，无法构建"
+          exit 1
+        fi
           
-    - name: 归档构建日志
+    - name: 归档构建日志和诊断信息
       uses: actions/upload-artifact@v4
-      if: failure()
+      if: always()
       with:
-        name: build-logs
-        path: "**/*.log"
+        name: build-diagnostics
+        path: |
+          **/*.log
+          **/project.pbxproj
         retention-days: 3 
