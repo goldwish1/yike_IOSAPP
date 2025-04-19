@@ -20,39 +20,17 @@ jobs:
       with:
         xcode-version: '15.0'
     
-    - name: 检查工作目录
-      run: |
-        pwd
-        ls -la
-        
-    - name: 列出可用schemes和测试计划
-      run: |
-        xcodebuild -list -project Yike.xcodeproj || echo "找不到主项目文件"
-        xcodebuild -list -project Yike/Yike.xcodeproj || echo "找不到嵌套项目文件"
-        ls -la Yike.xctestplan || echo "找不到测试计划文件"
-        ls -la Yike/Yike.xctestplan || echo "找不到嵌套测试计划文件"
-    
     - name: 安装依赖
       run: |
-        cd Yike
-        xcodebuild -resolvePackageDependencies -project Yike.xcodeproj
+        xcodebuild -resolvePackageDependencies
     
     - name: 运行单元测试
       run: |
-        cd Yike
-        # 尝试找到测试计划文件
-        TEST_PLAN=""
-        if [ -f "Yike.xctestplan" ]; then
-          TEST_PLAN="-testPlan Yike"
-        fi
-        
         xcodebuild test \
-          -project Yike.xcodeproj \
           -scheme "Yike" \
           -destination "platform=iOS Simulator,name=iPhone 15,OS=latest" \
-          $TEST_PLAN \
+          -testPlan "Yike" \
           -enableCodeCoverage YES \
           CODE_SIGN_IDENTITY="" \
           CODE_SIGNING_REQUIRED=NO \
-          ONLY_ACTIVE_ARCH=YES \
-          VALID_ARCHS=x86_64 
+          ONLY_ACTIVE_ARCH=YES 

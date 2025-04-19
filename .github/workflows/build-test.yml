@@ -20,28 +20,15 @@ jobs:
       with:
         xcode-version: '15.0'
     
-    - name: 检查工作目录
-      run: |
-        pwd
-        ls -la
-        
-    - name: 列出可用schemes
-      run: |
-        xcodebuild -list -project Yike.xcodeproj || echo "找不到主项目文件"
-        xcodebuild -list -project Yike/Yike.xcodeproj || echo "找不到嵌套项目文件"
-    
     - name: 安装依赖
       run: |
-        xcodebuild -resolvePackageDependencies -project Yike/Yike.xcodeproj || echo "无法解析依赖"
+        xcodebuild -resolvePackageDependencies
     
     - name: 构建应用
       run: |
-        cd Yike
         xcodebuild clean build \
-          -project Yike.xcodeproj \
           -scheme "Yike" \
           -destination "platform=iOS Simulator,name=iPhone 15,OS=latest" \
           CODE_SIGN_IDENTITY="" \
           CODE_SIGNING_REQUIRED=NO \
-          ONLY_ACTIVE_ARCH=YES \
-          VALID_ARCHS=x86_64 
+          ONLY_ACTIVE_ARCH=YES 
