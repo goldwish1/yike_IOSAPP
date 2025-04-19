@@ -1,73 +1,53 @@
+# 工作流名称和触发条件
 name: Build Test
 
+# 触发条件配置
 on:
+  # 当代码推送到以下分支时触发
   push:
     branches: [ main, develop, feature/*, bugfix/* ]
+  # 当创建针对以下分支的PR时触发
   pull_request:
     branches: [ main, develop ]
 
+# 工作流任务定义
 jobs:
   build:
     name: 构建测试
+    # 使用最新的macOS运行环境
     runs-on: macos-latest
     
+    # 工作流步骤定义
     steps:
+    # 步骤1: 签出代码
     - name: 签出代码
       uses: actions/checkout@v3
       with:
-        fetch-depth: 0
+        fetch-depth: 1  # 只获取最新的代码提交
     
+    # 步骤2: 设置Xcode环境
     - name: 设置Xcode版本
       uses: maxim-lobanov/setup-xcode@v1
       with:
-        xcode-version: '15.0'
+        xcode-version: '15.0'  # 使用Xcode 15.0版本
     
-    - name: 诊断 - 检查项目状态
-      run: |
-        echo "当前工作目录:"
-        pwd
-        echo "项目目录结构:"
-        find . -name "*.xcodeproj" -type d | xargs ls -la
-        
-        # 检查xcodeproj内部结构
-        XCODEPROJ_PATH=$(find . -name "*.xcodeproj" -type d | head -n 1)
-        if [ -n "$XCODEPROJ_PATH" ]; then
-          echo "Xcode项目结构: $XCODEPROJ_PATH"
-          ls -la "$XCODEPROJ_PATH"
-          
-          # 检查project.pbxproj文件
-          if [ -f "$XCODEPROJ_PATH/project.pbxproj" ]; then
-            echo "project.pbxproj文件存在"
-            head -n 20 "$XCODEPROJ_PATH/project.pbxproj"
-          else
-            echo "project.pbxproj文件不存在!"
-          fi
-        else
-          echo "未找到Xcode项目文件!"
-        fi
-        
-        # 检查scheme
-        find . -name "*.xcscheme" | xargs ls -la
-    
+    # 步骤3: 安装项目依赖
     - name: 安装依赖
       run: |
-        # 获取Xcode项目路径
+        # 定位Xcode项目并安装依赖
         XCODEPROJ_PATH=$(find . -name "*.xcodeproj" -type d | head -n 1)
         if [ -n "$XCODEPROJ_PATH" ]; then
           PROJECT_DIR=$(dirname "$XCODEPROJ_PATH")
           cd "$PROJECT_DIR"
-          xcodebuild -resolvePackageDependencies || true
+          xcodebuild -resolvePackageDependencies
         else
-          xcodebuild -resolvePackageDependencies || true
+          xcodebuild -resolvePackageDependencies
         fi
     
+    # 步骤4: 构建应用
     - name: 构建应用
       run: |
-        # 列出所有可用的scheme
-        echo "列出所有可用的scheme:"
-        xcodebuild -list || true
-        
-        # 尝试构建
+        # 执行构建
         XCODEPROJ_PATH=$(find . -name "*.xcodeproj" -type d | head -n 1)
         if [ -n "$XCODEPROJ_PATH" ]; then
           PROJECT_DIR=$(dirname "$XCODEPROJ_PATH")
@@ -78,18 +58,17 @@ jobs:
             -destination "platform=iOS Simulator,name=iPhone 15,OS=latest" \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
-            ONLY_ACTIVE_ARCH=YES || true
+            ONLY_ACTIVE_ARCH=YES
         else
           echo "未找到Xcode项目文件，无法构建"
           exit 1
         fi
-          
-    - name: 归档构建日志和诊断信息
+        
+    # 步骤5: 归档构建日志
+    - name: 归档构建日志
       uses: actions/upload-artifact@v4
-      if: always()
+      if: failure()  # 仅在构建失败时归档日志
       with:
-        name: build-diagnostics
-        path: |
-          **/*.log
-          **/project.pbxproj
-        retention-days: 3 
+        name: build-logs
+        path: "**/*.log"
+        retention-days: 3  # 日志保留3天
