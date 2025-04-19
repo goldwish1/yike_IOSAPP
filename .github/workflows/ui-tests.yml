@@ -21,91 +21,36 @@ jobs:
       with:
         xcode-version: '15.0'
     
-    - name: 调试 - 列出目录内容
-      run: |
-        echo "当前工作目录:"
-        pwd
-        echo "列出根目录文件:"
-        ls -la
-        echo "查找所有的xcodeproj文件:"
-        find . -name "*.xcodeproj"
-        echo "查找所有的xctestplan文件:"
-        find . -name "*.xctestplan"
-        echo "查找所有的UI测试文件:"
-        find . -path "*/YikeUITests/*"
-    
     - name: 安装依赖
       run: |
-        # 根据项目实际位置调整
-        if [ -d "Yike/Yike.xcodeproj" ]; then
-          cd Yike
-          xcodebuild -resolvePackageDependencies
-        else
-          xcodebuild -resolvePackageDependencies
-        fi
+        xcodebuild -resolvePackageDependencies
     
     - name: 启用UI测试计划
       run: |
-        # 查找测试计划文件
-        TEST_PLAN_PATH=$(find . -name "Yike.xctestplan" | head -n 1)
-        
-        if [ -n "$TEST_PLAN_PATH" ]; then
-          echo "找到测试计划: $TEST_PLAN_PATH"
-          # 修改测试计划以启用UI测试
-          sed -i '' 's/"enabled" : false/"enabled" : true/g' "$TEST_PLAN_PATH"
-        else
-          echo "警告: 未找到测试计划文件"
-        fi
+        # 修改测试计划以启用UI测试
+        sed -i '' 's/"enabled" : false/"enabled" : true/g' Yike.xctestplan
     
     - name: 运行UI测试
       run: |
-        # 获取测试计划路径
-        TEST_PLAN_PATH=$(find . -name "Yike.xctestplan" | head -n 1)
-        
-        # 如果测试计划存在
-        if [ -n "$TEST_PLAN_PATH" ]; then
-          TEST_PLAN_DIR=$(dirname "$TEST_PLAN_PATH")
-          TEST_PLAN_NAME=$(basename "$TEST_PLAN_PATH" .xctestplan)
-          
-          cd "$TEST_PLAN_DIR"
-          xcodebuild test \
-            -scheme "Yike" \
-            -destination "platform=iOS Simulator,name=iPhone 15,OS=latest" \
-            -testPlan "$TEST_PLAN_NAME" \
-            -only-testing:YikeUITests \
-            CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_REQUIRED=NO \
-            ONLY_ACTIVE_ARCH=YES
-        else
-          # 无测试计划的情况
-          if [ -d "Yike/Yike.xcodeproj" ]; then
-            cd Yike
-          fi
-          
-          xcodebuild test \
-            -scheme "Yike" \
-            -destination "platform=iOS Simulator,name=iPhone 15,OS=latest" \
-            -only-testing:YikeUITests \
-            CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_REQUIRED=NO \
-            ONLY_ACTIVE_ARCH=YES
-        fi
+        xcodebuild test \
+          -scheme "Yike" \
+          -destination "platform=iOS Simulator,name=iPhone 15,OS=latest" \
+          -testPlan "Yike" \
+          -only-testing:YikeUITests \
+          CODE_SIGN_IDENTITY="" \
+          CODE_SIGNING_REQUIRED=NO \
+          ONLY_ACTIVE_ARCH=YES
     
     - name: 归档测试结果
       uses: actions/upload-artifact@v4
       if: success() || failure()
       with:
         name: ui-test-results
-        path: "**/TestResults.xcresult"
+        path: TestResults.xcresult
         retention-days: 5
         
     - name: 恢复测试计划
       if: always()
       run: |
-        # 查找测试计划文件
-        TEST_PLAN_PATH=$(find . -name "Yike.xctestplan" | head -n 1)
-        
-        if [ -n "$TEST_PLAN_PATH" ]; then
-          # 恢复测试计划到原始状态
-          git checkout -- "$TEST_PLAN_PATH"
-        fi 
+        # 恢复测试计划到原始状态
+        git checkout -- Yike.xctestplan 

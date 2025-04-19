@@ -20,6 +20,15 @@ jobs:
       with:
         xcode-version: '15.0'
     
+    - name: 调试 - 列出目录内容
+      run: |
+        echo "当前工作目录:"
+        pwd
+        echo "列出根目录文件:"
+        ls -la
+        echo "查找所有的xcodeproj文件:"
+        find . -name "*.xcodeproj"
+    
     - name: 安装依赖
       run: |
         cd Yike
@@ -36,7 +45,7 @@ jobs:
           ONLY_ACTIVE_ARCH=YES
           
     - name: 归档构建日志
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: failure()
       with:
         name: build-logs
