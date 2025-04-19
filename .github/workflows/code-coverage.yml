@@ -1,15 +1,11 @@
 name: Code Coverage
 
-# 暂时禁用此工作流，直到基本构建工作流稳定
-# on:
-#   push:
-#     branches: [ main ]
-#   schedule:
-#     - cron: '0 0 * * 1'  # 每周一执行一次
+# 完全禁用此工作流，直到基本构建工作流稳定
+on: []
 
 # 使用manual触发方式替代自动触发
-on: 
-  workflow_dispatch:  # 仅允许手动触发
+# on: 
+#   workflow_dispatch:  # 仅允许手动触发
 
 jobs:
   coverage:
@@ -25,18 +21,33 @@ jobs:
       with:
         xcode-version: '15.0'
     
+    - name: 检查工作目录
+      run: |
+        pwd
+        ls -la
+    
     - name: 安装依赖
       run: |
-        xcodebuild -resolvePackageDependencies
+        cd Yike
+        xcodebuild -resolvePackageDependencies -project Yike.xcodeproj
         brew install xcbeautify
     
     - name: 运行测试
       run: |
+        cd Yike
+        # 尝试找到测试计划文件
+        TEST_PLAN=""
+        if [ -f "Yike.xctestplan" ]; then
+          TEST_PLAN="-testPlan Yike"
+        fi
+        
         xcodebuild test \
+          -project Yike.xcodeproj \
           -scheme "Yike" \
           -destination "platform=iOS Simulator,name=iPhone 15,OS=latest" \
-          -testPlan "Yike" \
+          $TEST_PLAN \
           -enableCodeCoverage YES \
           CODE_SIGN_IDENTITY="" \
           CODE_SIGNING_REQUIRED=NO \
-          ONLY_ACTIVE_ARCH=YES | xcbeautify 
+          ONLY_ACTIVE_ARCH=YES \
+          VALID_ARCHS=x86_64 | xcbeautify 
