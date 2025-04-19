@@ -47,7 +47,7 @@ jobs:
         xcresultparser TestResults.xcresult --output coverage-report
     
     - name: 归档覆盖率报告
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: coverage-report
         path: Yike/coverage-report
