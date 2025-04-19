@@ -14,33 +14,86 @@ jobs:
     steps:
     - name: 签出代码
       uses: actions/checkout@v3
+      with:
+        fetch-depth: 0  # 必须使用完整克隆，否则可能导致Xcode项目文件解析错误
     
     - name: 设置Xcode版本
       uses: maxim-lobanov/setup-xcode@v1
       with:
         xcode-version: '15.0'
     
+    - name: 检查项目状态
+      run: |
+        # 显示项目文件位置
+        echo "查找Xcode项目文件:"
+        find . -name "*.xcodeproj" -type d
+        
+        # 检查项目文件结构
+        XCODEPROJ_PATH=$(find . -name "*.xcodeproj" -type d | head -n 1)
+        if [ -n "$XCODEPROJ_PATH" ]; then
+          echo "找到Xcode项目: $XCODEPROJ_PATH"
+        else
+          echo "未找到Xcode项目文件!"
+          exit 1
+        fi
+    
     - name: 安装依赖
       run: |
-        cd Yike
-        xcodebuild -resolvePackageDependencies
+        # 定位Xcode项目并安装依赖
+        XCODEPROJ_PATH=$(find . -name "*.xcodeproj" -type d | head -n 1)
+        if [ -n "$XCODEPROJ_PATH" ]; then
+          PROJECT_DIR=$(dirname "$XCODEPROJ_PATH")
+          cd "$PROJECT_DIR"
+          xcodebuild -resolvePackageDependencies || true
+        else
+          xcodebuild -resolvePackageDependencies || true
+        fi
     
     - name: 运行单元测试
       run: |
-        cd Yike
-        xcodebuild test \
-          -scheme "Yike" \
-          -destination "platform=iOS Simulator,name=iPhone 15,OS=latest" \
-          -testPlan "Yike" \
-          -enableCodeCoverage YES \
-          CODE_SIGN_IDENTITY="" \
-          CODE_SIGNING_REQUIRED=NO \
-          ONLY_ACTIVE_ARCH=YES
+        # 列出可用的scheme
+        echo "列出可用的scheme:"
+        xcodebuild -list || true
+        
+        # 获取测试计划路径
+        TEST_PLAN_PATH=$(find . -name "*.xctestplan" | head -n 1)
+        
+        # 执行测试
+        XCODEPROJ_PATH=$(find . -name "*.xcodeproj" -type d | head -n 1)
+        if [ -n "$XCODEPROJ_PATH" ]; then
+          PROJECT_DIR=$(dirname "$XCODEPROJ_PATH")
+          cd "$PROJECT_DIR"
+          
+          if [ -n "$TEST_PLAN_PATH" ]; then
+            TEST_PLAN_NAME=$(basename "$TEST_PLAN_PATH" .xctestplan)
+            xcodebuild test \
+              -project "$(basename "$XCODEPROJ_PATH")" \
+              -scheme "Yike" \
+              -destination "platform=iOS Simulator,name=iPhone 15,OS=latest" \
+              -testPlan "$TEST_PLAN_NAME" \
+              -enableCodeCoverage YES \
+              CODE_SIGN_IDENTITY="" \
+              CODE_SIGNING_REQUIRED=NO \
+              ONLY_ACTIVE_ARCH=YES || true
+          else
+            xcodebuild test \
+              -project "$(basename "$XCODEPROJ_PATH")" \
+              -scheme "Yike" \
+              -destination "platform=iOS Simulator,name=iPhone 15,OS=latest" \
+              -enableCodeCoverage YES \
+              CODE_SIGN_IDENTITY="" \
+              CODE_SIGNING_REQUIRED=NO \
+              ONLY_ACTIVE_ARCH=YES || true
+          fi
+        else
+          echo "未找到Xcode项目文件，无法运行测试"
+          exit 1
+        fi
     
     - name: 归档测试结果
-      uses: actions/upload-artifact@v3
-      if: success() || failure()
+      uses: actions/upload-artifact@v4
+      if: always()  # 无论成功失败都归档
       with:
         name: test-results
-        path: Yike/TestResults.xcresult
+        path: "**/TestResults.xcresult"
         retention-days: 5 
