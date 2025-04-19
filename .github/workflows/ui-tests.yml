@@ -57,4 +57,4 @@ jobs:
       run: |
         cd Yike
         # 恢复测试计划到原始状态
-        git checkout -- Yike.xctestplan 
+        git checkout -- Yike.xctestplan
