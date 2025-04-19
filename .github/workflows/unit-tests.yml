@@ -20,83 +20,37 @@ jobs:
       with:
         xcode-version: '15.0'
     
-    - name: 检查工作目录结构
+    - name: 检查工作目录
       run: |
-        echo "当前工作目录: $(pwd)"
-        echo "根目录内容:"
+        pwd
         ls -la
         
-    - name: 查找项目文件和测试计划
+    - name: 列出可用schemes和测试计划
       run: |
-        echo "查找.xcodeproj文件:"
-        find . -name "*.xcodeproj" -type d
-        
-        echo "查找.xctestplan文件:"
-        find . -name "*.xctestplan"
-    
-    - name: 获取项目信息
-      id: project-info
-      run: |
-        # 动态查找项目文件
-        PROJ_FILE=$(find . -maxdepth 3 -name "*.xcodeproj" | head -n 1)
-        if [ -n "$PROJ_FILE" ]; then
-          echo "项目文件: $PROJ_FILE"
-          echo "project_file=$PROJ_FILE" >> $GITHUB_OUTPUT
-          
-          # 获取项目名称
-          PROJ_NAME=$(basename "$PROJ_FILE" .xcodeproj)
-          echo "project_name=$PROJ_NAME" >> $GITHUB_OUTPUT
-          
-          # 获取可用的schemes
-          SCHEMES=$(xcodebuild -list -project "$PROJ_FILE" -json | grep -o '"name" : "[^"]*"' | grep -v "Aggregate" | cut -d '"' -f 4)
-          MAIN_SCHEME=$(echo "$SCHEMES" | head -n 1)
-          
-          # 如果找不到scheme，使用项目名称
-          if [ -z "$MAIN_SCHEME" ]; then
-            MAIN_SCHEME="$PROJ_NAME"
-          fi
-          echo "scheme=$MAIN_SCHEME" >> $GITHUB_OUTPUT
-          
-          # 列出可用的schemes
-          echo "可用schemes:"
-          xcodebuild -list -project "$PROJ_FILE" || echo "无法列出schemes"
-        else
-          echo "未找到项目文件"
-          exit 1
-        fi
-        
-        # 查找测试计划文件
-        TEST_PLAN=$(find . -name "*.xctestplan" | head -n 1)
-        if [ -n "$TEST_PLAN" ]; then
-          echo "找到测试计划: $TEST_PLAN"
-          echo "test_plan=$TEST_PLAN" >> $GITHUB_OUTPUT
-        else
-          echo "未找到测试计划文件"
-          echo "test_plan=" >> $GITHUB_OUTPUT
-        fi
+        xcodebuild -list -project Yike.xcodeproj || echo "找不到主项目文件"
+        xcodebuild -list -project Yike/Yike.xcodeproj || echo "找不到嵌套项目文件"
+        ls -la Yike.xctestplan || echo "找不到测试计划文件"
+        ls -la Yike/Yike.xctestplan || echo "找不到嵌套测试计划文件"
     
     - name: 安装依赖
       run: |
-        xcodebuild -resolvePackageDependencies -project ${{ steps.project-info.outputs.project_file }}
+        cd Yike
+        xcodebuild -resolvePackageDependencies -project Yike.xcodeproj
     
     - name: 运行单元测试
       run: |
-        # 设置测试计划参数
-        TEST_PLAN_PARAM=""
-        if [ -n "${{ steps.project-info.outputs.test_plan }}" ]; then
-          TEST_PLAN_PARAM="-testPlan $(basename "${{ steps.project-info.outputs.test_plan }}" .xctestplan)"
+        cd Yike
+        # 尝试找到测试计划文件
+        TEST_PLAN=""
+        if [ -f "Yike.xctestplan" ]; then
+          TEST_PLAN="-testPlan Yike"
         fi
         
-        echo "使用项目文件: ${{ steps.project-info.outputs.project_file }}"
-        echo "使用scheme: ${{ steps.project-info.outputs.scheme }}"
-        echo "测试计划参数: $TEST_PLAN_PARAM"
-        
-        # 运行测试
         xcodebuild test \
-          -project "${{ steps.project-info.outputs.project_file }}" \
-          -scheme "${{ steps.project-info.outputs.scheme }}" \
+          -project Yike.xcodeproj \
+          -scheme "Yike" \
           -destination "platform=iOS Simulator,name=iPhone 15,OS=latest" \
-          $TEST_PLAN_PARAM \
+          $TEST_PLAN \
           -enableCodeCoverage YES \
           CODE_SIGN_IDENTITY="" \
           CODE_SIGNING_REQUIRED=NO \

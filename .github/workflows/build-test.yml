@@ -20,75 +20,28 @@ jobs:
       with:
         xcode-version: '15.0'
     
-    - name: 检查工作目录结构
+    - name: 检查工作目录
       run: |
-        echo "当前工作目录: $(pwd)"
-        echo "根目录内容:"
+        pwd
         ls -la
-        echo "---------------------"
-        if [ -d "Yike" ]; then
-          echo "Yike目录内容:"
-          ls -la Yike
-        else
-          echo "Yike目录不存在"
-        fi
-    
-    - name: 查找Xcode项目文件
+        
+    - name: 列出可用schemes
       run: |
-        echo "查找.xcodeproj文件:"
-        find . -name "*.xcodeproj" -type d
-    
-    - name: 尝试列出schemes (根目录)
-      run: |
-        # 尝试在根目录查找项目文件
-        for proj in $(find . -maxdepth 2 -name "*.xcodeproj" -type d); do
-          echo "项目文件: $proj"
-          xcodebuild -list -project "$proj" || echo "无法列出 $proj 的schemes"
-        done
+        xcodebuild -list -project Yike.xcodeproj || echo "找不到主项目文件"
+        xcodebuild -list -project Yike/Yike.xcodeproj || echo "找不到嵌套项目文件"
     
     - name: 安装依赖
       run: |
-        # 动态查找项目文件
-        PROJ_FILE=$(find . -maxdepth 3 -name "*.xcodeproj" | head -n 1)
-        if [ -n "$PROJ_FILE" ]; then
-          echo "使用项目文件: $PROJ_FILE"
-          xcodebuild -resolvePackageDependencies -project "$PROJ_FILE"
-        else
-          echo "未找到项目文件"
-          exit 1
-        fi
+        xcodebuild -resolvePackageDependencies -project Yike/Yike.xcodeproj || echo "无法解析依赖"
     
     - name: 构建应用
       run: |
-        # 动态查找项目文件和scheme
-        PROJ_FILE=$(find . -maxdepth 3 -name "*.xcodeproj" | head -n 1)
-        if [ -n "$PROJ_FILE" ]; then
-          # 获取项目名称用作默认scheme
-          PROJ_NAME=$(basename "$PROJ_FILE" .xcodeproj)
-          
-          # 获取可用的schemes
-          SCHEMES=$(xcodebuild -list -project "$PROJ_FILE" -json | grep -o '"name" : "[^"]*"' | grep -v "Aggregate" | cut -d '"' -f 4)
-          MAIN_SCHEME=$(echo "$SCHEMES" | head -n 1)
-          
-          echo "项目文件: $PROJ_FILE"
-          echo "可能的scheme: $MAIN_SCHEME (如果为空将使用项目名称: $PROJ_NAME)"
-          
-          # 如果找不到scheme，使用项目名称
-          if [ -z "$MAIN_SCHEME" ]; then
-            MAIN_SCHEME="$PROJ_NAME"
-          fi
-          
-          echo "使用scheme: $MAIN_SCHEME"
-          
-          xcodebuild clean build \
-            -project "$PROJ_FILE" \
-            -scheme "$MAIN_SCHEME" \
-            -destination "platform=iOS Simulator,name=iPhone 15,OS=latest" \
-            CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_REQUIRED=NO \
-            ONLY_ACTIVE_ARCH=YES \
-            VALID_ARCHS=x86_64
-        else
-          echo "未找到项目文件"
-          exit 1
-        fi 
+        cd Yike
+        xcodebuild clean build \
+          -project Yike.xcodeproj \
+          -scheme "Yike" \
+          -destination "platform=iOS Simulator,name=iPhone 15,OS=latest" \
+          CODE_SIGN_IDENTITY="" \
+          CODE_SIGNING_REQUIRED=NO \
+          ONLY_ACTIVE_ARCH=YES \
+          VALID_ARCHS=x86_64 
