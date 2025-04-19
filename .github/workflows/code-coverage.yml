@@ -1,15 +1,10 @@
 name: Code Coverage
 
-# 暂时禁用此工作流，直到基本构建工作流稳定
-# on:
-#   push:
-#     branches: [ main ]
-#   schedule:
-#     - cron: '0 0 * * 1'  # 每周一执行一次
-
-# 使用manual触发方式替代自动触发
-on: 
-  workflow_dispatch:  # 仅允许手动触发
+on:
+  push:
+    branches: [ main ]
+  schedule:
+    - cron: '0 0 * * 1'  # 每周一执行一次
 
 jobs:
   coverage:
@@ -27,11 +22,18 @@ jobs:
     
     - name: 安装依赖
       run: |
+        cd Yike
         xcodebuild -resolvePackageDependencies
         brew install xcbeautify
-    
-    - name: 运行测试
+        
+    - name: 安装xcresultparser
       run: |
+        brew tap a7ex/homebrew-formulae
+        brew install xcresultparser
+    
+    - name: 运行测试并生成覆盖率报告
+      run: |
+        cd Yike
         xcodebuild test \
           -scheme "Yike" \
           -destination "platform=iOS Simulator,name=iPhone 15,OS=latest" \
@@ -39,4 +41,39 @@ jobs:
           -enableCodeCoverage YES \
           CODE_SIGN_IDENTITY="" \
           CODE_SIGNING_REQUIRED=NO \
-          ONLY_ACTIVE_ARCH=YES | xcbeautify 
+          ONLY_ACTIVE_ARCH=YES | xcbeautify
+          
+        # 将xcresult转换为HTML报告
+        mkdir -p coverage-report
+        xcresultparser TestResults.xcresult --output coverage-report
+    
+    - name: 归档覆盖率报告
+      uses: actions/upload-artifact@v3
+      with:
+        name: coverage-report
+        path: Yike/coverage-report
+        retention-days: 14
+        
+    - name: 生成覆盖率摘要
+      run: |
+        cd Yike
+        echo "## 代码覆盖率摘要" > coverage-summary.md
+        echo "" >> coverage-summary.md
+        echo "\`\`\`" >> coverage-summary.md
+        xcresultparser TestResults.xcresult --text-summary >> coverage-summary.md
+        echo "\`\`\`" >> coverage-summary.md
+        
+    - name: 添加PR评论
+      uses: actions/github-script@v6
+      if: github.event_name == 'pull_request'
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const fs = require('fs');
+          const summary = fs.readFileSync('Yike/coverage-summary.md', 'utf8');
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: summary
+          }); 

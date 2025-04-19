@@ -22,10 +22,12 @@ jobs:
     
     - name: 安装依赖
       run: |
+        cd Yike
         xcodebuild -resolvePackageDependencies
     
     - name: 运行单元测试
       run: |
+        cd Yike
         xcodebuild test \
           -scheme "Yike" \
           -destination "platform=iOS Simulator,name=iPhone 15,OS=latest" \
@@ -33,4 +35,12 @@ jobs:
           -enableCodeCoverage YES \
           CODE_SIGN_IDENTITY="" \
           CODE_SIGNING_REQUIRED=NO \
-          ONLY_ACTIVE_ARCH=YES 
+          ONLY_ACTIVE_ARCH=YES
+    
+    - name: 归档测试结果
+      uses: actions/upload-artifact@v3
+      if: success() || failure()
+      with:
+        name: test-results
+        path: Yike/TestResults.xcresult
+        retention-days: 5 
