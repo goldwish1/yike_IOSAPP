@@ -1,0 +1,44 @@
+name: Build Test
+
+on:
+  push:
+    branches: [ main, develop, feature/*, bugfix/* ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  build:
+    name: 构建测试
+    runs-on: macos-latest
+    
+    steps:
+    - name: 签出代码
+      uses: actions/checkout@v3
+    
+    - name: 设置Xcode版本
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: '15.0'
+    
+    - name: 安装依赖
+      run: |
+        cd Yike
+        xcodebuild -resolvePackageDependencies
+    
+    - name: 构建应用
+      run: |
+        cd Yike
+        xcodebuild clean build \
+          -scheme "Yike" \
+          -destination "platform=iOS Simulator,name=iPhone 15,OS=latest" \
+          CODE_SIGN_IDENTITY="" \
+          CODE_SIGNING_REQUIRED=NO \
+          ONLY_ACTIVE_ARCH=YES
+          
+    - name: 归档构建日志
+      uses: actions/upload-artifact@v3
+      if: failure()
+      with:
+        name: build-logs
+        path: Yike/build-logs
+        retention-days: 3 

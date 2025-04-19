@@ -1,0 +1,46 @@
+name: Unit Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    name: 运行单元测试
+    runs-on: macos-latest
+    
+    steps:
+    - name: 签出代码
+      uses: actions/checkout@v3
+    
+    - name: 设置Xcode版本
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: '15.0'
+    
+    - name: 安装依赖
+      run: |
+        cd Yike
+        xcodebuild -resolvePackageDependencies
+    
+    - name: 运行单元测试
+      run: |
+        cd Yike
+        xcodebuild test \
+          -scheme "Yike" \
+          -destination "platform=iOS Simulator,name=iPhone 15,OS=latest" \
+          -testPlan "Yike" \
+          -enableCodeCoverage YES \
+          CODE_SIGN_IDENTITY="" \
+          CODE_SIGNING_REQUIRED=NO \
+          ONLY_ACTIVE_ARCH=YES
+    
+    - name: 归档测试结果
+      uses: actions/upload-artifact@v3
+      if: success() || failure()
+      with:
+        name: test-results
+        path: Yike/TestResults.xcresult
+        retention-days: 5 
