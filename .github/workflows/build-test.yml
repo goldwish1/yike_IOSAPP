@@ -19,10 +19,6 @@ jobs:
       uses: maxim-lobanov/setup-xcode@v1
       with:
         xcode-version: '15.0'
-        
-    - name: 安装依赖工具
-      run: |
-        brew install xcbeautify
     
     - name: 检查工作目录结构
       run: |
@@ -44,9 +40,6 @@ jobs:
         
         echo "查找.xcworkspace文件:"
         find . -name "*.xcworkspace" -type d
-        
-        echo "查找podfile文件:"
-        find . -name "Podfile" -o -name "podfile"
     
     - name: 详细检查Xcode项目结构
       run: |
@@ -54,10 +47,6 @@ jobs:
           echo "项目文件: $proj"
           echo "项目结构:"
           ls -la "$proj"
-          
-          # 检查项目配置
-          echo "项目配置文件:"
-          find "$proj" -name "*.xcconfig" -o -name "project.pbxproj"
           
           # 检查schemes目录
           if [ -d "$proj/xcshareddata/xcschemes" ]; then
@@ -79,39 +68,7 @@ jobs:
           # 检查scheme数量
           SCHEME_COUNT=$(xcodebuild -list -project "$proj" -json 2>/dev/null | grep -o '"Scheme"' | wc -l)
           echo "找到scheme数量: $SCHEME_COUNT"
-          
-          # 列出build配置
-          echo "构建配置:"
-          xcodebuild -project "$proj" -list | grep -A 10 "Build Configurations" || echo "无法列出构建配置"
-          
-          # 列出targets
-          echo "构建目标:"
-          xcodebuild -project "$proj" -list | grep -A 20 "Targets:" || echo "无法列出targets"
         done
-    
-    - name: 安装依赖
-      id: deps
-      run: |
-        # 检查是否有CocoaPods
-        PODFILE=$(find . -name "Podfile" -o -name "podfile" | head -n 1)
-        if [ -n "$PODFILE" ]; then
-          echo "找到Podfile: $PODFILE"
-          echo "安装CocoaPods依赖..."
-          cd $(dirname "$PODFILE")
-          gem install cocoapods
-          pod install
-          echo "pod_installed=true" >> $GITHUB_OUTPUT
-        else
-          echo "未找到Podfile"
-          echo "pod_installed=false" >> $GITHUB_OUTPUT
-        fi
-        
-        # 检查是否有Swift Package Manager依赖
-        PROJ_FILE=$(find . -maxdepth 3 -name "*.xcodeproj" | head -n 1)
-        if [ -n "$PROJ_FILE" ]; then
-          echo "解析Swift Package Manager依赖..."
-          xcodebuild -resolvePackageDependencies -project "$PROJ_FILE" || echo "解析依赖失败或没有依赖"
-        fi
     
     - name: 尝试创建默认scheme
       run: |
@@ -172,154 +129,29 @@ jobs:
           echo "未找到项目文件"
         fi
     
-    - name: 尝试多种构建方式
+    - name: 尝试使用xcodebuild直接指定target
       run: |
-        # 检查是否有workspace
-        WORKSPACE=$(find . -name "*.xcworkspace" | head -n 1)
         PROJ_FILE=$(find . -maxdepth 3 -name "*.xcodeproj" | head -n 1)
-        
-        echo "========= 诊断信息 =========="
-        if [ -n "$WORKSPACE" ]; then
-          echo "找到workspace: $WORKSPACE"
-          # 检查是否用CocoaPods安装了依赖
-          if [ "${{ steps.deps.outputs.pod_installed }}" == "true" ]; then
-            echo "使用workspace构建 (CocoaPods)"
-            
-            # 列出workspace中的schemes
-            echo "Workspace schemes:"
-            xcodebuild -workspace "$WORKSPACE" -list || echo "无法列出workspace schemes"
-            
-            # 尝试找出main target
-            MAIN_TARGET=$(xcodebuild -workspace "$WORKSPACE" -list -json 2>/dev/null | grep -o '"name" : "[^"]*"' | grep -v "Aggregate" | head -n 1 | cut -d '"' -f 4)
-            MAIN_SCHEME=$(xcodebuild -workspace "$WORKSPACE" -list -json 2>/dev/null | grep -o '"Scheme" : "[^"]*"' | head -n 1 | cut -d '"' -f 4)
-            
-            if [ -n "$MAIN_SCHEME" ]; then
-              echo "使用scheme: $MAIN_SCHEME"
-              set -x
-              xcodebuild clean build \
-                -workspace "$WORKSPACE" \
-                -scheme "$MAIN_SCHEME" \
-                -configuration Debug \
-                -destination "platform=iOS Simulator,name=iPhone 15,OS=latest" \
-                CODE_SIGN_IDENTITY=- \
-                CODE_SIGNING_REQUIRED=NO \
-                CODE_SIGNING_ALLOWED=NO \
-                ONLY_ACTIVE_ARCH=YES | xcbeautify
-              BUILD_RESULT=$?
-              set +x
-              
-              if [ $BUILD_RESULT -eq 0 ]; then
-                echo "构建成功！"
-                exit 0
-              else
-                echo "使用scheme构建失败，尝试使用target..."
-              fi
-            fi
-            
-            if [ -n "$MAIN_TARGET" ]; then
-              echo "使用target: $MAIN_TARGET"
-              set -x
-              xcodebuild clean build \
-                -workspace "$WORKSPACE" \
-                -target "$MAIN_TARGET" \
-                -configuration Debug \
-                -destination "platform=iOS Simulator,name=iPhone 15,OS=latest" \
-                CODE_SIGN_IDENTITY=- \
-                CODE_SIGNING_REQUIRED=NO \
-                CODE_SIGNING_ALLOWED=NO \
-                ONLY_ACTIVE_ARCH=YES | xcbeautify
-              BUILD_RESULT=$?
-              set +x
-              
-              if [ $BUILD_RESULT -eq 0 ]; then
-                echo "构建成功！"
-                exit 0
-              else
-                echo "使用workspace构建失败，尝试使用project..."
-              fi
-            fi
-          fi
-        fi
-        
         if [ -n "$PROJ_FILE" ]; then
-          echo "找到项目文件: $PROJ_FILE"
+          # 获取项目中的targets
+          TARGETS=$(xcodebuild -list -project "$PROJ_FILE" -json 2>/dev/null | grep -o '"name" : "[^"]*"' | grep -v "Aggregate" | cut -d '"' -f 4)
+          MAIN_TARGET=$(echo "$TARGETS" | head -n 1)
           
-          # 获取项目中的targets和schemes
-          TARGETS=$(xcodebuild -project "$PROJ_FILE" -list -json 2>/dev/null | grep -o '"name" : "[^"]*"' | grep -v "Aggregate" | cut -d '"' -f 4)
-          MAIN_TARGET=$(echo "$TARGETS" | grep -v "Test" | head -n 1)
-          SCHEMES=$(xcodebuild -project "$PROJ_FILE" -list -json 2>/dev/null | grep -o '"Scheme" : "[^"]*"' | cut -d '"' -f 4)
-          MAIN_SCHEME=$(echo "$SCHEMES" | grep -v "Test" | head -n 1)
-          
-          # 尝试使用scheme构建
-          if [ -n "$MAIN_SCHEME" ]; then
-            echo "使用scheme: $MAIN_SCHEME"
-            set -x
-            xcodebuild clean build \
-              -project "$PROJ_FILE" \
-              -scheme "$MAIN_SCHEME" \
-              -configuration Debug \
-              -destination "platform=iOS Simulator,name=iPhone 15,OS=latest" \
-              CODE_SIGN_IDENTITY=- \
-              CODE_SIGNING_REQUIRED=NO \
-              CODE_SIGNING_ALLOWED=NO \
-              ONLY_ACTIVE_ARCH=YES | xcbeautify
-            BUILD_RESULT=$?
-            set +x
-            
-            if [ $BUILD_RESULT -eq 0 ]; then
-              echo "构建成功！"
-              exit 0
-            else
-              echo "使用scheme构建失败，尝试使用target..."
-            fi
-          fi
-          
-          # 尝试使用target构建
           if [ -n "$MAIN_TARGET" ]; then
-            echo "使用target: $MAIN_TARGET"
-            set -x
+            echo "尝试直接使用target '$MAIN_TARGET'构建"
             xcodebuild clean build \
               -project "$PROJ_FILE" \
               -target "$MAIN_TARGET" \
-              -configuration Debug \
               -destination "platform=iOS Simulator,name=iPhone 15,OS=latest" \
-              CODE_SIGN_IDENTITY=- \
+              CODE_SIGN_IDENTITY="" \
               CODE_SIGNING_REQUIRED=NO \
-              CODE_SIGNING_ALLOWED=NO \
-              ONLY_ACTIVE_ARCH=YES | xcbeautify
-            BUILD_RESULT=$?
-            set +x
-            
-            if [ $BUILD_RESULT -eq 0 ]; then
-              echo "构建成功！"
-              exit 0
-            else
-              echo "使用target构建失败..."
-              
-              # 最后尝试一次不指定destination
-              echo "尝试不指定模拟器..."
-              set -x
-              xcodebuild clean build \
-                -project "$PROJ_FILE" \
-                -target "$MAIN_TARGET" \
-                -configuration Debug \
-                CODE_SIGN_IDENTITY=- \
-                CODE_SIGNING_REQUIRED=NO \
-                CODE_SIGNING_ALLOWED=NO | xcbeautify
-              BUILD_RESULT=$?
-              set +x
-              
-              if [ $BUILD_RESULT -eq 0 ]; then
-                echo "构建成功！"
-                exit 0
-              fi
-            fi
+              ONLY_ACTIVE_ARCH=YES \
+              VALID_ARCHS=x86_64
           else
             echo "未找到可用的target"
+            exit 1
           fi
         else
           echo "未找到项目文件"
+          exit 1
         fi
-        
-        echo "所有构建尝试均失败"
-        exit 1
