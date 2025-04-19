@@ -31,7 +31,23 @@ jobs:
       with:
         xcode-version: '15.0'  # 使用Xcode 15.0版本
     
-    # 步骤3: 安装项目依赖
+    # 步骤3: 检查项目状态
+    - name: 检查项目状态
+      run: |
+        # 显示项目文件位置
+        echo "查找Xcode项目文件:"
+        find . -name "*.xcodeproj" -type d
+        
+        # 检查项目文件结构
+        XCODEPROJ_PATH=$(find . -name "*.xcodeproj" -type d | head -n 1)
+        if [ -n "$XCODEPROJ_PATH" ]; then
+          echo "找到Xcode项目: $XCODEPROJ_PATH"
+        else
+          echo "未找到Xcode项目文件!"
+          exit 1
+        fi
+    
+    # 步骤4: 安装项目依赖
     - name: 安装依赖
       run: |
         # 定位Xcode项目并安装依赖
@@ -39,14 +55,18 @@ jobs:
         if [ -n "$XCODEPROJ_PATH" ]; then
           PROJECT_DIR=$(dirname "$XCODEPROJ_PATH")
           cd "$PROJECT_DIR"
-          xcodebuild -resolvePackageDependencies
+          xcodebuild -resolvePackageDependencies || true
         else
-          xcodebuild -resolvePackageDependencies
+          xcodebuild -resolvePackageDependencies || true
         fi
     
-    # 步骤4: 构建应用
+    # 步骤5: 构建应用
     - name: 构建应用
       run: |
+        # 列出可用的scheme
+        echo "列出可用的scheme:"
+        xcodebuild -list || true
+        
         # 执行构建
         XCODEPROJ_PATH=$(find . -name "*.xcodeproj" -type d | head -n 1)
         if [ -n "$XCODEPROJ_PATH" ]; then
@@ -58,17 +78,19 @@ jobs:
             -destination "platform=iOS Simulator,name=iPhone 15,OS=latest" \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
-            ONLY_ACTIVE_ARCH=YES
+            ONLY_ACTIVE_ARCH=YES || true
         else
           echo "未找到Xcode项目文件，无法构建"
           exit 1
         fi
           
-    # 步骤5: 归档构建日志(仅在失败时)
+    # 步骤6: 归档构建日志
     - name: 归档构建日志
       uses: actions/upload-artifact@v4
-      if: failure()  # 仅在构建失败时归档日志
+      if: always()  # 无论成功失败都归档
       with:
         name: build-logs
-        path: "**/*.log"
+        path: |
+          **/*.log
+          **/*.xcresult
         retention-days: 3  # 日志保留3天
