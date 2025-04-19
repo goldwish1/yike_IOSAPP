@@ -37,58 +37,121 @@ jobs:
       run: |
         echo "查找.xcodeproj文件:"
         find . -name "*.xcodeproj" -type d
+        
+        echo "查找.xcworkspace文件:"
+        find . -name "*.xcworkspace" -type d
     
-    - name: 尝试列出schemes (根目录)
+    - name: 详细检查Xcode项目结构
       run: |
-        # 尝试在根目录查找项目文件
-        for proj in $(find . -maxdepth 2 -name "*.xcodeproj" -type d); do
+        for proj in $(find . -name "*.xcodeproj" -type d); do
           echo "项目文件: $proj"
-          xcodebuild -list -project "$proj" || echo "无法列出 $proj 的schemes"
+          echo "项目结构:"
+          ls -la "$proj"
+          
+          # 检查schemes目录
+          if [ -d "$proj/xcshareddata/xcschemes" ]; then
+            echo "可用schemes:"
+            ls -la "$proj/xcshareddata/xcschemes"
+          else
+            echo "没有共享的schemes"
+            # 检查用户schemes
+            if [ -d "$proj/xcuserdata" ]; then
+              echo "用户schemes可能存在:"
+              find "$proj/xcuserdata" -name "*.xcscheme"
+            fi
+          fi
+          
+          # 尝试列出schemes
+          echo "尝试列出schemes信息:"
+          xcodebuild -list -project "$proj" || echo "无法列出schemes"
+          
+          # 检查scheme数量
+          SCHEME_COUNT=$(xcodebuild -list -project "$proj" -json 2>/dev/null | grep -o '"Scheme"' | wc -l)
+          echo "找到scheme数量: $SCHEME_COUNT"
         done
     
-    - name: 安装依赖
+    - name: 尝试创建默认scheme
       run: |
-        # 动态查找项目文件
         PROJ_FILE=$(find . -maxdepth 3 -name "*.xcodeproj" | head -n 1)
         if [ -n "$PROJ_FILE" ]; then
-          echo "使用项目文件: $PROJ_FILE"
-          xcodebuild -resolvePackageDependencies -project "$PROJ_FILE"
+          PROJ_NAME=$(basename "$PROJ_FILE" .xcodeproj)
+          SCHEMES_DIR="$PROJ_FILE/xcshareddata/xcschemes"
+          
+          # 检查是否存在schemes
+          SCHEME_COUNT=$(xcodebuild -list -project "$PROJ_FILE" -json 2>/dev/null | grep -o '"Scheme"' | wc -l)
+          
+          if [ "$SCHEME_COUNT" -eq 0 ]; then
+            echo "未找到scheme，尝试创建默认scheme"
+            
+            # 尝试找到主要的target
+            TARGETS=$(xcodebuild -list -project "$PROJ_FILE" -json 2>/dev/null | grep -o '"name" : "[^"]*"' | grep -v "Aggregate" | cut -d '"' -f 4)
+            MAIN_TARGET=$(echo "$TARGETS" | head -n 1)
+            
+            if [ -n "$MAIN_TARGET" ]; then
+              echo "为target '$MAIN_TARGET'创建scheme"
+              
+              # 创建schemes目录
+              mkdir -p "$SCHEMES_DIR"
+              
+              # 创建基本的scheme文件 (简化版)
+              echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" > "$SCHEMES_DIR/$MAIN_TARGET.xcscheme"
+              echo "<Scheme LastUpgradeVersion=\"1500\" version=\"1.7\">" >> "$SCHEMES_DIR/$MAIN_TARGET.xcscheme"
+              echo "  <BuildAction parallelizeBuildables=\"YES\" buildImplicitDependencies=\"YES\">" >> "$SCHEMES_DIR/$MAIN_TARGET.xcscheme"
+              echo "    <BuildActionEntries>" >> "$SCHEMES_DIR/$MAIN_TARGET.xcscheme"
+              echo "      <BuildActionEntry buildForTesting=\"YES\" buildForRunning=\"YES\" buildForProfiling=\"YES\" buildForArchiving=\"YES\" buildForAnalyzing=\"YES\">" >> "$SCHEMES_DIR/$MAIN_TARGET.xcscheme"
+              echo "        <BuildableReference BuildableIdentifier=\"primary\" BlueprintIdentifier=\"REPLACE_WITH_TARGET_ID\" BuildableName=\"$MAIN_TARGET.app\" BlueprintName=\"$MAIN_TARGET\" ReferencedContainer=\"container:$PROJ_NAME.xcodeproj\"></BuildableReference>" >> "$SCHEMES_DIR/$MAIN_TARGET.xcscheme"
+              echo "      </BuildActionEntry>" >> "$SCHEMES_DIR/$MAIN_TARGET.xcscheme"
+              echo "    </BuildActionEntries>" >> "$SCHEMES_DIR/$MAIN_TARGET.xcscheme"
+              echo "  </BuildAction>" >> "$SCHEMES_DIR/$MAIN_TARGET.xcscheme"
+              echo "  <TestAction buildConfiguration=\"Debug\" selectedDebuggerIdentifier=\"Xcode.DebuggerFoundation.Debugger.LLDB\" selectedLauncherIdentifier=\"Xcode.DebuggerFoundation.Launcher.LLDB\" shouldUseLaunchSchemeArgsEnv=\"YES\" shouldAutocreateTestPlan=\"YES\"></TestAction>" >> "$SCHEMES_DIR/$MAIN_TARGET.xcscheme"
+              echo "  <LaunchAction buildConfiguration=\"Debug\" selectedDebuggerIdentifier=\"Xcode.DebuggerFoundation.Debugger.LLDB\" selectedLauncherIdentifier=\"Xcode.DebuggerFoundation.Launcher.LLDB\" launchStyle=\"0\" useCustomWorkingDirectory=\"NO\" ignoresPersistentStateOnLaunch=\"NO\" debugDocumentVersioning=\"YES\" debugServiceExtension=\"internal\" allowLocationSimulation=\"YES\">" >> "$SCHEMES_DIR/$MAIN_TARGET.xcscheme"
+              echo "    <BuildableProductRunnable runnableDebuggingMode=\"0\">" >> "$SCHEMES_DIR/$MAIN_TARGET.xcscheme"
+              echo "      <BuildableReference BuildableIdentifier=\"primary\" BlueprintIdentifier=\"REPLACE_WITH_TARGET_ID\" BuildableName=\"$MAIN_TARGET.app\" BlueprintName=\"$MAIN_TARGET\" ReferencedContainer=\"container:$PROJ_NAME.xcodeproj\"></BuildableReference>" >> "$SCHEMES_DIR/$MAIN_TARGET.xcscheme"
+              echo "    </BuildableProductRunnable>" >> "$SCHEMES_DIR/$MAIN_TARGET.xcscheme"
+              echo "  </LaunchAction>" >> "$SCHEMES_DIR/$MAIN_TARGET.xcscheme"
+              echo "  <ProfileAction buildConfiguration=\"Release\" shouldUseLaunchSchemeArgsEnv=\"YES\" savedToolIdentifier=\"\" useCustomWorkingDirectory=\"NO\" debugDocumentVersioning=\"YES\">" >> "$SCHEMES_DIR/$MAIN_TARGET.xcscheme"
+              echo "    <BuildableProductRunnable runnableDebuggingMode=\"0\">" >> "$SCHEMES_DIR/$MAIN_TARGET.xcscheme"
+              echo "      <BuildableReference BuildableIdentifier=\"primary\" BlueprintIdentifier=\"REPLACE_WITH_TARGET_ID\" BuildableName=\"$MAIN_TARGET.app\" BlueprintName=\"$MAIN_TARGET\" ReferencedContainer=\"container:$PROJ_NAME.xcodeproj\"></BuildableReference>" >> "$SCHEMES_DIR/$MAIN_TARGET.xcscheme"
+              echo "    </BuildableProductRunnable>" >> "$SCHEMES_DIR/$MAIN_TARGET.xcscheme"
+              echo "  </ProfileAction>" >> "$SCHEMES_DIR/$MAIN_TARGET.xcscheme"
+              echo "  <AnalyzeAction buildConfiguration=\"Debug\"></AnalyzeAction>" >> "$SCHEMES_DIR/$MAIN_TARGET.xcscheme"
+              echo "  <ArchiveAction buildConfiguration=\"Release\" revealArchiveInOrganizer=\"YES\"></ArchiveAction>" >> "$SCHEMES_DIR/$MAIN_TARGET.xcscheme"
+              echo "</Scheme>" >> "$SCHEMES_DIR/$MAIN_TARGET.xcscheme"
+              
+              echo "默认scheme已创建: $SCHEMES_DIR/$MAIN_TARGET.xcscheme"
+            else
+              echo "无法找到可用的target"
+            fi
+          else
+            echo "已找到$SCHEME_COUNT个scheme，无需创建新scheme"
+          fi
+        else
+          echo "未找到项目文件"
+        fi
+    
+    - name: 尝试使用xcodebuild直接指定target
+      run: |
+        PROJ_FILE=$(find . -maxdepth 3 -name "*.xcodeproj" | head -n 1)
+        if [ -n "$PROJ_FILE" ]; then
+          # 获取项目中的targets
+          TARGETS=$(xcodebuild -list -project "$PROJ_FILE" -json 2>/dev/null | grep -o '"name" : "[^"]*"' | grep -v "Aggregate" | cut -d '"' -f 4)
+          MAIN_TARGET=$(echo "$TARGETS" | head -n 1)
+          
+          if [ -n "$MAIN_TARGET" ]; then
+            echo "尝试直接使用target '$MAIN_TARGET'构建"
+            xcodebuild clean build \
+              -project "$PROJ_FILE" \
+              -target "$MAIN_TARGET" \
+              -destination "platform=iOS Simulator,name=iPhone 15,OS=latest" \
+              CODE_SIGN_IDENTITY="" \
+              CODE_SIGNING_REQUIRED=NO \
+              ONLY_ACTIVE_ARCH=YES \
+              VALID_ARCHS=x86_64
+          else
+            echo "未找到可用的target"
+            exit 1
+          fi
         else
           echo "未找到项目文件"
           exit 1
         fi
-    
-    - name: 构建应用
-      run: |
-        # 动态查找项目文件和scheme
-        PROJ_FILE=$(find . -maxdepth 3 -name "*.xcodeproj" | head -n 1)
-        if [ -n "$PROJ_FILE" ]; then
-          # 获取项目名称用作默认scheme
-          PROJ_NAME=$(basename "$PROJ_FILE" .xcodeproj)
-          
-          # 获取可用的schemes
-          SCHEMES=$(xcodebuild -list -project "$PROJ_FILE" -json | grep -o '"name" : "[^"]*"' | grep -v "Aggregate" | cut -d '"' -f 4)
-          MAIN_SCHEME=$(echo "$SCHEMES" | head -n 1)
-          
-          echo "项目文件: $PROJ_FILE"
-          echo "可能的scheme: $MAIN_SCHEME (如果为空将使用项目名称: $PROJ_NAME)"
-          
-          # 如果找不到scheme，使用项目名称
-          if [ -z "$MAIN_SCHEME" ]; then
-            MAIN_SCHEME="$PROJ_NAME"
-          fi
-          
-          echo "使用scheme: $MAIN_SCHEME"
-          
-          xcodebuild clean build \
-            -project "$PROJ_FILE" \
-            -scheme "$MAIN_SCHEME" \
-            -destination "platform=iOS Simulator,name=iPhone 15,OS=latest" \
-            CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_REQUIRED=NO \
-            ONLY_ACTIVE_ARCH=YES \
-            VALID_ARCHS=x86_64
-        else
-          echo "未找到项目文件"
-          exit 1
-        fi 
