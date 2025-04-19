@@ -44,7 +44,6 @@ jobs:
           ONLY_ACTIVE_ARCH=YES | xcbeautify
           
         # 将xcresult转换为HTML报告
-        mkdir -p coverage-report
         xcresultparser TestResults.xcresult --output coverage-report
     
     - name: 归档覆盖率报告
