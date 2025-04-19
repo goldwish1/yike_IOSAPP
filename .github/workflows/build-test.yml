@@ -22,10 +22,12 @@ jobs:
     
     - name: 安装依赖
       run: |
+        cd Yike
         xcodebuild -resolvePackageDependencies
     
     - name: 构建应用
       run: |
+        cd Yike
         xcodebuild clean build \
           -scheme "Yike" \
           -destination "platform=iOS Simulator,name=iPhone 15,OS=latest" \
@@ -34,9 +36,9 @@ jobs:
           ONLY_ACTIVE_ARCH=YES
           
     - name: 归档构建日志
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v3
       if: failure()
       with:
         name: build-logs
-        path: build-logs
+        path: Yike/build-logs
         retention-days: 3 

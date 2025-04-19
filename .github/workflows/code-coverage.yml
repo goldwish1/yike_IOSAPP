@@ -20,9 +20,26 @@ jobs:
       with:
         xcode-version: '15.0'
     
+    - name: 调试 - 列出目录内容
+      run: |
+        echo "当前工作目录:"
+        pwd
+        echo "列出根目录文件:"
+        ls -la
+        echo "查找所有的xcodeproj文件:"
+        find . -name "*.xcodeproj"
+        echo "查找所有的xctestplan文件:"
+        find . -name "*.xctestplan"
+    
     - name: 安装依赖
       run: |
-        xcodebuild -resolvePackageDependencies
+        # 根据项目实际位置调整
+        if [ -d "Yike/Yike.xcodeproj" ]; then
+          cd Yike
+          xcodebuild -resolvePackageDependencies
+        else
+          xcodebuild -resolvePackageDependencies
+        fi
         brew install xcbeautify
         
     - name: 安装xcresultparser
@@ -32,31 +49,70 @@ jobs:
     
     - name: 运行测试并生成覆盖率报告
       run: |
-        xcodebuild test \
-          -scheme "Yike" \
-          -destination "platform=iOS Simulator,name=iPhone 15,OS=latest" \
-          -testPlan "Yike" \
-          -enableCodeCoverage YES \
-          CODE_SIGN_IDENTITY="" \
-          CODE_SIGNING_REQUIRED=NO \
-          ONLY_ACTIVE_ARCH=YES | xcbeautify
+        # 获取测试计划路径
+        TEST_PLAN_PATH=$(find . -name "Yike.xctestplan" | head -n 1)
+        
+        # 如果测试计划存在
+        if [ -n "$TEST_PLAN_PATH" ]; then
+          TEST_PLAN_DIR=$(dirname "$TEST_PLAN_PATH")
+          TEST_PLAN_NAME=$(basename "$TEST_PLAN_PATH" .xctestplan)
           
-        # 将xcresult转换为HTML报告
-        xcresultparser TestResults.xcresult --output coverage-report
+          cd "$TEST_PLAN_DIR"
+          xcodebuild test \
+            -scheme "Yike" \
+            -destination "platform=iOS Simulator,name=iPhone 15,OS=latest" \
+            -testPlan "$TEST_PLAN_NAME" \
+            -enableCodeCoverage YES \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            ONLY_ACTIVE_ARCH=YES | xcbeautify
+        else
+          # 无测试计划的情况
+          if [ -d "Yike/Yike.xcodeproj" ]; then
+            cd Yike
+          fi
+          
+          xcodebuild test \
+            -scheme "Yike" \
+            -destination "platform=iOS Simulator,name=iPhone 15,OS=latest" \
+            -enableCodeCoverage YES \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            ONLY_ACTIVE_ARCH=YES | xcbeautify
+        fi
+          
+        # 查找并转换xcresult为HTML报告
+        XCRESULT_PATH=$(find . -name "*.xcresult" | head -n 1)
+        if [ -n "$XCRESULT_PATH" ]; then
+          xcresultparser "$XCRESULT_PATH" --output coverage-report
+        else
+          echo "警告: 未找到xcresult文件"
+          mkdir -p coverage-report
+          echo "No coverage data found" > coverage-report/index.html
+        fi
     
     - name: 归档覆盖率报告
       uses: actions/upload-artifact@v4
       with:
         name: coverage-report
-        path: coverage-report
+        path: "**/coverage-report"
         retention-days: 14
         
     - name: 生成覆盖率摘要
       run: |
+        # 查找xcresult文件
+        XCRESULT_PATH=$(find . -name "*.xcresult" | head -n 1)
+        
         echo "## 代码覆盖率摘要" > coverage-summary.md
         echo "" >> coverage-summary.md
         echo "\`\`\`" >> coverage-summary.md
-        xcresultparser TestResults.xcresult --text-summary >> coverage-summary.md
+        
+        if [ -n "$XCRESULT_PATH" ]; then
+          xcresultparser "$XCRESULT_PATH" --text-summary >> coverage-summary.md
+        else
+          echo "No coverage data found" >> coverage-summary.md
+        fi
+        
         echo "\`\`\`" >> coverage-summary.md
         
     - name: 添加PR评论
