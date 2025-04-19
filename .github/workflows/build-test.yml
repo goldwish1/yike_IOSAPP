@@ -31,59 +31,84 @@ jobs:
       with:
         xcode-version: '15.0'  # 使用Xcode 15.0版本
     
-    # 步骤3: 检查项目状态
-    - name: 检查项目状态
+    # 步骤3: 分析环境和项目路径
+    - name: 分析环境和项目路径
       run: |
-        # 显示项目文件位置
-        echo "查找Xcode项目文件:"
-        find . -name "*.xcodeproj" -type d
+        # 打印工作目录
+        echo "当前工作目录:"
+        pwd
+        WORKFLOW_DIR=$(pwd)
         
-        # 检查项目文件结构
-        XCODEPROJ_PATH=$(find . -name "*.xcodeproj" -type d | head -n 1)
-        if [ -n "$XCODEPROJ_PATH" ]; then
-          echo "找到Xcode项目: $XCODEPROJ_PATH"
-        else
-          echo "未找到Xcode项目文件!"
-          exit 1
-        fi
+        # 打印环境变量
+        echo "GitHub工作目录变量:"
+        echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
+        echo "RUNNER_WORKSPACE: $RUNNER_WORKSPACE"
+        
+        # 列出目录内容
+        echo "当前目录内容:"
+        ls -la
+        
+        # 搜索项目文件位置
+        echo "搜索所有xcodeproj文件:"
+        find $WORKFLOW_DIR -name "*.xcodeproj" | sort
+        
+        # 保存最后找到的项目路径
+        echo "保存项目路径:"
+        XCODEPROJ_PATH=$(find $WORKFLOW_DIR -name "*.xcodeproj" -type d | head -n 1)
+        XCODEPROJ_NAME=$(basename "$XCODEPROJ_PATH")
+        PROJECT_DIR=$(dirname "$XCODEPROJ_PATH")
+        
+        # 创建一个工作目录链接
+        echo "创建工作目录链接:"
+        mkdir -p /tmp/yike_project
+        echo "XCODEPROJ_PATH=$XCODEPROJ_PATH" > /tmp/yike_project/path_info.txt
+        echo "XCODEPROJ_NAME=$XCODEPROJ_NAME" >> /tmp/yike_project/path_info.txt
+        echo "PROJECT_DIR=$PROJECT_DIR" >> /tmp/yike_project/path_info.txt
+        echo "WORKFLOW_DIR=$WORKFLOW_DIR" >> /tmp/yike_project/path_info.txt
     
     # 步骤4: 安装项目依赖
     - name: 安装依赖
       run: |
-        # 定位Xcode项目并安装依赖
-        XCODEPROJ_PATH=$(find . -name "*.xcodeproj" -type d | head -n 1)
-        if [ -n "$XCODEPROJ_PATH" ]; then
-          PROJECT_DIR=$(dirname "$XCODEPROJ_PATH")
-          cd "$PROJECT_DIR"
-          xcodebuild -resolvePackageDependencies 
-        else
-          xcodebuild -resolvePackageDependencies 
-        fi
+        # 加载路径信息
+        source /tmp/yike_project/path_info.txt
+        
+        echo "使用项目路径: $XCODEPROJ_PATH"
+        echo "项目名称: $XCODEPROJ_NAME"
+        echo "项目目录: $PROJECT_DIR"
+        
+        # 进入项目目录并执行
+        cd "$PROJECT_DIR"
+        pwd
+        ls -la
+        
+        # 使用完整路径执行命令
+        xcodebuild -project "$XCODEPROJ_NAME" -resolvePackageDependencies || true
     
     # 步骤5: 构建应用
     - name: 构建应用
       run: |
+        # 加载路径信息
+        source /tmp/yike_project/path_info.txt
+        
         # 列出可用的scheme
         echo "列出可用的scheme:"
-        xcodebuild -list || true
+        cd "$PROJECT_DIR"
+        xcodebuild -project "$XCODEPROJ_NAME" -list || true
         
-        # 执行构建
-        XCODEPROJ_PATH=$(find . -name "*.xcodeproj" -type d | head -n 1)
-        if [ -n "$XCODEPROJ_PATH" ]; then
-          PROJECT_DIR=$(dirname "$XCODEPROJ_PATH")
-          cd "$PROJECT_DIR"
-          xcodebuild clean build \
-            -project "$(basename "$XCODEPROJ_PATH")" \
-            -scheme "Yike" \
-            -destination "platform=iOS Simulator,name=iPhone 15,OS=latest" \
-            CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_REQUIRED=NO \
-            ONLY_ACTIVE_ARCH=YES || true
-        else
-          echo "未找到Xcode项目文件，无法构建"
-          exit 1
-        fi
-          
+        # 尝试修复xcodeproj文件权限
+        echo "修复文件权限:"
+        chmod -R 755 "$XCODEPROJ_PATH"
+        
+        # 使用完整路径指定项目文件
+        echo "执行构建:"
+        xcodebuild clean build \
+          -project "$XCODEPROJ_NAME" \
+          -scheme "Yike" \
+          -destination "platform=iOS Simulator,name=iPhone 15,OS=latest" \
+          CODE_SIGN_IDENTITY="" \
+          CODE_SIGNING_REQUIRED=NO \
+          ONLY_ACTIVE_ARCH=YES || true
+    
     # 步骤6: 归档构建日志
     - name: 归档构建日志
       uses: actions/upload-artifact@v4
@@ -93,4 +118,5 @@ jobs:
         path: |
           **/*.log
           **/*.xcresult
+          /tmp/yike_project/path_info.txt
         retention-days: 3  # 日志保留3天
